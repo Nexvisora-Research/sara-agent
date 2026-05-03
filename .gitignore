@@ -77,3 +77,15 @@ Thumbs.db
 
 # Playwright artifacts
 playwright-report/
+
+# Large model files & memory data
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.pkl
+*.pickle
+memory/data/
+brain/models/
+brain/checkpoints/
