@@ -1,0 +1,21 @@
+{
+  "summary": "Sara: 🌐 Opened **google** in your browser. | User: Now you search it latest phone release in india | Sara: To search for the latest phone release in India, I can open Google for you. Here's the relevant conversation: assista... | User: Yes | Sara: I understood this as: Yes I need your approval before I do these risky actions: - Run open app. Planned: open_app — i... | Sara: I understood this as: Yes Done: - Run open app - 🌐 Opened **google** in your browser.",
+  "summary_lines": [
+    "Sara: It looks like you want to create a new folder. I'll create a test folder for you in the Desktop Dart folder. ⛔ Permis...",
+    "User: Hi",
+    "Sara: Hey! What can I help you with? 😊",
+    "User: You add some new features",
+    "Sara: To add some new features, could you please provide more information on what you're looking for? Are there any specifi...",
+    "User: Open browser and search latest phone release in india",
+    "Sara: ❌ 'browser and search latest phone release in india' is not installed and I couldn't auto-install it on Linux. Reason...",
+    "User: Open Google",
+    "Sara: 🌐 Opened **google** in your browser.",
+    "User: Now you search it latest phone release in india",
+    "Sara: To search for the latest phone release in India, I can open Google for you. Here's the relevant conversation: assista...",
+    "User: Yes",
+    "Sara: I understood this as: Yes I need your approval before I do these risky actions: - Run open app. Planned: open_app — i...",
+    "Sara: I understood this as: Yes Done: - Run open app - 🌐 Opened **google** in your browser."
+  ],
+  "message_count": 80,
+  "last_updated": "2026-05-03T07:56:11.275274+00:00"
+}

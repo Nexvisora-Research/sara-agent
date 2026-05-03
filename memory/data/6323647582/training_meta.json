@@ -1,0 +1,11 @@
+{
+  "model_name": "Sara v2",
+  "user_id": "6323647582",
+  "sample_count": 11,
+  "history_length": 20,
+  "collected_at": "2026-03-13T06:11:04.435860+00:00",
+  "last_trained": null,
+  "lora_trained": false,
+  "quality_filtered": true,
+  "multi_turn": true
+}

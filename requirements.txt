@@ -1,0 +1,40 @@
+python-dotenv
+requests
+beautifulsoup4
+python-telegram-bot
+langchain
+langchain-core
+langchain-ollama
+langchain-community
+playwright
+chromadb
+sentence-transformers
+pdfplumber
+pywhatkit
+anthropic
+groq
+discord.py
+Flask
+twilio
+
+# ── Feature Upgrade: 8 New Tools ──
+SpeechRecognition
+pyaudio
+Pillow
+pytesseract
+plyer
+psutil
+feedparser
+pynput
+pycaw
+pyperclip
+comtypes
+
+# ── Sara v2 Personal LLM Trainer (optional) ──────────────────
+# Needs 8GB+ RAM or GPU. Install: pip install torch transformers peft datasets accelerate
+# torch          - PyTorch runtime
+# transformers   - TinyLlama-1.1B base model for Sara v2
+# peft           - LoRA fine-tuning
+# datasets       - training data pipeline
+# accelerate     - mixed-precision training
+# bitsandbytes   - 4-bit quant for GPU (optional speedup)

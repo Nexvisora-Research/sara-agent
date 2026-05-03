@@ -1,0 +1,30 @@
+{
+  "topic_frequency": {
+    "search": 2,
+    "youtube": 3,
+    "tech": 3,
+    "open": 1,
+    "coding": 1,
+    "gaming": 1,
+    "study": 1
+  },
+  "mood_history": [
+    {
+      "date": "2026-04-16",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-04-16",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-04-16",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-04-16",
+      "emotion": "neutral"
+    }
+  ],
+  "conversation_count": 4
+}

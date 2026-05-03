@@ -1,0 +1,182 @@
+{
+  "topic_frequency": {
+    "what": 2,
+    "date": 1,
+    "today": 2,
+    "info": 2,
+    "current": 2,
+    "news": 2,
+    "open": 25,
+    "chorme": 3,
+    "close": 4,
+    "flipkart": 13,
+    "movies": 1,
+    "other": 1,
+    "seen": 2,
+    "already": 1,
+    "coding": 5,
+    "google": 3,
+    "youtube": 2,
+    "tech": 2,
+    "video": 1,
+    "search": 8,
+    "continue": 4,
+    "phone": 3,
+    "confirm": 1,
+    "nothing": 1,
+    "showing": 1,
+    "time": 1,
+    "readmi": 1,
+    "check": 1,
+    "bill": 1,
+    "gates": 1,
+    "music": 1,
+    "gaming": 2,
+    "shopping": 1,
+    "help": 1,
+    "firefox": 2,
+    "fitness": 1,
+    "terminal": 7,
+    "shutdown": 1,
+    "clear": 1,
+    "power": 1,
+    "desktop": 1,
+    "dart": 1,
+    "folder": 1,
+    "features": 1,
+    "browser": 1,
+    "latest": 1
+  },
+  "mood_history": [
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-02",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "positive"
+    }
+  ],
+  "conversation_count": 94,
+  "last_understanding": {
+    "user_goal": "Yes",
+    "constraints": [],
+    "preferences": [],
+    "entities": [
+      "Yes"
+    ],
+    "unresolved_questions": []
+  }
+}

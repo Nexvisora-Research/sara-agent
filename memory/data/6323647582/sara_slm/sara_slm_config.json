@@ -1,0 +1,11 @@
+{
+  "n_layers": 8,
+  "n_heads": 8,
+  "n_kv_heads": 4,
+  "embed_dim": 512,
+  "ffn_mult": 2.75,
+  "max_seq": 1024,
+  "vocab_size": 50257,
+  "dropout": 0.1,
+  "rope_theta": 10000.0
+}

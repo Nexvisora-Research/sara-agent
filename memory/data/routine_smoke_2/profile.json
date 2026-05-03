@@ -1,0 +1,62 @@
+{
+  "name": null,
+  "language": "en",
+  "timezone": "Asia/Kolkata",
+  "interests": [],
+  "dislikes": [],
+  "preferences": {},
+  "notes": [],
+  "facts": [],
+  "last_seen": null,
+  "onboarded": false,
+  "created_at": null,
+  "telegram_chat_id": null,
+  "custom_routines": {
+    "focus mode": {
+      "name": "focus mode",
+      "steps": [
+        {
+          "goal": "Open chrome",
+          "action": "smart_open_app",
+          "input": "chrome"
+        },
+        {
+          "goal": "Play music: lofi",
+          "action": "open_youtube_music",
+          "input": "lofi"
+        }
+      ],
+      "source_text": "open chrome and play lofi in yt music"
+    }
+  },
+  "topic_frequency": {
+    "music": 1,
+    "gaming": 2,
+    "list": 1,
+    "routines": 1
+  },
+  "mood_history": [
+    {
+      "date": "2026-04-30",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-04-30",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-04-30",
+      "emotion": "neutral"
+    }
+  ],
+  "last_understanding": {
+    "user_goal": "gaming time",
+    "constraints": [],
+    "preferences": [],
+    "entities": [
+      "gaming"
+    ],
+    "unresolved_questions": []
+  },
+  "conversation_count": 3
+}
