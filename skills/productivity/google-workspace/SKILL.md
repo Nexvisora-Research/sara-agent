@@ -2,12 +2,12 @@
 name: google-workspace
 description: "Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python."
 version: 1.0.0
-author: Nous Research
+author: Nexvisora Research 
 license: MIT
 metadata:
   sara:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/NousResearch/sara-agent
+    homepage: https://github.com/NexvisoraResearch/sara-agent
     related_skills: [himalaya]
 ---
 

@@ -6,7 +6,7 @@
     "info": 2,
     "current": 2,
     "news": 2,
-    "open": 25,
+    "open": 26,
     "chorme": 3,
     "close": 4,
     "flipkart": 13,
@@ -14,7 +14,7 @@
     "other": 1,
     "seen": 2,
     "already": 1,
-    "coding": 5,
+    "coding": 6,
     "google": 3,
     "youtube": 2,
     "tech": 2,
@@ -30,7 +30,7 @@
     "check": 1,
     "bill": 1,
     "gates": 1,
-    "music": 1,
+    "music": 2,
     "gaming": 2,
     "shopping": 1,
     "help": 1,
@@ -45,31 +45,12 @@
     "folder": 1,
     "features": 1,
     "browser": 1,
-    "latest": 1
+    "latest": 1,
+    "brave": 1
   },
   "mood_history": [
     {
       "date": "2026-05-02",
-      "emotion": "positive"
-    },
-    {
-      "date": "2026-05-02",
-      "emotion": "positive"
-    },
-    {
-      "date": "2026-05-02",
-      "emotion": "positive"
-    },
-    {
-      "date": "2026-05-02",
-      "emotion": "positive"
-    },
-    {
-      "date": "2026-05-02",
-      "emotion": "neutral"
-    },
-    {
-      "date": "2026-05-02",
       "emotion": "neutral"
     },
     {
@@ -166,17 +147,35 @@
     },
     {
       "date": "2026-05-03",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-03",
+      "emotion": "positive"
+    },
+    {
+      "date": "2026-05-04",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-04",
+      "emotion": "neutral"
+    },
+    {
+      "date": "2026-05-04",
       "emotion": "positive"
     }
   ],
-  "conversation_count": 94,
+  "conversation_count": 99,
   "last_understanding": {
-    "user_goal": "Yes",
+    "user_goal": "yes",
     "constraints": [],
     "preferences": [],
-    "entities": [
-      "Yes"
-    ],
+    "entities": [],
     "unresolved_questions": []
   }
 }

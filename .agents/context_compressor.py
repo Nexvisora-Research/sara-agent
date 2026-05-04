@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 from agent.auxiliary_client import call_llm
 from agent.context_engine import ContextEngine
-from agent.model_metadata import (
+from model_metadata import (
     MINIMUM_CONTEXT_LENGTH,
     get_model_context_length,
     estimate_messages_tokens_rough,

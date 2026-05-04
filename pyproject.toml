@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sara-agent"
+version = "2.0.0"
+description = "Sara Agent - AI-powered assistant with multi-provider support"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Mr Roy", email = "mrroy@example.com"}
+]
+keywords = ["agent", "ai", "llm", "assistant", "multi-provider"]
+
+dependencies = [
+    "python-dotenv",
+    "requests",
+    "beautifulsoup4",
+    "python-telegram-bot",
+    "langchain",
+    "langchain-core",
+    "langchain-ollama",
+    "langchain-community",
+    "playwright",
+    "chromadb",
+    "sentence-transformers",
+    "pdfplumber",
+    "pywhatkit",
+    "anthropic",
+    "groq",
+    "discord.py",
+    "Flask",
+    "twilio",
+    "SpeechRecognition",
+    "Pillow",
+    "pytesseract",
+    "plyer",
+    "psutil",
+    "feedparser",
+    "pynput",
+    "pyperclip",
+    "fastapi",
+    "uvicorn",
+    "pyyaml",
+    "simple-term-menu",
+    "openai",
+    "boto3",
+    "prompt_toolkit",
+    "httpx",
+]
+
+[project.optional-dependencies]
+all = [
+    "torch",
+    "transformers",
+    "peft",
+    "datasets",
+    "accelerate",
+    "bitsandbytes",
+    "ripgrep",
+]
+
+termux = [
+    "python-dotenv",
+    "requests",
+    "beautifulsoup4",
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "anthropic",
+    "groq",
+    "discord.py",
+    "fastapi",
+    "uvicorn",
+    "pyyaml",
+    "simple-term-menu",
+    "openai",
+    "boto3",
+    "prompt_toolkit",
+    "httpx",
+]
+
+[project.scripts]
+sara = "sara_cli.main:cli_main"
+
+[tool.setuptools]
+packages = ["sara_cli", "gateway", "integrations", "memory", "agent", "brain", "skills", "plugins", "ui-tui", "web"]
+
+[tool.setuptools.package-data]
+sara_cli = ["*.py"]
+gateway = ["*.py", "builtin_hooks/*.py", "platforms/*.py"]
+agent = ["*.py"]
+brain = ["*.py"]
+memory = ["*.py"]
+skills = ["**/*.py", "**/*.md"]
+plugins = ["**/*.py"]

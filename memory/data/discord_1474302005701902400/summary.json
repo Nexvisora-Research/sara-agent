@@ -1,21 +1,21 @@
 {
-  "summary": "Sara: 🌐 Opened **google** in your browser. | User: Now you search it latest phone release in india | Sara: To search for the latest phone release in India, I can open Google for you. Here's the relevant conversation: assista... | User: Yes | Sara: I understood this as: Yes I need your approval before I do these risky actions: - Run open app. Planned: open_app — i... | Sara: I understood this as: Yes Done: - Run open app - 🌐 Opened **google** in your browser.",
+  "summary": "User: open brave | Sara: ❌ Could not open 'brave'. It may not be installed. Try: `which brave` in a terminal to check. | User: yt music | Sara: I understood this as: yt music I need your approval before I do these risky actions: - Run open youtube music. Planne... | User: yes | Sara: I understood this as: yt music Done: - Run open youtube music - 🎵 Opened YouTube Music.",
   "summary_lines": [
-    "Sara: It looks like you want to create a new folder. I'll create a test folder for you in the Desktop Dart folder. ⛔ Permis...",
-    "User: Hi",
-    "Sara: Hey! What can I help you with? 😊",
-    "User: You add some new features",
-    "Sara: To add some new features, could you please provide more information on what you're looking for? Are there any specifi...",
-    "User: Open browser and search latest phone release in india",
-    "Sara: ❌ 'browser and search latest phone release in india' is not installed and I couldn't auto-install it on Linux. Reason...",
-    "User: Open Google",
-    "Sara: 🌐 Opened **google** in your browser.",
-    "User: Now you search it latest phone release in india",
-    "Sara: To search for the latest phone release in India, I can open Google for you. Here's the relevant conversation: assista...",
-    "User: Yes",
     "Sara: I understood this as: Yes I need your approval before I do these risky actions: - Run open app. Planned: open_app — i...",
-    "Sara: I understood this as: Yes Done: - Run open app - 🌐 Opened **google** in your browser."
+    "Sara: I understood this as: Yes Done: - Run open app - 🌐 Opened **google** in your browser.",
+    "User: Close vs code",
+    "Sara: I understood this as: Close vs code I need your approval before I do these risky actions: - Run close app. Planned: c...",
+    "User: Yes",
+    "Sara: I understood this as: Close vs code Done: - Run close app ✅ Closed **vscode**.",
+    "User: hi",
+    "Sara: Hey! What can I help you with? 😊",
+    "User: open brave",
+    "Sara: ❌ Could not open 'brave'. It may not be installed. Try: `which brave` in a terminal to check.",
+    "User: yt music",
+    "Sara: I understood this as: yt music I need your approval before I do these risky actions: - Run open youtube music. Planne...",
+    "User: yes",
+    "Sara: I understood this as: yt music Done: - Run open youtube music - 🎵 Opened YouTube Music."
   ],
-  "message_count": 80,
-  "last_updated": "2026-05-03T07:56:11.275274+00:00"
+  "message_count": 86,
+  "last_updated": "2026-05-04T08:18:06.245536+00:00"
 }

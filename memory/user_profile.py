@@ -218,6 +218,61 @@ def delete_custom_routine(user_id: str, name: str) -> bool:
     return True
 
 
+# ── Interactive onboarding helper (CLI) ─────────────────────────────────────
+def interactive_onboard(user_id: str = "default") -> None:
+    """Run a short interactive prompt to populate the user's profile.
+
+    Safe to call from a terminal. Skips fields the user leaves blank.
+    Marks the profile as onboarded when finished.
+    """
+    p = _get(user_id)
+    if p.get("onboarded"):
+        print("Profile already onboarded. Use get_profile_summary() to view it.")
+        return
+
+    print("Welcome — let's set up your Sara profile. Press Enter to skip any question.")
+    try:
+        name = input("Your name: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nOnboarding cancelled.")
+        return
+    if name:
+        set_name(user_id, name)
+
+    try:
+        lang = input("Preferred language (en): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        lang = ""
+    if lang:
+        set_language(user_id, lang)
+
+    try:
+        tz = input("Timezone (e.g. Europe/London, UTC): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        tz = ""
+    if tz:
+        set_timezone(user_id, tz)
+
+    try:
+        interests_raw = input("Interests (comma-separated): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        interests_raw = ""
+    if interests_raw:
+        interests = [i.strip() for i in interests_raw.split(",") if i.strip()]
+        set_interests(user_id, interests)
+
+    try:
+        tone = input("Preferred reply tone (casual/formal, default casual): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        tone = ""
+    if tone:
+        set_preference(user_id, "tone", tone)
+
+    # Finalize
+    mark_onboarded(user_id)
+    print("\nThanks — your profile has been saved. You can view it with /profile or by calling get_profile_summary().")
+
+
 # ── Facts (things Sara learns) ────────────────────────────────────────────────
 
 def add_fact(user_id: str, fact: str) -> None:

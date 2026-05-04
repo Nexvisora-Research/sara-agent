@@ -430,7 +430,7 @@ class CredentialPool:
         if self.provider != "anthropic" or entry.source != "claude_code":
             return entry
         try:
-            from agent.anthropic_adapter import read_claude_code_credentials
+            from anthropic_adapter import read_claude_code_credentials
             creds = read_claude_code_credentials()
             if not creds:
                 return entry
@@ -644,7 +644,7 @@ class CredentialPool:
 
         try:
             if self.provider == "anthropic":
-                from agent.anthropic_adapter import refresh_anthropic_oauth_pure
+                from anthropic_adapter import refresh_anthropic_oauth_pure
 
                 refreshed = refresh_anthropic_oauth_pure(
                     entry.refresh_token,
@@ -661,7 +661,7 @@ class CredentialPool:
                 # see the latest tokens.
                 if entry.source == "claude_code":
                     try:
-                        from agent.anthropic_adapter import _write_claude_code_credentials
+                        from anthropic_adapter import _write_claude_code_credentials
                         _write_claude_code_credentials(
                             refreshed["access_token"],
                             refreshed["refresh_token"],
@@ -726,7 +726,7 @@ class CredentialPool:
                 if synced.refresh_token != entry.refresh_token:
                     logger.debug("Retrying refresh with synced token from credentials file")
                     try:
-                        from agent.anthropic_adapter import refresh_anthropic_oauth_pure
+                        from anthropic_adapter import refresh_anthropic_oauth_pure
                         refreshed = refresh_anthropic_oauth_pure(
                             synced.refresh_token,
                             use_json=synced.source.endswith("sara_pkce"),
@@ -743,7 +743,7 @@ class CredentialPool:
                         self._replace_entry(synced, updated)
                         self._persist()
                         try:
-                            from agent.anthropic_adapter import _write_claude_code_credentials
+                            from anthropic_adapter import _write_claude_code_credentials
                             _write_claude_code_credentials(
                                 refreshed["access_token"],
                                 refreshed["refresh_token"],
@@ -1172,7 +1172,7 @@ def _seed_from_singletons(provider: str, entries: List[PooledCredential]) -> Tup
         except ImportError:
             pass
 
-        from agent.anthropic_adapter import read_claude_code_credentials, read_sara_oauth_credentials
+        from anthropic_adapter import read_claude_code_credentials, read_sara_oauth_credentials
 
         for source_name, creds in (
             ("sara_pkce", read_sara_oauth_credentials()),

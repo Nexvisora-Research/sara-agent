@@ -15,7 +15,7 @@
 
 [Unit]
 Description=sara Kanban dispatcher (DEPRECATED standalone daemon — prefer gateway-embedded dispatch)
-Documentation=https://sara-agent.nousresearch.com/docs/user-guide/features/kanban
+Documentation=https://sara-agent.NexvisoraResearch.com/docs/user-guide/features/kanban
 After=network.target
 
 [Service]

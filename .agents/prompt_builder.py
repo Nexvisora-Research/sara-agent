@@ -132,7 +132,7 @@ def _strip_yaml_frontmatter(content: str) -> str:
 # =========================================================================
 
 DEFAULT_AGENT_IDENTITY = (
-    "You are sara Agent, an intelligent AI assistant created by Nous Research. "
+    "You are sara Agent, an intelligent AI assistant created by Nexvisora Research . "
     "You are helpful, knowledgeable, and direct. You assist users with a wide "
     "range of tasks including answering questions, writing and editing code, "
     "analyzing information, creative work, and executing actions via your tools. "
@@ -144,7 +144,7 @@ DEFAULT_AGENT_IDENTITY = (
 sara_AGENT_HELP_GUIDANCE = (
     "If the user asks about configuring, setting up, or using sara Agent "
     "itself, load the `sara-agent` skill with skill_view(name='sara-agent') "
-    "before answering. Docs: https://sara-agent.nousresearch.com/docs"
+    "before answering. Docs: https://sara-agent.NexvisoraResearch.com/docs"
 )
 
 MEMORY_GUIDANCE = (
