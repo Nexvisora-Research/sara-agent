@@ -89,3 +89,83 @@ playwright-report/
 memory/data/
 brain/models/
 brain/checkpoints/
+
+# User profile and runtime directories
+.sara/
+sara_home/
+~/.sara/
+
+# Node modules (web UI)
+node_modules/
+npm-debug.log
+yarn-error.log
+.yarn/
+
+# Large cache & runtime data
+image_cache/
+audio_cache/
+document_cache/
+browser_screenshots/
+browser_cache/
+checkpoints/
+sandboxes/
+.cache/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Session & state files
+state.db*
+sara_state.db*
+gateway_state.json
+gateway.pid
+processes.json
+active_profile
+.update_check
+.sara_history
+auth.json
+auth.lock
+
+# Large media files
+*.mp4
+*.webm
+*.mov
+*.avi
+*.mkv
+*.wav
+*.flac
+*.m4a
+*.aac
+
+# Build & dist artifacts
+*.so
+*.o
+*.a
+site-packages/
+.Next/
+out/
+.turbo/
+
+# Poetry lock (if using poetry)
+poetry.lock
+
+# Large test artifacts
+.pytest_cache/
+htmlcov/
+.nyc_output/
+coverage/
+
+# Error logs
+errors.log
+crash-reports/
+
+# Temporary development files
+.DS_Store
+.AppleDouble
+.LSOverride
+*.orig
+*.rej
