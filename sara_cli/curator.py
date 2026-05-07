@@ -171,7 +171,7 @@ def _cmd_run(args) -> int:
 
     result = curator.run_curator_review(
         on_summary=_on_summary,
-        synchronous=bool(args.synchronous),
+        synchronexvisora=bool(args.synchronexvisora),
         dry_run=dry,
     )
     auto = result.get("auto_transitions", {})
@@ -188,7 +188,7 @@ def _cmd_run(args) -> int:
                 f"archived={auto.get('archived', 0)} "
                 f"reactivated={auto.get('reactivated', 0)}"
             )
-    if not args.synchronous:
+    if not args.synchronexvisora:
         print("llm pass running in background — check `sara curator status` later")
     if dry:
         print(
@@ -355,7 +355,7 @@ def register_cli(parent: argparse.ArgumentParser) -> None:
 
     p_run = subs.add_parser("run", help="Trigger a curator review now")
     p_run.add_argument(
-        "--sync", "--synchronous", dest="synchronous", action="store_true",
+        "--sync", "--synchronexvisora", dest="synchronexvisora", action="store_true",
         help="Wait for the LLM review pass to finish (default: background thread)",
     )
     p_run.add_argument(

@@ -1284,7 +1284,7 @@ async def reveal_env_var(body: EnvVarReveal, request: Request):
 #
 # Phase 1 surfaces *which OAuth providers exist* and whether each is
 # connected, plus a disconnect button. The actual login flow (PKCE for
-# Anthropic, device-code for Nous/Codex) still runs in the CLI for now;
+# Anthropic, device-code for nexvisora/Codex) still runs in the CLI for now;
 # Phase 2 will add in-browser flows. For unconnected providers we return
 # the canonical ``sara auth add <provider>`` command so the dashboard
 # can surface a one-click copy.
@@ -1423,12 +1423,12 @@ _OAUTH_PROVIDER_CATALOG: tuple[Dict[str, Any], ...] = (
         "status_fn": _claude_code_only_status,
     },
     {
-        "id": "nous",
-        "name": "Nous Portal",
+        "id": "nexvisora",
+        "name": "NexvisoraPortal",
         "flow": "device_code",
-        "cli_command": "sara auth add nous",
+        "cli_command": "sara auth add nexvisora",
         "docs_url": "https://portal.NexvisoraResearch.com",
-        "status_fn": None,  # dispatched via auth.get_nous_auth_status
+        "status_fn": None,  # dispatched via auth.get_nexvisora_auth_status
     },
     {
         "id": "openai-codex",
@@ -1466,12 +1466,12 @@ def _resolve_provider_status(provider_id: str, status_fn) -> Dict[str, Any]:
             return {"logged_in": False, "error": str(e)}
     try:
         from sara_cli import auth as hauth
-        if provider_id == "nous":
-            raw = hauth.get_nous_auth_status()
+        if provider_id == "nexvisora":
+            raw = hauth.get_nexvisora_auth_status()
             return {
                 "logged_in": bool(raw.get("logged_in")),
-                "source": "nous_portal",
-                "source_label": raw.get("portal_base_url") or "Nous Portal",
+                "source": "nexvisora_portal",
+                "source_label": raw.get("portal_base_url") or "NexvisoraPortal",
                 "token_preview": _truncate_token(raw.get("access_token")),
                 "expires_at": raw.get("access_expires_at"),
                 "has_refresh_token": bool(raw.get("has_refresh_token")),
@@ -1604,8 +1604,8 @@ async def disconnect_oauth_provider(provider_id: str, request: Request):
 #          → persists to ~/.sara/.anthropic_oauth.json AND credential pool
 #          → returns { ok: true, status: "approved" }
 #
-#   Device code (Nous, OpenAI Codex):
-#     1. POST /api/providers/oauth/{nous|openai-codex}/start
+#   Device code (nexvisora, OpenAI Codex):
+#     1. POST /api/providers/oauth/{nexvisora|openai-codex}/start
 #          → server hits provider's device-auth endpoint
 #          → gets { user_code, verification_url, device_code, interval, expires_in }
 #          → spawns background poller thread that polls the token endpoint
@@ -1812,24 +1812,24 @@ def _submit_anthropic_pkce(session_id: str, code_input: str) -> Dict[str, Any]:
 
 
 async def _start_device_code_flow(provider_id: str) -> Dict[str, Any]:
-    """Initiate a device-code flow (Nous or OpenAI Codex).
+    """Initiate a device-code flow (Nexvisoraor OpenAI Codex).
 
     Calls the provider's device-auth endpoint via the existing CLI helpers,
     then spawns a background poller. Returns the user-facing display fields
     so the UI can render the verification page link + user code.
     """
-    if provider_id == "nous":
+    if provider_id == "nexvisora":
         from sara_cli.auth import _request_device_code, PROVIDER_REGISTRY
         import httpx
-        pconfig = PROVIDER_REGISTRY["nous"]
+        pconfig = PROVIDER_REGISTRY["nexvisora"]
         portal_base_url = (
             os.getenv("sara_PORTAL_BASE_URL")
-            or os.getenv("NOUS_PORTAL_BASE_URL")
+            or os.getenv("nexvisora_PORTAL_BASE_URL")
             or pconfig.portal_base_url
         ).rstrip("/")
         client_id = pconfig.client_id
         scope = pconfig.scope
-        def _do_nous_device_request():
+        def _do_nexvisora_device_request():
             with httpx.Client(timeout=httpx.Timeout(15.0), headers={"Accept": "application/json"}) as client:
                 return _request_device_code(
                     client=client,
@@ -1837,15 +1837,15 @@ async def _start_device_code_flow(provider_id: str) -> Dict[str, Any]:
                     client_id=client_id,
                     scope=scope,
                 )
-        device_data = await asyncio.get_event_loop().run_in_executor(None, _do_nous_device_request)
-        sid, sess = _new_oauth_session("nous", "device_code")
+        device_data = await asyncio.get_event_loop().run_in_executor(None, _do_nexvisora_device_request)
+        sid, sess = _new_oauth_session("nexvisora", "device_code")
         sess["device_code"] = str(device_data["device_code"])
         sess["interval"] = int(device_data["interval"])
         sess["expires_at"] = time.time() + int(device_data["expires_in"])
         sess["portal_base_url"] = portal_base_url
         sess["client_id"] = client_id
         threading.Thread(
-            target=_nous_poller, args=(sid,), daemon=True, name=f"oauth-poll-{sid[:6]}"
+            target=_nexvisora_poller, args=(sid,), daemon=True, name=f"oauth-poll-{sid[:6]}"
         ).start()
         return {
             "session_id": sid,
@@ -1894,9 +1894,9 @@ async def _start_device_code_flow(provider_id: str) -> Dict[str, Any]:
     raise HTTPException(status_code=400, detail=f"Provider {provider_id} does not support device-code flow")
 
 
-def _nous_poller(session_id: str) -> None:
-    """Background poller that drives a Nous device-code flow to completion."""
-    from sara_cli.auth import _poll_for_token, refresh_nous_oauth_from_state
+def _nexvisora_poller(session_id: str) -> None:
+    """Background poller that drives a Nexvisoradevice-code flow to completion."""
+    from sara_cli.auth import _poll_for_token, refresh_nexvisora_oauth_from_state
     from datetime import datetime, timezone
     import httpx
     with _oauth_sessions_lock:
@@ -1918,7 +1918,7 @@ def _nous_poller(session_id: str) -> None:
                 expires_in=expires_in,
                 poll_interval=interval,
             )
-        # Same post-processing as _nous_device_code_login (mint agent key)
+        # Same post-processing as _nexvisora_device_code_login (mint agent key)
         now = datetime.now(timezone.utc)
         token_ttl = int(token_data.get("expires_in") or 0)
         auth_state = {
@@ -1936,17 +1936,17 @@ def _nous_poller(session_id: str) -> None:
             ),
             "expires_in": token_ttl,
         }
-        full_state = refresh_nous_oauth_from_state(
+        full_state = refresh_nexvisora_oauth_from_state(
             auth_state, min_key_ttl_seconds=300, timeout_seconds=15.0,
             force_refresh=False, force_mint=True,
         )
-        from sara_cli.auth import persist_nous_credentials
-        persist_nous_credentials(full_state)
+        from sara_cli.auth import persist_nexvisora_credentials
+        persist_nexvisora_credentials(full_state)
         with _oauth_sessions_lock:
             sess["status"] = "approved"
-        _log.info("oauth/device: nous login completed (session=%s)", session_id)
+        _log.info("oauth/device: Nexvisoralogin completed (session=%s)", session_id)
     except Exception as e:
-        _log.warning("nous device-code poll failed (session=%s): %s", session_id, e)
+        _log.warning("Nexvisoradevice-code poll failed (session=%s): %s", session_id, e)
         with _oauth_sessions_lock:
             sess["status"] = "error"
             sess["error_message"] = str(e)

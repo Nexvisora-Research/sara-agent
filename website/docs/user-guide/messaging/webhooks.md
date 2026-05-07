@@ -271,7 +271,7 @@ Benefits:
 - **Zero LLM tokens** — the agent is never invoked
 - **Sub-second delivery** — a single adapter call, no reasoning loop
 - **Same security as agent mode** — HMAC auth, rate limits, idempotency, and body-size limits all still apply
-- **Synchronous response** — the POST returns `200 OK` once delivery succeeds, or `502` if the target rejects it, so your upstream service can retry intelligently
+- **SynchroNexvisoraresponse** — the POST returns `200 OK` once delivery succeeds, or `502` if the target rejects it, so your upstream service can retry intelligently
 
 ### Example: Telegram push from Supabase
 

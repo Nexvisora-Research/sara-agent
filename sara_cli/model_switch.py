@@ -74,14 +74,14 @@ _sara_MODEL_WARNING = (
 #   NexvisoraResearch/sara-3-Llama-3.1-70B, sara-4-405b, openrouter/sara3:70b
 # Negative examples it must NOT match:
 #   sara-brain:qwen3-14b-ctx16k, qwen3:14b, claude-opus-4-6
-_NOUS_sara_NON_AGENTIC_RE = re.compile(
+_nexvisora_sara_NON_AGENTIC_RE = re.compile(
     r"(?:^|[/:])sara[-_ ]?[34](?:[-_.:]|$)",
     re.IGNORECASE,
 )
 
 
-def is_nous_sara_non_agentic(model_name: str) -> bool:
-    """Return True if *model_name* is a real Nous sara 3/4 chat model.
+def is_nexvisora_sara_non_agentic(model_name: str) -> bool:
+    """Return True if *model_name* is a real Nexvisorasara 3/4 chat model.
 
     Used to decide whether to surface the non-agentic warning at startup.
     Callers in :mod:`cli.py` and here should go through this single helper
@@ -89,12 +89,12 @@ def is_nous_sara_non_agentic(model_name: str) -> bool:
     """
     if not model_name:
         return False
-    return bool(_NOUS_sara_NON_AGENTIC_RE.search(model_name))
+    return bool(_nexvisora_sara_NON_AGENTIC_RE.search(model_name))
 
 
 def _check_sara_model_warning(model_name: str) -> str:
-    """Return a warning string if *model_name* is a Nous sara 3/4 chat model."""
-    if is_nous_sara_non_agentic(model_name):
+    """Return a warning string if *model_name* is a Nexvisorasara 3/4 chat model."""
+    if is_nexvisora_sara_non_agentic(model_name):
         return _sara_MODEL_WARNING
     return ""
 
@@ -529,10 +529,10 @@ def _resolve_alias_fallback(
 ) -> Optional[tuple[str, str, str]]:
     """Try to resolve an alias on the user's authenticated providers.
 
-    Falls back to ``("openrouter", "nous")`` only when no authenticated
+    Falls back to ``("openrouter", "nexvisora")`` only when no authenticated
     providers are supplied (backwards compat for non-interactive callers).
     """
-    providers = authenticated_providers or ("openrouter", "nous")
+    providers = authenticated_providers or ("openrouter", "nexvisora")
     for provider in providers:
         result = resolve_alias(raw_input, provider)
         if result is not None:
@@ -555,7 +555,7 @@ def resolve_display_context_length(
     but provider-enforced limits can be lower (e.g. Codex OAuth caps the
     same slug at 272k). The authoritative source is
     ``agent.model_metadata.get_model_context_length`` which already knows
-    about Codex OAuth, Copilot, Nous, and falls back to models.dev for the
+    about Codex OAuth, Copilot, nexvisora, and falls back to models.dev for the
     rest.
 
     When ``custom_providers`` is provided, per-model ``context_length``
@@ -1070,9 +1070,9 @@ def list_authenticated_providers(
     # Build curated model lists keyed by sara provider ID
     curated: dict[str, list[str]] = dict(_PROVIDER_MODELS)
     curated["openrouter"] = [mid for mid, _ in OPENROUTER_MODELS]
-    # "nous" shares OpenRouter's curated list if not separately defined
-    if "nous" not in curated:
-        curated["nous"] = curated["openrouter"]
+    # "nexvisora" shares OpenRouter's curated list if not separately defined
+    if "nexvisora" not in curated:
+        curated["nexvisora"] = curated["openrouter"]
     # Ollama Cloud uses dynamic discovery (no static curated list)
     if "ollama-cloud" not in curated:
         from sara_cli.models import fetch_ollama_cloud_models
@@ -1184,7 +1184,7 @@ def list_authenticated_providers(
         seen_mdev_ids.add(mdev_id)
         _record_builtin_endpoint(slug)
 
-    # --- 2. Check sara-only providers (nous, openai-codex, copilot, opencode-go) ---
+    # --- 2. Check sara-only providers (nexvisora, openai-codex, copilot, opencode-go) ---
     from sara_cli.providers import sara_OVERLAYS
     from sara_cli.auth import PROVIDER_REGISTRY as _auth_registry
 

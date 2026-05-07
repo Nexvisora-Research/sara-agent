@@ -1,4 +1,4 @@
-"""Small helper shims for tool backend and Nous-specific settings."""
+"""Small helper shims for tool backend and nexvisora-specific settings."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ def _truthy_env(*names: str, default: bool = False) -> bool:
     return default
 
 
-def managed_nous_tools_enabled() -> bool:
-    return _truthy_env("sara_MANAGED", "SARA_MANAGED", "NOUS_MANAGED_TOOLS", "NOUS_MANAGED", default=False)
+def managed_nexvisora_tools_enabled() -> bool:
+    return _truthy_env("sara_MANAGED", "SARA_MANAGED", "nexvisora_MANAGED_TOOLS", "nexvisora_MANAGED", default=False)
 
 
 def prefers_gateway(tool_key: str) -> bool:

@@ -1,0 +1,16 @@
+{
+  "id": "email",
+  "name": "Email",
+  "version": "1.0.0",
+  "description": "Connect to Email via IMAP/SMTP",
+  "author": "Sara Agent",
+  "icon": "email",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "email", "label": "Email Address", "sensitive": false, "placeholder": "user@example.com" },
+    { "key": "password", "label": "Password or App Token", "sensitive": true, "placeholder": "Your email password" },
+    { "key": "imapServer", "label": "IMAP Server (optional)", "sensitive": false, "placeholder": "imap.gmail.com" },
+    { "key": "smtpServer", "label": "SMTP Server (optional)", "sensitive": false, "placeholder": "smtp.gmail.com" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read"]
+}

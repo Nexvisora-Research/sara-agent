@@ -1,8 +1,8 @@
-import { useGpuTier } from "@nous-research/ui/hooks/use-gpu-tier";
+import { useGpuTier } from "@nexvisora-research/ui/hooks/use-gpu-tier";
 
 /**
  * Replicates the visual layer stack of `<Overlays dark />` from
- * `@nous-research/ui` without pulling in its leva / gsap / three peer deps.
+ * `@nexvisora-research/ui` without pulling in its leva / gsap / three peer deps.
  *
  * See `design-language/src/ui/components/overlays/index.tsx` for the source of
  * truth. Defaults match LENS_0 (the sara teal dark preset); the deep canvas

@@ -11,7 +11,12 @@ Usage:
     python cli.py --skills sara-agent-dev,github-auth
     python cli.py -q "your question"       # Single query mode
     python cli.py --list-tools             # List available tools and exit
+
 """
+
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
+
 
 import logging
 import os
@@ -1994,7 +1999,7 @@ class saraCLI:
         Args:
             model: Model to use (default: from env or claude-sonnet)
             toolsets: List of toolsets to enable (default: all)
-            provider: Inference provider ("auto", "openrouter", "nous", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
+            provider: Inference provider ("auto", "openrouter", "nexvisora", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
             api_key: API key (default: from environment)
             base_url: API base URL (default: OpenRouter)
             max_turns: Maximum tool-calling iterations shared with subagents (default: 90)
@@ -3720,11 +3725,11 @@ class saraCLI:
                     "[dim]   Fix: Set model.context_length in config.yaml, or increase your server's context setting[/]"
                 )
 
-        # Warn if the configured model is a Nous sara LLM (not agentic)
-        from sara_cli.model_switch import is_nous_sara_non_agentic
+        # Warn if the configured model is a Nexvisorasara LLM (not agentic)
+        from sara_cli.model_switch import is_nexvisora_sara_non_agentic
 
         model_name = getattr(self, "model", "") or ""
-        if is_nous_sara_non_agentic(model_name):
+        if is_nexvisora_sara_non_agentic(model_name):
             self._console_print()
             self._console_print(
                 "[bold yellow]⚠  Nexvisora Research sara 3 & 4 models are NOT agentic and are not "
@@ -5497,7 +5502,7 @@ class saraCLI:
         _cprint(f"    Provider: {provider_label}")
 
         # Context: always resolve via the provider-aware chain so Codex OAuth,
-        # Copilot, and Nous-enforced caps win over the raw models.dev entry
+        # Copilot, and nexvisora-enforced caps win over the raw models.dev entry
         # (e.g. gpt-5.5 is 1.05M on openai but 272K on Codex OAuth).
         mi = result.model_info
         try:
@@ -5725,7 +5730,7 @@ class saraCLI:
         _cprint(f"    Provider: {provider_label}")
 
         # Context: always resolve via the provider-aware chain so Codex OAuth,
-        # Copilot, and Nous-enforced caps win over the raw models.dev entry
+        # Copilot, and nexvisora-enforced caps win over the raw models.dev entry
         # (e.g. gpt-5.5 is 1.05M on openai but 272K on Codex OAuth).
         mi = result.model_info
         from sara_cli.model_switch import resolve_display_context_length
@@ -11783,6 +11788,7 @@ def main(
     pass_session_id: bool = False,
     ignore_user_config: bool = False,
     ignore_rules: bool = False,
+    replace: bool = False,
 ):
     """
     sara Agent CLI - Interactive AI Assistant
@@ -11794,7 +11800,7 @@ def main(
         toolsets: Comma-separated list of toolsets to enable (e.g., "web,terminal")
         skills: Comma-separated or repeated list of skills to preload for the session
         model: Model to use (default: anthropic/claude-opus-4-20250514)
-        provider: Inference provider ("auto", "openrouter", "nous", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
+        provider: Inference provider ("auto", "openrouter", "nexvisora", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
         api_key: API key for authentication
         base_url: Base URL for the API
         max_turns: Maximum tool-calling iterations (default: 60)
@@ -11828,7 +11834,7 @@ def main(
         import asyncio
         from gateway.run import start_gateway
         print("Starting sara Gateway (messaging platforms)...")
-        asyncio.run(start_gateway())
+        asyncio.run(start_gateway(replace=replace))
         return
 
     # Skip worktree for list commands (they exit immediately)
@@ -12039,10 +12045,46 @@ def main(
     cli.run()
 
 
+def _main_argparse_fallback() -> None:
+    """Parse the common CLI flags when optional google-fire is unavailable."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="sara Agent CLI - Interactive AI Assistant",
+    )
+    parser.add_argument("-q", "--query", dest="query")
+    parser.add_argument("--image")
+    parser.add_argument("--toolsets")
+    parser.add_argument("--skills", action="append")
+    parser.add_argument("--model")
+    parser.add_argument("--provider")
+    parser.add_argument("--api-key", dest="api_key")
+    parser.add_argument("--base-url", dest="base_url")
+    parser.add_argument("--max-turns", dest="max_turns", type=int)
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--compact", action="store_true")
+    parser.add_argument("--list-tools", dest="list_tools", action="store_true")
+    parser.add_argument("--list-toolsets", dest="list_toolsets", action="store_true")
+    parser.add_argument("--gateway", action="store_true")
+    parser.add_argument("--replace", action="store_true")
+    parser.add_argument("--resume")
+    parser.add_argument("-w", "--worktree", action="store_true")
+    parser.add_argument("--checkpoints", action="store_true")
+    parser.add_argument("--pass-session-id", dest="pass_session_id", action="store_true")
+    parser.add_argument("--ignore-user-config", dest="ignore_user_config", action="store_true")
+    parser.add_argument("--ignore-rules", dest="ignore_rules", action="store_true")
+
+    args = parser.parse_args()
+    main(**vars(args))
+
+
 if __name__ == "__main__":
     try:
         import fire
+    except ModuleNotFoundError as exc:
+        if exc.name != "fire":
+            raise
+        _main_argparse_fallback()
+    else:
         fire.Fire(main)
-    except ModuleNotFoundError:
-        # Fallback when optional google-fire dependency is absent.
-        main()

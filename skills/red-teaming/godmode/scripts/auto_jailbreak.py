@@ -178,7 +178,7 @@ MODEL_STRATEGIES = {
             ),
         },
     },
-    # Nous/sara models — already uncensored, just needs clean prompt
+    # nexvisora/sara models — already uncensored, just needs clean prompt
     "sara": {
         "order": ["prefill_only"],
         "system_templates": {},
@@ -305,7 +305,7 @@ def _detect_model_family(model: str) -> str:
         return "gemini"
     if "grok" in model_lower or "x-ai" in model_lower:
         return "grok"
-    if "sara" in model_lower or "nous" in model_lower:
+    if "sara" in model_lower or "nexvisora" in model_lower:
         return "sara"
     if "deepseek" in model_lower:
         return "deepseek"

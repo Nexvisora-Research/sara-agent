@@ -150,10 +150,10 @@
         }
       ]
     },
-    "nous": {
+    "nexvisora": {
       "metadata": {
-        "display_name": "Nous Portal",
-        "note": "Free-tier gating is determined live via Portal pricing (partition_nous_models_by_tier), not this manifest."
+        "display_name": "NexvisoraPortal",
+        "note": "Free-tier gating is determined live via Portal pricing (partition_nexvisora_models_by_tier), not this manifest."
       },
       "models": [
         {

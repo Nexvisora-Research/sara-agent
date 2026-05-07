@@ -9,6 +9,8 @@ Saves per-platform tool configuration to ~/.sara/config.yaml under
 the `platform_toolsets` key.
 """
 
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
 import json as _json
 import logging
 import os
@@ -22,11 +24,11 @@ from sara_cli.config import (
     load_config, save_config, get_env_value, save_env_value,
 )
 from sara_cli.colors import Colors, color
-from sara_cli.nous_subscription import (
-    apply_nous_managed_defaults,
-    get_nous_subscription_features,
+from sara_cli.nexvisora_subscription import (
+    apply_nexvisora_managed_defaults,
+    get_nexvisora_subscription_features,
 )
-from tools.tool_backend_helpers import fal_key_is_configured, managed_nous_tools_enabled
+from tools.tool_backend_helpers import fal_key_is_configured, managed_nexvisora_tools_enabled
 from utils import base_url_hostname, is_truthy_value
 
 logger = logging.getLogger(__name__)
@@ -159,13 +161,13 @@ TOOL_CATEGORIES = {
         "icon": "🔊",
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "NexvisoraSubscription",
                 "badge": "subscription",
                 "tag": "Managed OpenAI TTS billed to your subscription",
                 "env_vars": [],
                 "tts_provider": "openai",
-                "requires_nous_auth": True,
-                "managed_nous_feature": "tts",
+                "requires_nexvisora_auth": True,
+                "managed_nexvisora_feature": "tts",
                 "override_env_vars": ["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"],
             },
             {
@@ -244,13 +246,13 @@ TOOL_CATEGORIES = {
         "icon": "🔍",
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "NexvisoraSubscription",
                 "badge": "subscription",
                 "tag": "Managed Firecrawl billed to your subscription",
                 "web_backend": "firecrawl",
                 "env_vars": [],
-                "requires_nous_auth": True,
-                "managed_nous_feature": "web",
+                "requires_nexvisora_auth": True,
+                "managed_nexvisora_feature": "web",
                 "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL"],
             },
             {
@@ -305,12 +307,12 @@ TOOL_CATEGORIES = {
         "icon": "🎨",
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "NexvisoraSubscription",
                 "badge": "subscription",
                 "tag": "Managed FAL image generation billed to your subscription",
                 "env_vars": [],
-                "requires_nous_auth": True,
-                "managed_nous_feature": "image_gen",
+                "requires_nexvisora_auth": True,
+                "managed_nexvisora_feature": "image_gen",
                 "override_env_vars": ["FAL_KEY"],
                 "imagegen_backend": "fal",
             },
@@ -330,13 +332,13 @@ TOOL_CATEGORIES = {
         "icon": "🌐",
         "providers": [
             {
-                "name": "Nous Subscription (Browser Use cloud)",
+                "name": "NexvisoraSubscription (Browser Use cloud)",
                 "badge": "subscription",
                 "tag": "Managed Browser Use billed to your subscription",
                 "env_vars": [],
                 "browser_provider": "browser-use",
-                "requires_nous_auth": True,
-                "managed_nous_feature": "browser",
+                "requires_nexvisora_auth": True,
+                "managed_nexvisora_feature": "browser",
                 "override_env_vars": ["BROWSER_USE_API_KEY"],
                 "post_setup": "agent_browser",
             },
@@ -1052,9 +1054,9 @@ def _toolset_has_keys(ts_key: str, config: dict = None) -> bool:
             return False
 
     if ts_key in {"web", "image_gen", "tts", "browser"}:
-        features = get_nous_subscription_features(config)
+        features = get_nexvisora_subscription_features(config)
         feature = features.features.get(ts_key)
-        if feature and (feature.available or feature.managed_by_nous):
+        if feature and (feature.available or feature.managed_by_nexvisora):
             return True
 
     # Check TOOL_CATEGORIES first (provider-aware)
@@ -1247,17 +1249,17 @@ def _plugin_image_gen_providers() -> list[dict]:
 
 def _visible_providers(cat: dict, config: dict) -> list[dict]:
     """Return provider entries visible for the current auth/config state."""
-    features = get_nous_subscription_features(config)
+    features = get_nexvisora_subscription_features(config)
     visible = []
     for provider in cat.get("providers", []):
-        if provider.get("managed_nous_feature") and not managed_nous_tools_enabled():
+        if provider.get("managed_nexvisora_feature") and not managed_nexvisora_tools_enabled():
             continue
-        if provider.get("requires_nous_auth") and not features.nous_auth_present:
+        if provider.get("requires_nexvisora_auth") and not features.nexvisora_auth_present:
             continue
         visible.append(provider)
 
     # Inject plugin-registered image_gen backends (OpenAI today, more
-    # later) so the picker lists them alongside FAL / Nous Subscription.
+    # later) so the picker lists them alongside FAL / NexvisoraSubscription.
     if cat.get("name") == "Image Generation":
         visible.extend(_plugin_image_gen_providers())
 
@@ -1377,9 +1379,9 @@ def _is_provider_active(provider: dict, config: dict) -> bool:
         image_cfg = config.get("image_gen", {})
         return isinstance(image_cfg, dict) and image_cfg.get("provider") == plugin_name
 
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_nexvisora_feature")
     if managed_feature:
-        features = get_nous_subscription_features(config)
+        features = get_nexvisora_subscription_features(config)
         feature = features.features.get(managed_feature)
         if feature is None:
             return False
@@ -1391,19 +1393,19 @@ def _is_provider_active(provider: dict, config: dict) -> bool:
                     return False
                 if image_cfg.get("use_gateway") is not None and not is_truthy_value(image_cfg.get("use_gateway"), default=False):
                     return False
-            return feature.managed_by_nous
+            return feature.managed_by_nexvisora
         if provider.get("tts_provider"):
             return (
-                feature.managed_by_nous
+                feature.managed_by_nexvisora
                 and cfg_get(config, "tts", "provider") == provider["tts_provider"]
             )
         if "browser_provider" in provider:
             current = cfg_get(config, "browser", "cloud_provider")
-            return feature.managed_by_nous and provider["browser_provider"] == current
+            return feature.managed_by_Nexvisora and provider["browser_provider"] == current
         if provider.get("web_backend"):
             current = cfg_get(config, "web", "backend")
-            return feature.managed_by_nous and current == provider["web_backend"]
-        return feature.managed_by_nous
+            return feature.managed_by_Nexvisora and current == provider["web_backend"]
+        return feature.managed_by_nexvisora
 
     if provider.get("tts_provider"):
         return cfg_get(config, "tts", "provider") == provider["tts_provider"]
@@ -1635,12 +1637,12 @@ def _select_plugin_image_gen_provider(plugin_name: str, config: dict) -> None:
 def _configure_provider(provider: dict, config: dict):
     """Configure a single provider - prompt for API keys and set config."""
     env_vars = provider.get("env_vars", [])
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_nexvisora_feature")
 
-    if provider.get("requires_nous_auth"):
-        features = get_nous_subscription_features(config)
-        if not features.nous_auth_present:
-            _print_warning("  Nous Subscription is only available after logging into Nous Portal.")
+    if provider.get("requires_nexvisora_auth"):
+        features = get_nexvisora_subscription_features(config)
+        if not features.nexvisora_auth_present:
+            _print_warning("  NexvisoraSubscription is only available after logging into NexvisoraPortal.")
             return
 
     # Set TTS provider in config if applicable
@@ -1687,7 +1689,7 @@ def _configure_provider(provider: dict, config: dict):
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your Nexvisorasubscription.")
         # Plugin-registered image_gen provider: write image_gen.provider
         # and route model selection to the plugin's own catalog.
         plugin_name = provider.get("image_gen_plugin_name")
@@ -1888,12 +1890,12 @@ def _configure_tool_category_for_reconfig(ts_key: str, cat: dict, config: dict):
 def _reconfigure_provider(provider: dict, config: dict):
     """Reconfigure a provider - update API keys."""
     env_vars = provider.get("env_vars", [])
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_nexvisora_feature")
 
-    if provider.get("requires_nous_auth"):
-        features = get_nous_subscription_features(config)
-        if not features.nous_auth_present:
-            _print_warning("  Nous Subscription is only available after logging into Nous Portal.")
+    if provider.get("requires_nexvisora_auth"):
+        features = get_nexvisora_subscription_features(config)
+        if not features.nexvisora_auth_present:
+            _print_warning("  NexvisoraSubscription is only available after logging into NexvisoraPortal.")
             return
 
     if provider.get("tts_provider"):
@@ -1933,7 +1935,7 @@ def _reconfigure_provider(provider: dict, config: dict):
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your Nexvisorasubscription.")
         plugin_name = provider.get("image_gen_plugin_name")
         if plugin_name:
             _select_plugin_image_gen_provider(plugin_name, config)
@@ -2071,14 +2073,14 @@ def tools_command(args=None, first_install: bool = False, config: dict = None):
                     label = next((l for k, l, _ in _get_effective_configurable_toolsets() if k == ts), ts)
                     print(color(f"  - {label}", Colors.RED))
 
-            auto_configured = apply_nous_managed_defaults(
+            auto_configured = apply_nexvisora_managed_defaults(
                 config,
                 enabled_toolsets=new_enabled,
             )
-            if managed_nous_tools_enabled():
+            if managed_nexvisora_tools_enabled():
                 for ts_key in sorted(auto_configured):
                     label = next((l for k, l, _ in CONFIGURABLE_TOOLSETS if k == ts_key), ts_key)
-                    print(color(f"  ✓ {label}: using your Nous subscription defaults", Colors.GREEN))
+                    print(color(f"  ✓ {label}: using your Nexvisorasubscription defaults", Colors.GREEN))
 
             # Walk through ALL selected tools that have provider options or
             # need API keys.  This ensures browser (Local vs Browserbase),

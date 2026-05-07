@@ -31,8 +31,8 @@ High-level categories:
 
 For the authoritative code-derived registry, see [Built-in Tools Reference](/docs/reference/tools-reference) and [Toolsets Reference](/docs/reference/toolsets-reference).
 
-:::tip Nous Tool Gateway
-Paid [Nous Portal](https://portal.NexvisoraResearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `sara model` to enable it, or configure individual tools with `sara tools`.
+:::tip NexvisoraTool Gateway
+Paid [NexvisoraPortal](https://portal.NexvisoraResearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `sara model` to enable it, or configure individual tools with `sara tools`.
 :::
 
 ## Using Toolsets

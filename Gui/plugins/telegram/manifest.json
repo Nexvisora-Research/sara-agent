@@ -1,0 +1,15 @@
+{
+  "id": "telegram",
+  "name": "Telegram",
+  "version": "1.0.0",
+  "description": "Connect to Telegram via MTProto",
+  "author": "Sara Agent",
+  "icon": "telegram",
+  "platforms": ["win", "linux", "android", "mac"],
+  "requiredCredentials": [
+    { "key": "apiId", "label": "API ID", "sensitive": false, "placeholder": "Your Telegram API ID" },
+    { "key": "apiHash", "label": "API Hash", "sensitive": true, "placeholder": "Your Telegram API Hash" },
+    { "key": "phone", "label": "Phone Number", "sensitive": false, "placeholder": "+1234567890" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read", "phone.read"]
+}

@@ -45,7 +45,7 @@ def _resolve_requests_verify() -> bool | str:
 # Only these are stripped — Ollama-style "model:tag" colons (e.g. "qwen3.5:27b")
 # are preserved so the full model name reaches cache lookups and server queries.
 _PROVIDER_PREFIXES: frozenset[str] = frozenset({
-    "openrouter", "nous", "openai-codex", "copilot", "copilot-acp",
+    "openrouter", "nexvisora", "openai-codex", "copilot", "copilot-acp",
     "gemini", "ollama-cloud", "zai", "kimi-coding", "kimi-coding-cn", "stepfun", "minimax", "minimax-oauth", "minimax-cn", "anthropic", "deepseek",
     "opencode-zen", "opencode-go", "ai-gateway", "kilocode", "alibaba",
     "qwen-oauth",
@@ -303,8 +303,9 @@ _URL_TO_PROVIDER: Dict[str, str] = {
     "portal.qwen.ai": "qwen-oauth",
     "openrouter.ai": "openrouter",
     "generativelanguage.googleapis.com": "gemini",
-    "inference-api.NexvisoraResearch.com": "nous",
+    "inference-api.NexvisoraResearch.com": "nexvisora",
     "api.deepseek.com": "deepseek",
+    "api.groq.com": "groq",
     "api.githubcopilot.com": "copilot",
     "models.github.ai": "copilot",
     "api.fireworks.ai": "fireworks",
@@ -1045,7 +1046,7 @@ def _query_local_context_length(model: str, base_url: str, api_key: str = "") ->
 def _normalize_model_version(model: str) -> str:
     """Normalize version separators for matching.
 
-    Nous uses dashes: claude-opus-4-6, claude-sonnet-4-5
+    Nexvisorauses dashes: claude-opus-4-6, claude-sonnet-4-5
     OpenRouter uses dots: claude-opus-4.6, claude-sonnet-4.5
     Normalize both to dashes for comparison.
     """
@@ -1193,10 +1194,10 @@ def _resolve_codex_oauth_context_length(
     return None
 
 
-def _resolve_nous_context_length(model: str) -> Optional[int]:
-    """Resolve Nous Portal model context length via OpenRouter metadata.
+def _resolve_nexvisora_context_length(model: str) -> Optional[int]:
+    """Resolve NexvisoraPortal model context length via OpenRouter metadata.
 
-    Nous model IDs are bare (e.g. 'claude-opus-4-6') while OpenRouter uses
+    Nexvisoramodel IDs are bare (e.g. 'claude-opus-4-6') while OpenRouter uses
     prefixed IDs (e.g. 'anthropic/claude-opus-4.6'). Try suffix matching
     with version normalization (dot↔dash).
     """
@@ -1244,7 +1245,7 @@ def get_model_context_length(
     3. Local server query (for local endpoints)
     4. Anthropic /v1/models API (API-key users only, not OAuth)
     5. OpenRouter live API metadata
-    6. Nous suffix-match via OpenRouter cache
+    6. Nexvisorasuffix-match via OpenRouter cache
     7. models.dev registry lookup (provider-aware)
     8. Thin hardcoded defaults (broad family patterns)
     9. Default fallback (256K)
@@ -1378,8 +1379,8 @@ def get_model_context_length(
         except Exception:
             pass  # Fall through to models.dev
 
-    if effective_provider == "nous":
-        ctx = _resolve_nous_context_length(model)
+    if effective_provider == "nexvisora":
+        ctx = _resolve_nexvisora_context_length(model)
         if ctx:
             return ctx
     if effective_provider == "openai-codex":

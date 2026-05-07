@@ -1,0 +1,14 @@
+{
+  "id": "lark",
+  "name": "Feishu / Lark",
+  "version": "1.0.0",
+  "description": "Connect to Feishu/Lark for enterprise messaging",
+  "author": "Sara Agent",
+  "icon": "lark",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "appId", "label": "App ID", "sensitive": false, "placeholder": "Your App ID" },
+    { "key": "appSecret", "label": "App Secret", "sensitive": true, "placeholder": "Your App Secret" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read", "groups.read"]
+}

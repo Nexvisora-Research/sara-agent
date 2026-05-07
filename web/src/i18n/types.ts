@@ -168,7 +168,7 @@ export interface Translations {
     input: string;
     output: string;
     total: string;
-    noUsageData: string;
+    nexvisoraageData: string;
     startSession: string;
     date: string;
     model: string;

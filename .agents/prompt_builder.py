@@ -152,11 +152,17 @@ MEMORY_GUIDANCE = (
     "tool: user preferences, environment details, tool quirks, and stable conventions. "
     "Memory is injected into every turn, so keep it compact and focused on facts that "
     "will still matter later.\n"
+    "Memory layers:\n"
+    "- Short-term memory: the current context window; use it for immediate task state.\n"
+    "- Working memory: session state, active goals, and in-flight decisions for this run.\n"
+    "- Long-term memory: durable user facts, preferences, and recurring patterns stored in persistent memory / vector DBs such as FAISS or Chroma.\n"
+    "- Retrieval ranking: prefer the most relevant, recent, and stable memories first; down-rank stale, contradictory, or low-signal entries.\n"
+    "- Summarization layer: compress long conversation threads into concise, factual summaries before writing them to memory.\n"
     "Prioritize what reduces future user steering — the most valuable memory is one "
     "that prevents the user from having to correct or remind you again. "
     "User preferences and recurring corrections matter more than procedural task details.\n"
     "Do NOT save task progress, session outcomes, completed-work logs, or temporary TODO "
-    "state to memory; use session_search to recall those from past transcripts. "
+    "state to long-term memory; keep those in working memory or recover them with session_search. "
     "If you've discovered a new way to do something, solved a problem that could be "
     "necessary later, save it as a skill with the skill tool.\n"
     "Write memories as declarative facts, not instructions to yourself. "
@@ -164,7 +170,9 @@ MEMORY_GUIDANCE = (
     "'Project uses pytest with xdist' ✓ — 'Run tests with pytest -n 4' ✗. "
     "Imperative phrasing gets re-read as a directive in later sessions and can "
     "cause repeated work or override the user's current request. Procedures and "
-    "workflows belong in skills, not memory."
+    "workflows belong in skills, not memory. "
+    "When unsure whether something belongs in memory, ask: is it stable, user-specific, "
+    "and likely to help future retrieval or behavior? If not, keep it in session state."
 )
 
 SESSION_SEARCH_GUIDANCE = (
@@ -943,16 +951,16 @@ def build_skills_system_prompt(
     return result
 
 
-def build_nous_subscription_prompt(valid_tool_names: "set[str] | None" = None) -> str:
-    """Build a compact Nous subscription capability block for the system prompt."""
+def build_nexvisora_subscription_prompt(valid_tool_names: "set[str] | None" = None) -> str:
+    """Build a compact Nexvisorasubscription capability block for the system prompt."""
     try:
-        from sara_cli.nous_subscription import get_nous_subscription_features
-        from tools.tool_backend_helpers import managed_nous_tools_enabled
+        from sara_cli.nexvisora_subscription import get_nexvisora_subscription_features
+        from tools.tool_backend_helpers import managed_nexvisora_tools_enabled
     except Exception as exc:
-        logger.debug("Failed to import Nous subscription helper: %s", exc)
+        logger.debug("Failed to import Nexvisorasubscription helper: %s", exc)
         return ""
 
-    if not managed_nous_tools_enabled():
+    if not managed_nexvisora_tools_enabled():
         return ""
 
     valid_names = set(valid_tool_names or set())
@@ -978,30 +986,30 @@ def build_nous_subscription_prompt(valid_tool_names: "set[str] | None" = None) -
     if valid_names and not (valid_names & relevant_tool_names):
         return ""
 
-    features = get_nous_subscription_features()
+    features = get_nexvisora_subscription_features()
 
     def _status_line(feature) -> str:
-        if feature.managed_by_nous:
-            return f"- {feature.label}: active via Nous subscription"
+        if feature.managed_by_nexvisora:
+            return f"- {feature.label}: active via Nexvisorasubscription"
         if feature.active:
             current = feature.current_provider or "configured provider"
             return f"- {feature.label}: currently using {current}"
-        if feature.included_by_default and features.nous_auth_present:
-            return f"- {feature.label}: included with Nous subscription, not currently selected"
-        if feature.key == "modal" and features.nous_auth_present:
-            return f"- {feature.label}: optional via Nous subscription"
+        if feature.included_by_default and features.nexvisora_auth_present:
+            return f"- {feature.label}: included with Nexvisorasubscription, not currently selected"
+        if feature.key == "modal" and features.nexvisora_auth_present:
+            return f"- {feature.label}: optional via Nexvisorasubscription"
         return f"- {feature.label}: not currently available"
 
     lines = [
-        "# Nous Subscription",
-        "Nous subscription includes managed web tools (Firecrawl), image generation (FAL), OpenAI TTS, and browser automation (Browser Use) by default. Modal execution is optional.",
+        "# NexvisoraSubscription",
+        "Nexvisorasubscription includes managed web tools (Firecrawl), image generation (FAL), OpenAI TTS, and browser automation (Browser Use) by default. Modal execution is optional.",
         "Current capability status:",
     ]
     lines.extend(_status_line(feature) for feature in features.items())
     lines.extend(
         [
-            "When a Nous-managed feature is active, do not ask the user for Firecrawl, FAL, OpenAI TTS, or Browser-Use API keys.",
-            "If the user is not subscribed and asks for a capability that Nous subscription would unlock or simplify, suggest Nous subscription as one option alongside direct setup or local alternatives.",
+            "When a nexvisora-managed feature is active, do not ask the user for Firecrawl, FAL, OpenAI TTS, or Browser-Use API keys.",
+            "If the user is not subscribed and asks for a capability that Nexvisorasubscription would unlock or simplify, suggest Nexvisorasubscription as one option alongside direct setup or local alternatives.",
             "Do not mention subscription unless the user asks about it or it directly solves the current missing capability.",
             "Useful commands: sara setup, sara setup tools, sara setup terminal, sara status.",
         ]

@@ -6344,7 +6344,7 @@ class GatewayRunner:
             # thread blocks until the user responds with /approve or /deny, so by
             # the time we reach here the approval has already been resolved.  The
             # old post-loop pop_pending + approval_hint code was removed in favour
-            # of the blocking approach that mirrors CLI's synchronous input().
+            # of the blocking approach that mirrors CLI's synchroNexvisorainput().
             
             # Save the full conversation to the transcript, including tool calls.
             # This preserves the complete agent loop (tool_calls, tool results,
@@ -7583,7 +7583,7 @@ class GatewayRunner:
         lines.append(f"Provider: {provider_label}")
 
         # Context: always resolve via the provider-aware chain so Codex OAuth,
-        # Copilot, and Nous-enforced caps win over the raw models.dev entry.
+        # Copilot, and nexvisora-enforced caps win over the raw models.dev entry.
         mi = result.model_info
         from sara_cli.model_switch import resolve_display_context_length
         _sw2_config_ctx = None
@@ -9898,7 +9898,7 @@ class GatewayRunner:
         The agent thread(s) are blocked inside tools/approval.py waiting for
         the user to respond.  This handler signals the event so the agent
         resumes and the terminal_tool executes the command inline — the same
-        flow as the CLI's synchronous input() approval.
+        flow as the CLI's synchroNexvisorainput() approval.
 
         Supports multiple concurrent approvals (parallel subagents,
         execute_code).  ``/approve`` resolves the oldest pending command;

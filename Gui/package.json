@@ -1,0 +1,98 @@
+{
+  "name": "sara-gui",
+  "version": "1.0.0",
+  "description": "Sara Agent: Cross-platform messenger with voice control",
+  "main": "dist/src/main/index.js",
+  "private": true,
+  "author": "Sara Agent Team",
+  "license": "MIT",
+  "keywords": [
+    "messenger",
+    "telegram",
+    "discord",
+    "electron",
+    "voice-control",
+    "cross-platform"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
+    "dev:main": "tsc -p tsconfig.json --watch",
+    "dev:renderer": "vite",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.json",
+    "build:renderer": "vite build --config vite.config.mts",
+    "electron:build": "npm run build && electron .",
+    "electron:dev": "wait-on http://localhost:5173 && npm run build:main && electron .",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:android": "tsc -p tsconfig.json && vite build && cap sync android && cd android && gradlgw assembleDebug",
+    "test": "echo No tests configured",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
+    "format": "prettier --write src/",
+    "clean": "rm -rf dist release",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@mtproto/core": "^6.3.0",
+    "axios": "^1.7.0",
+    "electron-store": "^8.2.0",
+    "framer-motion": "^11.0.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.19",
+    "concurrently": "^8.2.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.0",
+    "eslint": "^8.57.0",
+    "postcss": "^8.4.38",
+    "prettier": "^3.3.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.21",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.saragent.gui",
+    "productName": "Sara Agent",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico",
+      "publisherName": "Sara Agent"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "assets/icon.png",
+      "category": "Network",
+      "desktop": {
+        "Name": "Sara Agent",
+        "Comment": "Cross-platform messenger with voice control",
+        "Categories": "Network;InstantMessaging;"
+      }
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}.${ext}"
+    }
+  }
+}

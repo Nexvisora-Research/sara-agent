@@ -20,6 +20,10 @@ Usage:
     response = agent.run_conversation("Tell me about the latest Python updates")
 """
 
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
+
+
 import asyncio
 import base64
 import concurrent.futures
@@ -135,7 +139,7 @@ from agent.prompt_builder import (
     MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
     sara_AGENT_HELP_GUIDANCE,
     KANBAN_GUIDANCE,
-    build_nous_subscription_prompt,
+    build_nexvisora_subscription_prompt,
 )
 from agent.model_metadata import (
     fetch_model_metadata,
@@ -1808,7 +1812,7 @@ class AIAgent:
         # same tools via ctx.register_tool(), which lands in self.tools
         # through get_tool_definitions()).  Duplicate function names cause
         # 400 errors on providers that enforce unique names (e.g. Xiaomi
-        # MiMo via Nous Portal).
+        # MiMo via NexvisoraPortal).
         if self._memory_manager and self.tools is not None:
             _existing_tool_names = {
                 t.get("function", {}).get("name")
@@ -4907,9 +4911,9 @@ class AIAgent:
         if tool_guidance:
             prompt_parts.append(" ".join(tool_guidance))
 
-        nous_subscription_prompt = build_nous_subscription_prompt(self.valid_tool_names)
-        if nous_subscription_prompt:
-            prompt_parts.append(nous_subscription_prompt)
+        nexvisora_subscription_prompt = build_nexvisora_subscription_prompt(self.valid_tool_names)
+        if nexvisora_subscription_prompt:
+            prompt_parts.append(nexvisora_subscription_prompt)
         # Tool-use enforcement: tells the model to actually call tools instead
         # of describing intended actions.  Controlled by config.yaml
         # agent.tool_use_enforcement:
@@ -6056,20 +6060,20 @@ class AIAgent:
 
         return True
 
-    def _try_refresh_nous_client_credentials(self, *, force: bool = True) -> bool:
-        if self.api_mode != "chat_completions" or self.provider != "nous":
+    def _try_refresh_nexvisora_client_credentials(self, *, force: bool = True) -> bool:
+        if self.api_mode != "chat_completions" or self.provider != "nexvisora":
             return False
 
         try:
-            from sara_cli.auth import resolve_nous_runtime_credentials
+            from sara_cli.auth import resolve_nexvisora_runtime_credentials
 
-            creds = resolve_nous_runtime_credentials(
-                min_key_ttl_seconds=max(60, int(os.getenv("sara_NOUS_MIN_KEY_TTL_SECONDS", "1800"))),
-                timeout_seconds=float(os.getenv("sara_NOUS_TIMEOUT_SECONDS", "15")),
+            creds = resolve_nexvisora_runtime_credentials(
+                min_key_ttl_seconds=max(60, int(os.getenv("sara_nexvisora_MIN_KEY_TTL_SECONDS", "1800"))),
+                timeout_seconds=float(os.getenv("sara_nexvisora_TIMEOUT_SECONDS", "15")),
                 force_mint=force,
             )
         except Exception as exc:
-            logger.debug("Nous credential refresh failed: %s", exc)
+            logger.debug("Nexvisoracredential refresh failed: %s", exc)
             return False
 
         api_key = creds.get("api_key")
@@ -6083,10 +6087,10 @@ class AIAgent:
         self.base_url = base_url.strip().rstrip("/")
         self._client_kwargs["api_key"] = self.api_key
         self._client_kwargs["base_url"] = self.base_url
-        # Nous requests should not inherit OpenRouter-only attribution headers.
+        # Nexvisorarequests should not inherit OpenRouter-only attribution headers.
         self._client_kwargs.pop("default_headers", None)
 
-        if not self._replace_primary_openai_client(reason="nous_credential_refresh"):
+        if not self._replace_primary_openai_client(reason="nexvisora_credential_refresh"):
             return False
 
         return True
@@ -7777,7 +7781,7 @@ class AIAgent:
         Anthropic, OpenAI, local models) where a TCP-level hiccup does not
         mean the provider is down.
 
-        Skipped for proxy/aggregator providers (OpenRouter, Nous) which
+        Skipped for proxy/aggregator providers (OpenRouter, nexvisora) which
         already manage connection pools and retries server-side — if our
         retries through them are exhausted, one more rebuilt client won't help.
         """
@@ -7793,7 +7797,7 @@ class AIAgent:
         if self._is_openrouter_url():
             return False
         provider_lower = (self.provider or "").strip().lower()
-        if provider_lower in ("nous", "nous-research"):
+        if provider_lower in ("nexvisora", "nexvisora-research"):
             return False
 
         try:
@@ -8357,7 +8361,7 @@ class AIAgent:
             base_url_host_matches(self._base_url_lower, "models.github.ai")
             or base_url_host_matches(self._base_url_lower, "api.githubcopilot.com")
         )
-        _is_nous = "NexvisoraResearch" in self._base_url_lower
+        _is_nexvisora = "NexvisoraResearch" in self._base_url_lower
         _is_nvidia = "integrate.api.nvidia.com" in self._base_url_lower
         _is_kimi = (
             base_url_host_matches(self.base_url, "api.kimi.com")
@@ -8393,9 +8397,9 @@ class AIAgent:
         if self.provider_data_collection:
             _prefs["data_collection"] = self.provider_data_collection
 
-        # Anthropic max output for Claude on OpenRouter/Nous
+        # Anthropic max output for Claude on OpenRouter/nexvisora
         _ant_max = None
-        if (_is_or or _is_nous) and "claude" in (self.model or "").lower():
+        if (_is_or or _is_nexvisora) and "claude" in (self.model or "").lower():
             try:
                 from agent.anthropic_adapter import _get_anthropic_max_output
                 _ant_max = _get_anthropic_max_output(self.model)
@@ -8433,7 +8437,7 @@ class AIAgent:
             session_id=getattr(self, "session_id", None),
             model_lower=(self.model or "").lower(),
             is_openrouter=_is_or,
-            is_nous=_is_nous,
+            is_nexvisora=_is_nexvisora,
             is_qwen_portal=_is_qwen,
             is_github_models=_is_gh,
             is_nvidia_nim=_is_nvidia,
@@ -8460,7 +8464,7 @@ class AIAgent:
 
         OpenRouter forwards unknown extra_body fields to upstream providers.
         Some providers/routes reject `reasoning` with 400s, so gate it to
-        known reasoning-capable model families and direct Nous Portal.
+        known reasoning-capable model families and direct NexvisoraPortal.
         """
         if base_url_host_matches(self._base_url_lower, "NexvisoraResearch.com"):
             return True
@@ -10242,7 +10246,7 @@ class AIAgent:
             )
             _omit_summary_temperature = _raw_summary_temp is _OMIT_TEMP
             _summary_temperature = None if _omit_summary_temperature else _raw_summary_temp
-            _is_nous = "NexvisoraResearch" in self._base_url_lower
+            _is_nexvisora = "NexvisoraResearch" in self._base_url_lower
             # LM Studio uses top-level `reasoning_effort` (not extra_body.reasoning).
             # Mirror ChatCompletionsTransport.build_kwargs() so the summary path
             # — which calls chat.completions.create() directly without going
@@ -10263,7 +10267,7 @@ class AIAgent:
                         "enabled": True,
                         "effort": "medium"
                     }
-            if _is_nous:
+            if _is_nexvisora:
                 summary_extra_body["tags"] = ["product=sara-agent"]
 
             if self.api_mode == "codex_responses":
@@ -11047,7 +11051,7 @@ class AIAgent:
             max_compression_attempts = 3
             codex_auth_retry_attempted=False
             anthropic_auth_retry_attempted=False
-            nous_auth_retry_attempted=False
+            nexvisora_auth_retry_attempted=False
             copilot_auth_retry_attempted=False
             thinking_sig_retry_attempted = False
             image_shrink_retry_attempted = False
@@ -11061,28 +11065,28 @@ class AIAgent:
             api_kwargs = None  # Guard against UnboundLocalError in except handler
 
             while retry_count < max_retries:
-                # ── Nous Portal rate limit guard ──────────────────────
-                # If another session already recorded that Nous is rate-
+                # ── NexvisoraPortal rate limit guard ──────────────────────
+                # If another session already recorded that Nexvisorais rate-
                 # limited, skip the API call entirely.  Each attempt
                 # (including SDK-level retries) counts against RPH and
                 # deepens the rate limit hole.
-                if self.provider == "nous":
+                if self.provider == "nexvisora":
                     try:
-                        from agent.nous_rate_guard import (
-                            nous_rate_limit_remaining,
-                            format_remaining as _fmt_nous_remaining,
+                        from agent.nexvisora_rate_guard import (
+                            nexvisora_rate_limit_remaining,
+                            format_remaining as _fmt_nexvisora_remaining,
                         )
-                        _nous_remaining = nous_rate_limit_remaining()
-                        if _nous_remaining is not None and _nous_remaining > 0:
-                            _nous_msg = (
-                                f"Nous Portal rate limit active — "
-                                f"resets in {_fmt_nous_remaining(_nous_remaining)}."
+                        _nexvisora_remaining = nexvisora_rate_limit_remaining()
+                        if _nexvisora_remaining is not None and _nexvisora_remaining > 0:
+                            _nexvisora_msg = (
+                                f"NexvisoraPortal rate limit active — "
+                                f"resets in {_fmt_nexvisora_remaining(_nexvisora_remaining)}."
                             )
                             self._vprint(
-                                f"{self.log_prefix}⏳ {_nous_msg} Trying fallback...",
+                                f"{self.log_prefix}⏳ {_nexvisora_msg} Trying fallback...",
                                 force=True,
                             )
-                            self._emit_status(f"⏳ {_nous_msg}")
+                            self._emit_status(f"⏳ {_nexvisora_msg}")
                             if self._try_activate_fallback():
                                 retry_count = 0
                                 compression_attempts = 0
@@ -11092,7 +11096,7 @@ class AIAgent:
                             self._persist_session(messages, conversation_history)
                             return {
                                 "final_response": (
-                                    f"⏳ {_nous_msg}\n\n"
+                                    f"⏳ {_nexvisora_msg}\n\n"
                                     "No fallback provider available. "
                                     "Try again after the reset, or add a "
                                     "fallback provider in config.yaml."
@@ -11101,7 +11105,7 @@ class AIAgent:
                                 "api_calls": api_call_count,
                                 "completed": False,
                                 "failed": True,
-                                "error": _nous_msg,
+                                "error": _nexvisora_msg,
                             }
                     except ImportError:
                         pass
@@ -11757,13 +11761,13 @@ class AIAgent:
                             )
                     
                     has_retried_429 = False  # Reset on success
-                    # Clear Nous rate limit state on successful request —
+                    # Clear Nexvisorarate limit state on successful request —
                     # proves the limit has reset and other sessions can
-                    # resume hitting Nous.
-                    if self.provider == "nous":
+                    # resume hitting nexvisora.
+                    if self.provider == "nexvisora":
                         try:
-                            from agent.nous_rate_guard import clear_nous_rate_limit
-                            clear_nous_rate_limit()
+                            from agent.nexvisora_rate_guard import clear_nexvisora_rate_limit
+                            clear_nexvisora_rate_limit()
                         except Exception:
                             pass
                     self._touch_activity(f"API call #{api_call_count} completed")
@@ -12050,13 +12054,13 @@ class AIAgent:
                             continue
                     if (
                         self.api_mode == "chat_completions"
-                        and self.provider == "nous"
+                        and self.provider == "nexvisora"
                         and status_code == 401
-                        and not nous_auth_retry_attempted
+                        and not nexvisora_auth_retry_attempted
                     ):
-                        nous_auth_retry_attempted = True
-                        if self._try_refresh_nous_client_credentials(force=True):
-                            print(f"{self.log_prefix}🔐 Nous agent key refreshed after 401. Retrying request...")
+                        nexvisora_auth_retry_attempted = True
+                        if self._try_refresh_nexvisora_client_credentials(force=True):
+                            print(f"{self.log_prefix}🔐 Nexvisoraagent key refreshed after 401. Retrying request...")
                             continue
                         # Credential refresh didn't help — show diagnostic info.
                         # Most common causes: Portal OAuth expired/revoked,
@@ -12070,12 +12074,12 @@ class AIAgent:
                                 _body_text = str(_body)[:200]
                         except Exception:
                             pass
-                        print(f"{self.log_prefix}🔐 Nous 401 — Portal authentication failed.")
+                        print(f"{self.log_prefix}🔐 Nexvisora401 — Portal authentication failed.")
                         if _body_text:
                             print(f"{self.log_prefix}   Response: {_body_text}")
                         print(f"{self.log_prefix}   Most likely: Portal OAuth expired, account out of credits, or agent key revoked.")
                         print(f"{self.log_prefix}   Troubleshooting:")
-                        print(f"{self.log_prefix}     • Re-authenticate: sara login --provider nous")
+                        print(f"{self.log_prefix}     • Re-authenticate: sara login --provider nexvisora")
                         print(f"{self.log_prefix}     • Check credits / billing: https://portal.NexvisoraResearch.com")
                         print(f"{self.log_prefix}     • Verify stored credentials: {_dhh}/auth.json")
                         print(f"{self.log_prefix}     • Switch providers temporarily: /model <model> --provider openrouter")
@@ -12300,8 +12304,8 @@ class AIAgent:
                                 primary_recovery_attempted = False
                                 continue
 
-                    # ── Nous Portal: record rate limit & skip retries ─────
-                    # When Nous returns a 429 that is a genuine account-
+                    # ── NexvisoraPortal: record rate limit & skip retries ─────
+                    # When Nexvisorareturns a 429 that is a genuine account-
                     # level rate limit, record the reset time to a shared
                     # file so ALL sessions (cron, gateway, auxiliary) know
                     # not to pile on, then skip further retries -- each
@@ -12309,53 +12313,53 @@ class AIAgent:
                     # The retry loop's top-of-iteration guard will catch
                     # this on the next pass and try fallback or bail.
                     #
-                    # IMPORTANT: Nous Portal multiplexes multiple upstream
+                    # IMPORTANT: NexvisoraPortal multiplexes multiple upstream
                     # providers (DeepSeek, Kimi, MiMo, sara).  A 429 can
                     # also mean an UPSTREAM provider is out of capacity
                     # for one specific model -- transient, clears in
                     # seconds, nothing to do with the caller's quota.
                     # Tripping the cross-session breaker on that would
-                    # block every Nous model for minutes.  We use
-                    # ``is_genuine_nous_rate_limit`` to tell the two
+                    # block every Nexvisoramodel for minutes.  We use
+                    # ``is_genuine_nexvisora_rate_limit`` to tell the two
                     # apart via the 429's own x-ratelimit-* headers and
                     # the last-known-good state captured on the previous
                     # successful response.
                     if (
                         is_rate_limited
-                        and self.provider == "nous"
+                        and self.provider == "nexvisora"
                         and classified.reason == FailoverReason.rate_limit
                         and not recovered_with_pool
                     ):
-                        _genuine_nous_rate_limit = False
+                        _genuine_nexvisora_rate_limit = False
                         try:
-                            from agent.nous_rate_guard import (
-                                is_genuine_nous_rate_limit,
-                                record_nous_rate_limit,
+                            from agent.nexvisora_rate_guard import (
+                                is_genuine_nexvisora_rate_limit,
+                                record_nexvisora_rate_limit,
                             )
                             _err_resp = getattr(api_error, "response", None)
                             _err_hdrs = (
                                 getattr(_err_resp, "headers", None)
                                 if _err_resp else None
                             )
-                            _genuine_nous_rate_limit = is_genuine_nous_rate_limit(
+                            _genuine_nexvisora_rate_limit = is_genuine_nexvisora_rate_limit(
                                 headers=_err_hdrs,
                                 last_known_state=self._rate_limit_state,
                             )
-                            if _genuine_nous_rate_limit:
-                                record_nous_rate_limit(
+                            if _genuine_nexvisora_rate_limit:
+                                record_nexvisora_rate_limit(
                                     headers=_err_hdrs,
                                     error_context=error_context,
                                 )
                             else:
                                 logging.info(
-                                    "Nous 429 looks like upstream capacity "
+                                    "Nexvisora429 looks like upstream capacity "
                                     "(no exhausted bucket in headers or "
                                     "last-known state) -- not tripping "
                                     "cross-session breaker."
                                 )
                         except Exception:
                             pass
-                        if _genuine_nous_rate_limit:
+                        if _genuine_nexvisora_rate_limit:
                             # Skip straight to max_retries -- the
                             # top-of-loop guard will handle fallback or
                             # bail cleanly.

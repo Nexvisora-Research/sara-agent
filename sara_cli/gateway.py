@@ -171,7 +171,7 @@ def _is_pid_ancestor_of_current_process(target_pid: int) -> bool:
 
 
 def _request_gateway_self_restart(pid: int) -> bool:
-    """Ask a running gateway ancestor to restart itself asynchronously."""
+    """Ask a running gateway ancestor to restart itself asynchronexvisoraly."""
     if not hasattr(signal, "SIGUSR1"):
         return False
     if not _is_pid_ancestor_of_current_process(pid):

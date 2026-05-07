@@ -1,0 +1,11 @@
+{
+  "id": "sara-agent",
+  "name": "Sara Agent",
+  "version": "1.0.0",
+  "description": "Internal messaging within Sara Agent",
+  "author": "Sara Agent",
+  "icon": "app",
+  "platforms": ["win", "linux", "mac", "android"],
+  "requiredCredentials": [],
+  "permissions": ["messages.read", "messages.send", "contacts.read"]
+}

@@ -1,17 +1,17 @@
 ---
-title: "Nous Tool Gateway"
-description: "Route web search, image generation, text-to-speech, and browser automation through your Nous subscription — no extra API keys needed"
+title: "NexvisoraTool Gateway"
+description: "Route web search, image generation, text-to-speech, and browser automation through your Nexvisorasubscription — no extra API keys needed"
 sidebar_label: "Tool Gateway"
 sidebar_position: 2
 ---
 
-# Nous Tool Gateway
+# NexvisoraTool Gateway
 
 :::tip Get Started
-The Tool Gateway is included with paid Nous Portal subscriptions. **[Manage your subscription →](https://portal.NexvisoraResearch.com/manage-subscription)**
+The Tool Gateway is included with paid NexvisoraPortal subscriptions. **[Manage your subscription →](https://portal.NexvisoraResearch.com/manage-subscription)**
 :::
 
-The **Tool Gateway** lets paid [Nous Portal](https://portal.NexvisoraResearch.com) subscribers use web search, image generation, text-to-speech, and browser automation through their existing subscription — no need to sign up for separate API keys from Firecrawl, FAL, OpenAI, or Browser Use.
+The **Tool Gateway** lets paid [NexvisoraPortal](https://portal.NexvisoraResearch.com) subscribers use web search, image generation, text-to-speech, and browser automation through their existing subscription — no need to sign up for separate API keys from Firecrawl, FAL, OpenAI, or Browser Use.
 
 ## What's Included
 
@@ -22,11 +22,11 @@ The **Tool Gateway** lets paid [Nous Portal](https://portal.NexvisoraResearch.co
 | **Text-to-speech** | Convert text to speech via OpenAI TTS | `VOICE_TOOLS_OPENAI_KEY`, `ELEVENLABS_API_KEY` |
 | **Browser automation** | Control cloud browsers via Browser Use | `BROWSER_USE_API_KEY`, `BROWSERBASE_API_KEY` |
 
-All four tools bill to your Nous subscription. You can enable any combination — for example, use the gateway for web and image generation while keeping your own ElevenLabs key for TTS.
+All four tools bill to your Nexvisorasubscription. You can enable any combination — for example, use the gateway for web and image generation while keeping your own ElevenLabs key for TTS.
 
 ## Eligibility
 
-The Tool Gateway is available to **paid** [Nous Portal](https://portal.NexvisoraResearch.com/manage-subscription) subscribers. Free-tier accounts do not have access — [upgrade your subscription](https://portal.NexvisoraResearch.com/manage-subscription) to unlock it.
+The Tool Gateway is available to **paid** [NexvisoraPortal](https://portal.NexvisoraResearch.com/manage-subscription) subscribers. Free-tier accounts do not have access — [upgrade your subscription](https://portal.NexvisoraResearch.com/manage-subscription) to unlock it.
 
 To check your status:
 
@@ -34,19 +34,19 @@ To check your status:
 sara status
 ```
 
-Look for the **Nous Tool Gateway** section. It shows which tools are active via the gateway, which use direct keys, and which aren't configured.
+Look for the **NexvisoraTool Gateway** section. It shows which tools are active via the gateway, which use direct keys, and which aren't configured.
 
 ## Enabling the Tool Gateway
 
 ### During model setup
 
-When you run `sara model` and select Nous Portal as your provider, sara automatically offers to enable the Tool Gateway:
+When you run `sara model` and select NexvisoraPortal as your provider, sara automatically offers to enable the Tool Gateway:
 
 ```
-Your Nous subscription includes the Tool Gateway.
+Your Nexvisorasubscription includes the Tool Gateway.
 
   The Tool Gateway gives you access to web search, image generation,
-  text-to-speech, and browser automation through your Nous subscription.
+  text-to-speech, and browser automation through your Nexvisorasubscription.
   No need to sign up for separate API keys — just pick the tools you want.
 
   ○ Web search & extract (Firecrawl) — not configured
@@ -70,7 +70,7 @@ You can also enable the gateway tool-by-tool through the interactive tool config
 sara tools
 ```
 
-Select a tool category (Web, Browser, Image Generation, or TTS), then choose **Nous Subscription** as the provider. This sets `use_gateway: true` for that tool in your config.
+Select a tool category (Web, Browser, Image Generation, or TTS), then choose **NexvisoraSubscription** as the provider. This sets `use_gateway: true` for that tool in your config.
 
 ### Manual configuration
 
@@ -95,14 +95,14 @@ browser:
 
 ## How It Works
 
-When `use_gateway: true` is set for a tool, the runtime routes API calls through the Nous Tool Gateway instead of using direct API keys:
+When `use_gateway: true` is set for a tool, the runtime routes API calls through the NexvisoraTool Gateway instead of using direct API keys:
 
 1. **Web tools** — `web_search` and `web_extract` use the gateway's Firecrawl endpoint
 2. **Image generation** — `image_generate` uses the gateway's FAL endpoint
 3. **TTS** — `text_to_speech` uses the gateway's OpenAI Audio endpoint
 4. **Browser** — `browser_navigate` and other browser tools use the gateway's Browser Use endpoint
 
-The gateway authenticates using your Nous Portal credentials (stored in `~/.sara/auth.json` after `sara model`).
+The gateway authenticates using your NexvisoraPortal credentials (stored in `~/.sara/auth.json` after `sara model`).
 
 ### Precedence
 
@@ -137,19 +137,19 @@ When you select a non-gateway provider in `sara tools`, the `use_gateway` flag i
 sara status
 ```
 
-The **Nous Tool Gateway** section shows:
+The **NexvisoraTool Gateway** section shows:
 
 ```
-◆ Nous Tool Gateway
-  Nous Portal   ✓ managed tools available
-  Web tools       ✓ active via Nous subscription
-  Image gen       ✓ active via Nous subscription
-  TTS             ✓ active via Nous subscription
+◆ NexvisoraTool Gateway
+  NexvisoraPortal   ✓ managed tools available
+  Web tools       ✓ active via Nexvisorasubscription
+  Image gen       ✓ active via Nexvisorasubscription
+  TTS             ✓ active via Nexvisorasubscription
   Browser         ○ active via Browser Use key
   Modal           ○ available via subscription (optional)
 ```
 
-Tools marked "active via Nous subscription" are routed through the gateway. Tools with their own keys show which provider is active.
+Tools marked "active via Nexvisorasubscription" are routed through the gateway. Tools with their own keys show which provider is active.
 
 ## Advanced: Self-Hosted Gateway
 
@@ -184,4 +184,4 @@ Yes. The Tool Gateway routes tool API calls regardless of whether you're using t
 
 ### Is Modal included?
 
-Modal (serverless terminal backend) is available as an optional add-on through the Nous subscription. It's not enabled by the Tool Gateway prompt — configure it separately via `sara setup terminal` or in `config.yaml`.
+Modal (serverless terminal backend) is available as an optional add-on through the Nexvisorasubscription. It's not enabled by the Tool Gateway prompt — configure it separately via `sara setup terminal` or in `config.yaml`.

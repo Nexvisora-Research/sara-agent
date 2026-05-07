@@ -80,7 +80,7 @@ sara chat [flags]
   -q, --query TEXT          Single query, non-interactive
   -m, --model MODEL         Model (e.g. anthropic/claude-sonnet-4)
   -t, --toolsets LIST       Comma-separated toolsets
-  --provider PROVIDER       Force provider (openrouter, anthropic, nous, etc.)
+  --provider PROVIDER       Force provider (openrouter, anthropic, nexvisora, etc.)
   -v, --verbose             Verbose output
   -Q, --quiet               Suppress banner, spinner, tool previews
   --checkpoints             Enable filesystem checkpoints (/rollback)
@@ -99,7 +99,7 @@ sara config path          Print config.yaml path
 sara config env-path      Print .env path
 sara config check         Check for missing/outdated config
 sara config migrate       Update config with new options
-sara login [--provider P] OAuth login (nous, openai-codex)
+sara login [--provider P] OAuth login (nexvisora, openai-codex)
 sara logout               Clear stored auth
 sara doctor [--fix]       Check dependencies and config
 sara status [--all]       Show component status
@@ -348,7 +348,7 @@ Full config reference: https://sara-agent.NexvisoraResearch.com/docs/user-guide/
 |----------|------|-------------|
 | OpenRouter | API key | `OPENROUTER_API_KEY` |
 | Anthropic | API key | `ANTHROPIC_API_KEY` |
-| Nous Portal | OAuth | `sara auth` |
+| NexvisoraPortal | OAuth | `sara auth` |
 | OpenAI Codex | OAuth | `sara auth` |
 | GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
 | Google Gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |

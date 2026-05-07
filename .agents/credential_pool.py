@@ -159,13 +159,13 @@ class PooledCredential:
 
     @property
     def runtime_api_key(self) -> str:
-        if self.provider == "nous":
+        if self.provider == "nexvisora":
             return str(self.agent_key or self.access_token or "")
         return str(self.access_token or "")
 
     @property
     def runtime_base_url(self) -> Optional[str]:
-        if self.provider == "nous":
+        if self.provider == "nexvisora":
             return self.inference_base_url or self.base_url
         return self.base_url
 
@@ -469,7 +469,7 @@ class CredentialPool:
         though fresh credentials are sitting on disk — and every request
         fails with "no available entries (all exhausted or empty)".
 
-        Mirrors the Nous/Anthropic resync paths above.  Only applies to
+        Mirrors the nexvisora/Anthropic resync paths above.  Only applies to
         device_code-sourced entries; env/API-key-sourced entries have no
         auth.json shadow to sync from.
         """
@@ -520,29 +520,29 @@ class CredentialPool:
             logger.debug("Failed to sync Codex entry from auth.json: %s", exc)
         return entry
 
-    def _sync_nous_entry_from_auth_store(self, entry: PooledCredential) -> PooledCredential:
-        """Sync a Nous pool entry from auth.json if tokens differ.
+    def _sync_nexvisora_entry_from_auth_store(self, entry: PooledCredential) -> PooledCredential:
+        """Sync a Nexvisorapool entry from auth.json if tokens differ.
 
-        Nous OAuth refresh tokens are single-use.  When another process
+        NexvisoraOAuth refresh tokens are single-use.  When another process
         (e.g. a concurrent cron) refreshes the token via
-        ``resolve_nous_runtime_credentials``, it writes fresh tokens to
+        ``resolve_nexvisora_runtime_credentials``, it writes fresh tokens to
         auth.json under ``_auth_store_lock``.  The pool entry's tokens
         become stale.  This method detects that and adopts the newer pair,
-        avoiding a "refresh token reuse" revocation on the Nous Portal.
+        avoiding a "refresh token reuse" revocation on the NexvisoraPortal.
         """
-        if self.provider != "nous" or entry.source != "device_code":
+        if self.provider != "nexvisora" or entry.source != "device_code":
             return entry
         try:
             with _auth_store_lock():
                 auth_store = _load_auth_store()
-                state = _load_provider_state(auth_store, "nous")
+                state = _load_provider_state(auth_store, "nexvisora")
             if not state:
                 return entry
             store_refresh = state.get("refresh_token", "")
             store_access = state.get("access_token", "")
             if store_refresh and store_refresh != entry.refresh_token:
                 logger.debug(
-                    "Pool entry %s: syncing tokens from auth.json (Nous refresh token changed)",
+                    "Pool entry %s: syncing tokens from auth.json (Nexvisorarefresh token changed)",
                     entry.id,
                 )
                 field_updates: Dict[str, Any] = {
@@ -572,7 +572,7 @@ class CredentialPool:
                 self._persist()
                 return updated
         except Exception as exc:
-            logger.debug("Failed to sync Nous entry from auth.json: %s", exc)
+            logger.debug("Failed to sync Nexvisoraentry from auth.json: %s", exc)
         return entry
 
     def _sync_device_code_entry_to_auth_store(self, entry: PooledCredential) -> None:
@@ -585,15 +585,15 @@ class CredentialPool:
         re-seeding a consumed single-use refresh token.
 
         Applies to any OAuth provider whose singleton lives in auth.json
-        (currently Nous and OpenAI Codex).
+        (currently Nexvisoraand OpenAI Codex).
         """
         if entry.source != "device_code":
             return
         try:
             with _auth_store_lock():
                 auth_store = _load_auth_store()
-                if self.provider == "nous":
-                    state = _load_provider_state(auth_store, "nous")
+                if self.provider == "nexvisora":
+                    state = _load_provider_state(auth_store, "nexvisora")
                     if state is None:
                         return
                     state["access_token"] = entry.access_token
@@ -613,7 +613,7 @@ class CredentialPool:
                             state[extra_key] = val
                     if entry.inference_base_url:
                         state["inference_base_url"] = entry.inference_base_url
-                    _save_provider_state(auth_store, "nous", state)
+                    _save_provider_state(auth_store, "nexvisora", state)
 
                 elif self.provider == "openai-codex":
                     state = _load_provider_state(auth_store, "openai-codex")
@@ -680,11 +680,11 @@ class CredentialPool:
                     refresh_token=refreshed["refresh_token"],
                     last_refresh=refreshed.get("last_refresh"),
                 )
-            elif self.provider == "nous":
-                synced = self._sync_nous_entry_from_auth_store(entry)
+            elif self.provider == "nexvisora":
+                synced = self._sync_nexvisora_entry_from_auth_store(entry)
                 if synced is not entry:
                     entry = synced
-                nous_state = {
+                nexvisora_state = {
                     "access_token": entry.access_token,
                     "refresh_token": entry.refresh_token,
                     "client_id": entry.client_id,
@@ -698,8 +698,8 @@ class CredentialPool:
                     "agent_key_expires_at": entry.agent_key_expires_at,
                     "tls": entry.tls,
                 }
-                refreshed = auth_mod.refresh_nous_oauth_from_state(
-                    nous_state,
+                refreshed = auth_mod.refresh_nexvisora_oauth_from_state(
+                    nexvisora_state,
                     min_key_ttl_seconds=DEFAULT_AGENT_KEY_MIN_TTL_SECONDS,
                     force_refresh=force,
                     force_mint=force,
@@ -758,13 +758,13 @@ class CredentialPool:
                     # Credentials file had a valid (non-expired) token — use it directly
                     logger.debug("Credentials file has valid token, using without refresh")
                     return synced
-            # For nous: another process may have consumed the refresh token
+            # For nexvisora: another process may have consumed the refresh token
             # between our proactive sync and the HTTP call.  Re-sync from
             # auth.json and adopt the fresh tokens if available.
-            if self.provider == "nous":
-                synced = self._sync_nous_entry_from_auth_store(entry)
+            if self.provider == "nexvisora":
+                synced = self._sync_nexvisora_entry_from_auth_store(entry)
                 if synced.refresh_token != entry.refresh_token:
-                    logger.debug("Nous refresh failed but auth.json has newer tokens — adopting")
+                    logger.debug("Nexvisorarefresh failed but auth.json has newer tokens — adopting")
                     updated = replace(
                         synced,
                         last_status=STATUS_OK,
@@ -810,8 +810,8 @@ class CredentialPool:
                 entry.access_token,
                 CODEX_ACCESS_TOKEN_REFRESH_SKEW_SECONDS,
             )
-        if self.provider == "nous":
-            # Nous refresh/mint can require network access and should happen when
+        if self.provider == "nexvisora":
+            # Nexvisorarefresh/mint can require network access and should happen when
             # runtime credentials are actually resolved, not merely when the pool
             # is enumerated for listing, migration, or selection.
             return False
@@ -841,14 +841,14 @@ class CredentialPool:
                 if synced is not entry:
                     entry = synced
                     cleared_any = True
-            # For nous entries, sync from auth.json before status checks.
+            # For Nexvisoraentries, sync from auth.json before status checks.
             # Another process may have successfully refreshed via
-            # resolve_nous_runtime_credentials(), making this entry's
+            # resolve_nexvisora_runtime_credentials(), making this entry's
             # exhausted status stale.
-            if (self.provider == "nous"
+            if (self.provider == "nexvisora"
                     and entry.source == "device_code"
                     and entry.last_status == STATUS_EXHAUSTED):
-                synced = self._sync_nous_entry_from_auth_store(entry)
+                synced = self._sync_nexvisora_entry_from_auth_store(entry)
                 if synced is not entry:
                     entry = synced
                     cleared_any = True
@@ -1196,13 +1196,13 @@ def _seed_from_singletons(provider: str, entries: List[PooledCredential]) -> Tup
                     },
                 )
 
-    elif provider == "nous":
-        state = _load_provider_state(auth_store, "nous")
+    elif provider == "nexvisora":
+        state = _load_provider_state(auth_store, "nexvisora")
         if state and not _is_suppressed(provider, "device_code"):
             active_sources.add("device_code")
             # Prefer a user-supplied label embedded in the singleton state
-            # (set by persist_nous_credentials(label=...) when the user ran
-            # `sara auth add nous --label <name>`).  Fall back to the
+            # (set by persist_nexvisora_credentials(label=...) when the user ran
+            # `sara auth add Nexvisora--label <name>`).  Fall back to the
             # auto-derived token fingerprint for logins that didn't supply one.
             custom_label = str(state.get("label") or "").strip()
             seeded_label = custom_label or label_from_token(

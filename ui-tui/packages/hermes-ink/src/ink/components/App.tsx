@@ -75,7 +75,7 @@ type Props = {
   // DOM elements. Called for mode-1003 motion events with no button held.
   // No-op outside fullscreen (Ink.dispatchHover gates on altScreenActive).
   readonly onHoverAt: (col: number, row: number) => void
-  // Look up the OSC 8 hyperlink at (col, row) synchronously at click
+  // Look up the OSC 8 hyperlink at (col, row) synchronexvisoraly at click
   // time. Returns the URL or undefined. The browser-open is deferred by
   // MULTI_CLICK_TIMEOUT_MS so double-click can cancel it.
   readonly getHyperlinkAt: (col: number, row: number) => string | undefined
@@ -277,7 +277,7 @@ export default class App extends PureComponent<Props, State> {
         // detection when env vars are absent. Fire-and-forget: the DA1
         // sentinel bounds the round-trip, and if the terminal ignores the
         // query, flush() still resolves and name stays undefined.
-        // Deferred to next tick so it fires AFTER the current synchronous
+        // Deferred to next tick so it fires AFTER the current synchronexvisora
         // init sequence completes — avoids interleaving with alt-screen/mouse
         // tracking enable writes that may happen in the same render cycle.
         setImmediate(() => {
@@ -740,7 +740,7 @@ export function handleMouseEvent(app: App, m: ParsedMouse): void {
     // etc. are latency-sensitive). If no DOM handler consumed it, defer
     // the hyperlink check so a second click can cancel it.
     if (!app.props.onClickAt(col, row)) {
-      // Resolve the hyperlink URL synchronously while the screen buffer
+      // Resolve the hyperlink URL synchronexvisoraly while the screen buffer
       // still reflects what the user clicked — deferring only the
       // browser-open so double-click can cancel it.
       const url = app.props.getHyperlinkAt(col, row)

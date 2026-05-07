@@ -316,7 +316,7 @@ def _has_any_provider_configured() -> bool:
     except Exception:
         pass
 
-    # Check for Nous Portal OAuth credentials
+    # Check for NexvisoraPortal OAuth credentials
     auth_file = get_sara_home() / "auth.json"
     if auth_file.exists():
         try:
@@ -1806,8 +1806,8 @@ def select_provider_and_model(args=None):
         _model_flow_openrouter(config, current_model)
     elif selected_provider == "ai-gateway":
         _model_flow_ai_gateway(config, current_model)
-    elif selected_provider == "nous":
-        _model_flow_nous(config, current_model, args=args)
+    elif selected_provider == "nexvisora":
+        _model_flow_nexvisora(config, current_model, args=args)
     elif selected_provider == "openai-codex":
         _model_flow_openai_codex(config, current_model)
     elif selected_provider == "qwen-oauth":
@@ -1849,6 +1849,7 @@ def select_provider_and_model(args=None):
     elif selected_provider in (
         "gemini",
         "deepseek",
+        "groq",
         "xai",
         "zai",
         "kimi-coding-cn",
@@ -2035,7 +2036,7 @@ def _aux_config_menu() -> None:
         print("  Side tasks (vision, compression, web extraction, etc.) default")
         print("  to your main chat model.  \"auto\" means \"use my main model\" —")
         print("  sara only falls back to a lightweight backend (OpenRouter,")
-        print("  Nous Portal) if the main model is unavailable.  Override a")
+        print("  NexvisoraPortal) if the main model is unavailable.  Override a")
         print("  task below if you want it pinned to a specific provider/model.")
         print()
 
@@ -2392,17 +2393,17 @@ def _model_flow_ai_gateway(config, current_model=""):
         print("No change.")
 
 
-def _model_flow_nous(config, current_model="", args=None):
-    """Nous Portal provider: ensure logged in, then pick model."""
+def _model_flow_nexvisora(config, current_model="", args=None):
+    """NexvisoraPortal provider: ensure logged in, then pick model."""
     from sara_cli.auth import (
         get_provider_auth_state,
         _prompt_model_selection,
         _save_model_choice,
         _update_config_for_provider,
-        resolve_nous_runtime_credentials,
+        resolve_nexvisora_runtime_credentials,
         AuthError,
         format_auth_error,
-        _login_nous,
+        _login_nexvisora,
         PROVIDER_REGISTRY,
     )
     from sara_cli.config import (
@@ -2411,11 +2412,11 @@ def _model_flow_nous(config, current_model="", args=None):
         save_config,
         save_env_value,
     )
-    from sara_cli.nous_subscription import prompt_enable_tool_gateway
+    from sara_cli.nexvisora_subscription import prompt_enable_tool_gateway
 
-    state = get_provider_auth_state("nous")
+    state = get_provider_auth_state("nexvisora")
     if not state or not state.get("access_token"):
-        print("Not logged into Nous Portal. Starting login...")
+        print("Not logged into NexvisoraPortal. Starting login...")
         print()
         try:
             mock_args = argparse.Namespace(
@@ -2428,7 +2429,7 @@ def _model_flow_nous(config, current_model="", args=None):
                 ca_bundle=getattr(args, "ca_bundle", None),
                 insecure=bool(getattr(args, "insecure", False)),
             )
-            _login_nous(mock_args, PROVIDER_REGISTRY["nous"])
+            _login_nexvisora(mock_args, PROVIDER_REGISTRY["nexvisora"])
             # Offer Tool Gateway enablement for paid subscribers
             try:
                 _refreshed = load_config() or {}
@@ -2441,33 +2442,33 @@ def _model_flow_nous(config, current_model="", args=None):
         except Exception as exc:
             print(f"Login failed: {exc}")
             return
-        # login_nous already handles model selection + config update
+        # login_Nexvisoraalready handles model selection + config update
         return
 
     # Already logged in — use curated model list (same as OpenRouter defaults).
     # The live /models endpoint returns hundreds of models; the curated list
     # shows only agentic models users recognize from OpenRouter.
     from sara_cli.models import (
-        get_curated_nous_model_ids,
+        get_curated_nexvisora_model_ids,
         get_pricing_for_provider,
-        check_nous_free_tier,
-        partition_nous_models_by_tier,
+        check_nexvisora_free_tier,
+        partition_nexvisora_models_by_tier,
     )
 
-    model_ids = get_curated_nous_model_ids()
+    model_ids = get_curated_nexvisora_model_ids()
     if not model_ids:
-        print("No curated models available for Nous Portal.")
+        print("No curated models available for NexvisoraPortal.")
         return
 
     # Verify credentials are still valid (catches expired sessions early)
     try:
-        creds = resolve_nous_runtime_credentials(min_key_ttl_seconds=5 * 60)
+        creds = resolve_nexvisora_runtime_credentials(min_key_ttl_seconds=5 * 60)
     except Exception as exc:
         relogin = isinstance(exc, AuthError) and exc.relogin_required
         msg = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
         if relogin:
             print(f"Session expired: {msg}")
-            print("Re-authenticating with Nous Portal...\n")
+            print("Re-authenticating with NexvisoraPortal...\n")
             try:
                 mock_args = argparse.Namespace(
                     portal_url=None,
@@ -2479,7 +2480,7 @@ def _model_flow_nous(config, current_model="", args=None):
                     ca_bundle=None,
                     insecure=False,
                 )
-                _login_nous(mock_args, PROVIDER_REGISTRY["nous"])
+                _login_nexvisora(mock_args, PROVIDER_REGISTRY["nexvisora"])
             except Exception as login_exc:
                 print(f"Re-login failed: {login_exc}")
             return
@@ -2487,38 +2488,38 @@ def _model_flow_nous(config, current_model="", args=None):
         return
 
     # Fetch live pricing (non-blocking — returns empty dict on failure)
-    pricing = get_pricing_for_provider("nous")
+    pricing = get_pricing_for_provider("nexvisora")
 
     # Check if user is on free tier
-    free_tier = check_nous_free_tier()
+    free_tier = check_nexvisora_free_tier()
 
     # For free users: partition models into selectable/unavailable based on
     # whether they are free per the Portal-reported pricing.
     unavailable_models: list[str] = []
     if free_tier:
-        model_ids, unavailable_models = partition_nous_models_by_tier(
+        model_ids, unavailable_models = partition_nexvisora_models_by_tier(
             model_ids, pricing, free_tier=True
         )
 
     if not model_ids and not unavailable_models:
-        print("No models available for Nous Portal after filtering.")
+        print("No models available for NexvisoraPortal after filtering.")
         return
 
     # Resolve portal URL for upgrade links (may differ on staging)
-    _nous_portal_url = ""
+    _nexvisora_portal_url = ""
     try:
-        _nous_state = get_provider_auth_state("nous")
-        if _nous_state:
-            _nous_portal_url = _nous_state.get("portal_base_url", "")
+        _nexvisora_state = get_provider_auth_state("nexvisora")
+        if _nexvisora_state:
+            _nexvisora_portal_url = _nexvisora_state.get("portal_base_url", "")
     except Exception:
         pass
 
     if free_tier and not model_ids:
         print("No free models currently available.")
         if unavailable_models:
-            from sara_cli.auth import DEFAULT_NOUS_PORTAL_URL
+            from sara_cli.auth import DEFAULT_nexvisora_PORTAL_URL
 
-            _url = (_nous_portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+            _url = (_nexvisora_portal_url or DEFAULT_nexvisora_PORTAL_URL).rstrip("/")
             print(f"Upgrade at {_url} to access paid models.")
         return
 
@@ -2531,13 +2532,13 @@ def _model_flow_nous(config, current_model="", args=None):
         current_model=current_model,
         pricing=pricing,
         unavailable_models=unavailable_models,
-        portal_url=_nous_portal_url,
+        portal_url=_nexvisora_portal_url,
     )
     if selected:
         _save_model_choice(selected)
-        # Reactivate Nous as the provider and update config
+        # Reactivate Nexvisoraas the provider and update config
         inference_url = creds.get("base_url", "")
-        _update_config_for_provider("nous", inference_url)
+        _update_config_for_provider("nexvisora", inference_url)
         current_model_cfg = config.get("model")
         if isinstance(current_model_cfg, dict):
             model_cfg = dict(current_model_cfg)
@@ -2545,7 +2546,7 @@ def _model_flow_nous(config, current_model="", args=None):
             model_cfg = {"default": current_model_cfg.strip()}
         else:
             model_cfg = {}
-        model_cfg["provider"] = "nous"
+        model_cfg["provider"] = "nexvisora"
         model_cfg["default"] = selected
         if inference_url and inference_url.strip():
             model_cfg["base_url"] = inference_url.rstrip("/")
@@ -2557,7 +2558,7 @@ def _model_flow_nous(config, current_model="", args=None):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
         save_config(config)
-        print(f"Default model set to: {selected} (via Nous Portal)")
+        print(f"Default model set to: {selected} (via NexvisoraPortal)")
         # Offer Tool Gateway enablement for paid subscribers
         prompt_enable_tool_gateway(config)
     else:
@@ -4575,7 +4576,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                 print()
                 print(
                     "   Alternatives with workable free usage: DeepSeek, "
-                    "OpenRouter (free models), Groq, Nous."
+                    "OpenRouter (free models), Groq, nexvisora."
                 )
                 print()
                 print("Not saving Gemini as the default provider.")
@@ -5124,7 +5125,7 @@ def cmd_version(args):
     except ImportError:
         print("OpenAI SDK: Not installed")
 
-    # Show update status (synchronous — acceptable since user asked for version info)
+    # Show update status (synchroNexvisora— acceptable since user asked for version info)
     try:
         from sara_cli.banner import check_for_updates
         from sara_cli.config import recommended_update_command
@@ -8164,38 +8165,38 @@ def main():
     )
     model_parser.add_argument(
         "--portal-url",
-        help="Portal base URL for Nous login (default: production portal)",
+        help="Portal base URL for Nexvisoralogin (default: production portal)",
     )
     model_parser.add_argument(
         "--inference-url",
-        help="Inference API base URL for Nous login (default: production inference API)",
+        help="Inference API base URL for Nexvisoralogin (default: production inference API)",
     )
     model_parser.add_argument(
         "--client-id",
         default=None,
-        help="OAuth client id to use for Nous login (default: sara-cli)",
+        help="OAuth client id to use for Nexvisoralogin (default: sara-cli)",
     )
     model_parser.add_argument(
-        "--scope", default=None, help="OAuth scope to request for Nous login"
+        "--scope", default=None, help="OAuth scope to request for Nexvisoralogin"
     )
     model_parser.add_argument(
         "--no-browser",
         action="store_true",
-        help="Do not attempt to open the browser automatically during Nous login",
+        help="Do not attempt to open the browser automatically during Nexvisoralogin",
     )
     model_parser.add_argument(
         "--timeout",
         type=float,
         default=15.0,
-        help="HTTP request timeout in seconds for Nous login (default: 15)",
+        help="HTTP request timeout in seconds for Nexvisoralogin (default: 15)",
     )
     model_parser.add_argument(
-        "--ca-bundle", help="Path to CA bundle PEM file for Nous TLS verification"
+        "--ca-bundle", help="Path to CA bundle PEM file for NexvisoraTLS verification"
     )
     model_parser.add_argument(
         "--insecure",
         action="store_true",
-        help="Disable TLS verification for Nous login (testing only)",
+        help="Disable TLS verification for Nexvisoralogin (testing only)",
     )
     model_parser.set_defaults(func=cmd_model)
 
@@ -8488,9 +8489,9 @@ def main():
     )
     login_parser.add_argument(
         "--provider",
-        choices=["nous", "openai-codex"],
+        choices=["nexvisora", "openai-codex"],
         default=None,
-        help="Provider to authenticate with (default: nous)",
+        help="Provider to authenticate with (default: nexvisora)",
     )
     login_parser.add_argument(
         "--portal-url", help="Portal base URL (default: production portal)"
@@ -8534,7 +8535,7 @@ def main():
     )
     logout_parser.add_argument(
         "--provider",
-        choices=["nous", "openai-codex", "spotify"],
+        choices=["nexvisora", "openai-codex", "spotify"],
         default=None,
         help="Provider to log out from (default: active provider)",
     )
@@ -8560,8 +8561,8 @@ def main():
     auth_add.add_argument(
         "--api-key", help="API key value (otherwise prompted securely)"
     )
-    auth_add.add_argument("--portal-url", help="Nous portal base URL")
-    auth_add.add_argument("--inference-url", help="Nous inference base URL")
+    auth_add.add_argument("--portal-url", help="Nexvisoraportal base URL")
+    auth_add.add_argument("--inference-url", help="Nexvisorainference base URL")
     auth_add.add_argument("--client-id", help="OAuth client id")
     auth_add.add_argument("--scope", help="OAuth scope override")
     auth_add.add_argument(

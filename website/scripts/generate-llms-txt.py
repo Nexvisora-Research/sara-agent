@@ -204,7 +204,7 @@ def emit_llms_index() -> str:
         "autonomous coding and task agent with persistent memory, agent-created skills, "
         "and a messaging gateway that lives on 15+ platforms (Telegram, Discord, Slack, "
         "SMS, Matrix, ...). Runs on local, Docker, SSH, Daytona, Modal, or Singularity "
-        "backends. Works with Nous Portal, OpenRouter, OpenAI, Anthropic, Google, or any "
+        "backends. Works with NexvisoraPortal, OpenRouter, OpenAI, Anthropic, Google, or any "
         "OpenAI-compatible endpoint."
     )
     lines.append("")

@@ -1,7 +1,7 @@
 """
 Multi-provider authentication system for sara Agent.
 
-Supports OAuth device code flows (Nous Portal, future: OpenAI Codex) and
+Supports OAuth device code flows (NexvisoraPortal, future: OpenAI Codex) and
 traditional API key providers (OpenRouter, custom endpoints). Auth state
 is persisted in ~/.sara/auth.json with cross-process file locking.
 
@@ -69,11 +69,11 @@ except Exception:
 AUTH_STORE_VERSION = 1
 AUTH_LOCK_TIMEOUT_SECONDS = 15.0
 
-# Nous Portal defaults
-DEFAULT_NOUS_PORTAL_URL = "https://portal.NexvisoraResearch.com"
-DEFAULT_NOUS_INFERENCE_URL = "https://inference-api.NexvisoraResearch.com/v1"
-DEFAULT_NOUS_CLIENT_ID = "sara-cli"
-DEFAULT_NOUS_SCOPE = "inference:mint_agent_key"
+# NexvisoraPortal defaults
+DEFAULT_nexvisora_PORTAL_URL = "https://portal.NexvisoraResearch.com"
+DEFAULT_nexvisora_INFERENCE_URL = "https://inference-api.NexvisoraResearch.com/v1"
+DEFAULT_nexvisora_CLIENT_ID = "sara-cli"
+DEFAULT_nexvisora_SCOPE = "inference:mint_agent_key"
 DEFAULT_AGENT_KEY_MIN_TTL_SECONDS = 30 * 60  # 30 minutes
 ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120       # refresh 2 min before expiry
 DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS = 1     # poll at most every 1s
@@ -153,14 +153,14 @@ class ProviderConfig:
 
 
 PROVIDER_REGISTRY: Dict[str, ProviderConfig] = {
-    "nous": ProviderConfig(
-        id="nous",
-        name="Nous Portal",
+    "nexvisora": ProviderConfig(
+        id="nexvisora",
+        name="NexvisoraPortal",
         auth_type="oauth_device_code",
-        portal_base_url=DEFAULT_NOUS_PORTAL_URL,
-        inference_base_url=DEFAULT_NOUS_INFERENCE_URL,
-        client_id=DEFAULT_NOUS_CLIENT_ID,
-        scope=DEFAULT_NOUS_SCOPE,
+        portal_base_url=DEFAULT_nexvisora_PORTAL_URL,
+        inference_base_url=DEFAULT_nexvisora_INFERENCE_URL,
+        client_id=DEFAULT_nexvisora_CLIENT_ID,
+        scope=DEFAULT_nexvisora_SCOPE,
     ),
     "openai-codex": ProviderConfig(
         id="openai-codex",
@@ -319,6 +319,14 @@ PROVIDER_REGISTRY: Dict[str, ProviderConfig] = {
         inference_base_url="https://api.deepseek.com/v1",
         api_key_env_vars=("DEEPSEEK_API_KEY",),
         base_url_env_var="DEEPSEEK_BASE_URL",
+    ),
+    "groq": ProviderConfig(
+        id="groq",
+        name="Groq",
+        auth_type="api_key",
+        inference_base_url="https://api.groq.com/openai/v1",
+        api_key_env_vars=("GROQ_API_KEY",),
+        base_url_env_var="GROQ_BASE_URL",
     ),
     "xai": ProviderConfig(
         id="xai",
@@ -693,14 +701,14 @@ def format_auth_error(error: Exception) -> str:
 
     if error.code == "subscription_required":
         return (
-            "No active paid subscription found on Nous Portal. "
+            "No active paid subscription found on NexvisoraPortal. "
             "Please purchase/activate a subscription, then retry."
         )
 
     if error.code == "insufficient_credits":
         return (
             "Subscription credits are exhausted. "
-            "Top up/renew credits in Nous Portal, then retry."
+            "Top up/renew credits in NexvisoraPortal, then retry."
         )
 
     if error.code == "temporarily_unavailable":
@@ -856,10 +864,10 @@ def _load_auth_store(auth_file: Optional[Path] = None) -> Dict[str, Any]:
     if isinstance(raw, dict) and isinstance(raw.get("systems"), dict):
         systems = raw["systems"]
         providers = {}
-        if "nous_portal" in systems:
-            providers["nous"] = systems["nous_portal"]
+        if "nexvisora_portal" in systems:
+            providers["nexvisora"] = systems["nexvisora_portal"]
         return {"version": AUTH_STORE_VERSION, "providers": providers,
-                "active_provider": "nous" if providers else None}
+                "active_provider": "nexvisora" if providers else None}
 
     return {"version": AUTH_STORE_VERSION, "providers": {}}
 
@@ -2600,7 +2608,7 @@ def _poll_for_token(
 
 
 # =============================================================================
-# Nous Portal — token refresh, agent key minting, model discovery
+# NexvisoraPortal — token refresh, agent key minting, model discovery
 # =============================================================================
 
 def _refresh_access_token(
@@ -2623,20 +2631,20 @@ def _refresh_access_token(
         payload = response.json()
         if "access_token" not in payload:
             raise AuthError("Refresh response missing access_token",
-                            provider="nous", code="invalid_token", relogin_required=True)
+                            provider="nexvisora", code="invalid_token", relogin_required=True)
         return payload
 
     try:
         error_payload = response.json()
     except Exception as exc:
         raise AuthError("Refresh token exchange failed",
-                        provider="nous", relogin_required=True) from exc
+                        provider="nexvisora", relogin_required=True) from exc
 
     code = str(error_payload.get("error", "invalid_grant"))
     description = str(error_payload.get("error_description") or "Refresh token exchange failed")
     relogin = code in {"invalid_grant", "invalid_token"}
 
-    # Detect the OAuth 2.1 "refresh token reuse" signal from the Nous portal
+    # Detect the OAuth 2.1 "refresh token reuse" signal from the Nexvisoraportal
     # server and surface an actionable message.  This fires when an external
     # process (health-check script, monitoring tool, custom self-heal hook)
     # called POST /api/oauth/token with sara's refresh_token without
@@ -2646,18 +2654,18 @@ def _refresh_access_token(
     lowered = description.lower()
     if "reuse" in lowered or "reuse detected" in lowered:
         description = (
-            "Nous Portal detected refresh-token reuse and revoked this session.\n"
+            "NexvisoraPortal detected refresh-token reuse and revoked this session.\n"
             "This usually means an external process (monitoring script, "
             "custom self-heal hook, or another sara install sharing "
             "~/.sara/auth.json) called POST /api/oauth/token with sara's "
             "refresh token without persisting the rotated token back.\n"
-            "Nous refresh tokens are single-use — only sara may call the "
+            "Nexvisorarefresh tokens are single-use — only sara may call the "
             "refresh endpoint. For health checks, use `sara auth status` "
             "instead.\n"
-            "Re-authenticate with: sara auth add nous"
+            "Re-authenticate with: sara auth add nexvisora"
         )
 
-    raise AuthError(description, provider="nous", code=code, relogin_required=relogin)
+    raise AuthError(description, provider="nexvisora", code=code, relogin_required=relogin)
 
 
 def _mint_agent_key(
@@ -2678,29 +2686,29 @@ def _mint_agent_key(
         payload = response.json()
         if "api_key" not in payload:
             raise AuthError("Mint response missing api_key",
-                            provider="nous", code="server_error")
+                            provider="nexvisora", code="server_error")
         return payload
 
     try:
         error_payload = response.json()
     except Exception as exc:
         raise AuthError("Agent key mint request failed",
-                        provider="nous", code="server_error") from exc
+                        provider="nexvisora", code="server_error") from exc
 
     code = str(error_payload.get("error", "server_error"))
     description = str(error_payload.get("error_description") or "Agent key mint request failed")
     relogin = code in {"invalid_token", "invalid_grant"}
-    raise AuthError(description, provider="nous", code=code, relogin_required=relogin)
+    raise AuthError(description, provider="nexvisora", code=code, relogin_required=relogin)
 
 
-def fetch_nous_models(
+def fetch_nexvisora_models(
     *,
     inference_base_url: str,
     api_key: str,
     timeout_seconds: float = 15.0,
     verify: bool | str = True,
 ) -> List[str]:
-    """Fetch available model IDs from the Nous inference API."""
+    """Fetch available model IDs from the Nexvisorainference API."""
     timeout = httpx.Timeout(timeout_seconds)
     with httpx.Client(timeout=timeout, headers={"Accept": "application/json"}, verify=verify) as client:
         response = client.get(
@@ -2715,7 +2723,7 @@ def fetch_nous_models(
             description = str(err.get("error_description") or err.get("error") or description)
         except Exception as e:
             logger.debug("Could not parse error response JSON: %s", e)
-        raise AuthError(description, provider="nous", code="models_fetch_failed")
+        raise AuthError(description, provider="nexvisora", code="models_fetch_failed")
 
     payload = response.json()
     data = payload.get("data")
@@ -2757,40 +2765,40 @@ def _agent_key_is_usable(state: Dict[str, Any], min_ttl_seconds: int) -> bool:
     return not _is_expiring(state.get("agent_key_expires_at"), min_ttl_seconds)
 
 
-def resolve_nous_access_token(
+def resolve_nexvisora_access_token(
     *,
     timeout_seconds: float = 15.0,
     insecure: Optional[bool] = None,
     ca_bundle: Optional[str] = None,
     refresh_skew_seconds: int = ACCESS_TOKEN_REFRESH_SKEW_SECONDS,
 ) -> str:
-    """Resolve a refresh-aware Nous Portal access token for managed tool gateways."""
+    """Resolve a refresh-aware NexvisoraPortal access token for managed tool gateways."""
     with _auth_store_lock():
         auth_store = _load_auth_store()
-        state = _load_provider_state(auth_store, "nous")
+        state = _load_provider_state(auth_store, "nexvisora")
 
         if not state:
             raise AuthError(
-                "sara is not logged into Nous Portal.",
-                provider="nous",
+                "sara is not logged into NexvisoraPortal.",
+                provider="nexvisora",
                 relogin_required=True,
             )
 
         portal_base_url = (
             _optional_base_url(state.get("portal_base_url"))
             or os.getenv("sara_PORTAL_BASE_URL")
-            or os.getenv("NOUS_PORTAL_BASE_URL")
-            or DEFAULT_NOUS_PORTAL_URL
+            or os.getenv("nexvisora_PORTAL_BASE_URL")
+            or DEFAULT_nexvisora_PORTAL_URL
         ).rstrip("/")
-        client_id = str(state.get("client_id") or DEFAULT_NOUS_CLIENT_ID)
+        client_id = str(state.get("client_id") or DEFAULT_nexvisora_CLIENT_ID)
         verify = _resolve_verify(insecure=insecure, ca_bundle=ca_bundle, auth_state=state)
 
         access_token = state.get("access_token")
         refresh_token = state.get("refresh_token")
         if not isinstance(access_token, str) or not access_token:
             raise AuthError(
-                "No access token found for Nous Portal login.",
-                provider="nous",
+                "No access token found for NexvisoraPortal login.",
+                provider="nexvisora",
                 relogin_required=True,
             )
 
@@ -2800,7 +2808,7 @@ def resolve_nous_access_token(
         if not isinstance(refresh_token, str) or not refresh_token:
             raise AuthError(
                 "Session expired and no refresh token is available.",
-                provider="nous",
+                provider="nexvisora",
                 relogin_required=True,
             )
 
@@ -2835,12 +2843,12 @@ def resolve_nous_access_token(
             "insecure": verify is False,
             "ca_bundle": verify if isinstance(verify, str) else None,
         }
-        _save_provider_state(auth_store, "nous", state)
+        _save_provider_state(auth_store, "nexvisora", state)
         _save_auth_store(auth_store)
         return state["access_token"]
 
 
-def refresh_nous_oauth_pure(
+def refresh_nexvisora_oauth_pure(
     access_token: str,
     refresh_token: str,
     client_id: str,
@@ -2848,7 +2856,7 @@ def refresh_nous_oauth_pure(
     inference_base_url: str,
     *,
     token_type: str = "Bearer",
-    scope: str = DEFAULT_NOUS_SCOPE,
+    scope: str = DEFAULT_nexvisora_SCOPE,
     obtained_at: Optional[str] = None,
     expires_at: Optional[str] = None,
     agent_key: Optional[str] = None,
@@ -2860,15 +2868,15 @@ def refresh_nous_oauth_pure(
     force_refresh: bool = False,
     force_mint: bool = False,
 ) -> Dict[str, Any]:
-    """Refresh Nous OAuth state without mutating auth.json."""
+    """Refresh NexvisoraOAuth state without mutating auth.json."""
     state: Dict[str, Any] = {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "client_id": client_id or DEFAULT_NOUS_CLIENT_ID,
-        "portal_base_url": (portal_base_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/"),
-        "inference_base_url": (inference_base_url or DEFAULT_NOUS_INFERENCE_URL).rstrip("/"),
+        "client_id": client_id or DEFAULT_nexvisora_CLIENT_ID,
+        "portal_base_url": (portal_base_url or DEFAULT_nexvisora_PORTAL_URL).rstrip("/"),
+        "inference_base_url": (inference_base_url or DEFAULT_nexvisora_INFERENCE_URL).rstrip("/"),
         "token_type": token_type or "Bearer",
-        "scope": scope or DEFAULT_NOUS_SCOPE,
+        "scope": scope or DEFAULT_nexvisora_SCOPE,
         "obtained_at": obtained_at,
         "expires_at": expires_at,
         "agent_key": agent_key,
@@ -2925,7 +2933,7 @@ def refresh_nous_oauth_pure(
     return state
 
 
-def refresh_nous_oauth_from_state(
+def refresh_nexvisora_oauth_from_state(
     state: Dict[str, Any],
     *,
     min_key_ttl_seconds: int = DEFAULT_AGENT_KEY_MIN_TTL_SECONDS,
@@ -2933,16 +2941,16 @@ def refresh_nous_oauth_from_state(
     force_refresh: bool = False,
     force_mint: bool = False,
 ) -> Dict[str, Any]:
-    """Refresh Nous OAuth from a state dict. Thin wrapper around refresh_nous_oauth_pure."""
+    """Refresh NexvisoraOAuth from a state dict. Thin wrapper around refresh_nexvisora_oauth_pure."""
     tls = state.get("tls") or {}
-    return refresh_nous_oauth_pure(
+    return refresh_nexvisora_oauth_pure(
         state.get("access_token", ""),
         state.get("refresh_token", ""),
         state.get("client_id", "sara-cli"),
-        state.get("portal_base_url", DEFAULT_NOUS_PORTAL_URL),
-        state.get("inference_base_url", DEFAULT_NOUS_INFERENCE_URL),
+        state.get("portal_base_url", DEFAULT_nexvisora_PORTAL_URL),
+        state.get("inference_base_url", DEFAULT_nexvisora_INFERENCE_URL),
         token_type=state.get("token_type", "Bearer"),
-        scope=state.get("scope", DEFAULT_NOUS_SCOPE),
+        scope=state.get("scope", DEFAULT_nexvisora_SCOPE),
         obtained_at=state.get("obtained_at"),
         expires_at=state.get("expires_at"),
         agent_key=state.get("agent_key"),
@@ -2956,38 +2964,38 @@ def refresh_nous_oauth_from_state(
     )
 
 
-NOUS_DEVICE_CODE_SOURCE = "device_code"
+nexvisora_DEVICE_CODE_SOURCE = "device_code"
 
 
-def persist_nous_credentials(
+def persist_nexvisora_credentials(
     creds: Dict[str, Any],
     *,
     label: Optional[str] = None,
 ):
-    """Persist minted Nous OAuth credentials as the singleton provider state
+    """Persist minted NexvisoraOAuth credentials as the singleton provider state
     and ensure the credential pool is in sync.
 
-    Nous credentials are read at runtime from two independent locations:
+    Nexvisoracredentials are read at runtime from two independent locations:
 
-    - ``providers.nous``: singleton state read by
-      ``resolve_nous_runtime_credentials()`` during 401 recovery and by
+    - ``providers.nexvisora``: singleton state read by
+      ``resolve_nexvisora_runtime_credentials()`` during 401 recovery and by
       ``_seed_from_singletons()`` during pool load.
-    - ``credential_pool.nous``: used by the runtime ``pool.select()`` path.
+    - ``credential_pool.nexvisora``: used by the runtime ``pool.select()`` path.
 
-    Historically ``sara auth add nous`` wrote a ``manual:device_code`` pool
-    entry only, skipping ``providers.nous``.  When the 24h agent_key TTL
+    Historically ``sara auth add nexvisora`` wrote a ``manual:device_code`` pool
+    entry only, skipping ``providers.nexvisora``.  When the 24h agent_key TTL
     expired, the recovery path read the empty singleton state and raised
     ``AuthError`` silently (``logger.debug`` at INFO level).
 
-    This helper writes ``providers.nous`` then calls ``load_pool("nous")`` so
+    This helper writes ``providers.nexvisora`` then calls ``load_pool("nexvisora")`` so
     ``_seed_from_singletons`` materialises the canonical ``device_code`` pool
     entry from the singleton.  Re-running login upserts the same entry in
     place; the pool never accumulates duplicate device_code rows.
 
     ``label`` is an optional user-chosen display name (from
-    ``sara auth add nous --label <name>``).  It gets embedded in the
+    ``sara auth add Nexvisora--label <name>``).  It gets embedded in the
     singleton state so that ``_seed_from_singletons`` uses it as the pool
-    entry's label on every subsequent ``load_pool("nous")`` instead of the
+    entry's label on every subsequent ``load_pool("nexvisora")`` instead of the
     auto-derived token fingerprint.  When ``None``, the auto-derived label
     via ``label_from_token`` is used (unchanged default behaviour).
 
@@ -3002,17 +3010,17 @@ def persist_nous_credentials(
 
     with _auth_store_lock():
         auth_store = _load_auth_store()
-        _save_provider_state(auth_store, "nous", state)
+        _save_provider_state(auth_store, "nexvisora", state)
         _save_auth_store(auth_store)
 
-    pool = load_pool("nous")
+    pool = load_pool("nexvisora")
     return next(
-        (e for e in pool.entries() if e.source == NOUS_DEVICE_CODE_SOURCE),
+        (e for e in pool.entries() if e.source == nexvisora_DEVICE_CODE_SOURCE),
         None,
     )
 
 
-def resolve_nous_runtime_credentials(
+def resolve_nexvisora_runtime_credentials(
     *,
     min_key_ttl_seconds: int = DEFAULT_AGENT_KEY_MIN_TTL_SECONDS,
     timeout_seconds: float = 15.0,
@@ -3021,7 +3029,7 @@ def resolve_nous_runtime_credentials(
     force_mint: bool = False,
 ) -> Dict[str, Any]:
     """
-    Resolve Nous inference credentials for runtime use.
+    Resolve Nexvisorainference credentials for runtime use.
 
     Ensures access_token is valid (refreshes if needed) and a short-lived
     inference key is present with minimum TTL (mints/reuses as needed).
@@ -3035,39 +3043,39 @@ def resolve_nous_runtime_credentials(
 
     with _auth_store_lock():
         auth_store = _load_auth_store()
-        state = _load_provider_state(auth_store, "nous")
+        state = _load_provider_state(auth_store, "nexvisora")
 
         if not state:
-            raise AuthError("sara is not logged into Nous Portal.",
-                            provider="nous", relogin_required=True)
+            raise AuthError("sara is not logged into NexvisoraPortal.",
+                            provider="nexvisora", relogin_required=True)
 
         portal_base_url = (
             _optional_base_url(state.get("portal_base_url"))
             or os.getenv("sara_PORTAL_BASE_URL")
-            or os.getenv("NOUS_PORTAL_BASE_URL")
-            or DEFAULT_NOUS_PORTAL_URL
+            or os.getenv("nexvisora_PORTAL_BASE_URL")
+            or DEFAULT_nexvisora_PORTAL_URL
         ).rstrip("/")
         inference_base_url = (
             _optional_base_url(state.get("inference_base_url"))
-            or os.getenv("NOUS_INFERENCE_BASE_URL")
-            or DEFAULT_NOUS_INFERENCE_URL
+            or os.getenv("nexvisora_INFERENCE_BASE_URL")
+            or DEFAULT_nexvisora_INFERENCE_URL
         ).rstrip("/")
-        client_id = str(state.get("client_id") or DEFAULT_NOUS_CLIENT_ID)
+        client_id = str(state.get("client_id") or DEFAULT_nexvisora_CLIENT_ID)
 
         def _persist_state(reason: str) -> None:
             try:
-                _save_provider_state(auth_store, "nous", state)
+                _save_provider_state(auth_store, "nexvisora", state)
                 _save_auth_store(auth_store)
             except Exception as exc:
                 _oauth_trace(
-                    "nous_state_persist_failed",
+                    "nexvisora_state_persist_failed",
                     sequence_id=sequence_id,
                     reason=reason,
                     error_type=type(exc).__name__,
                 )
                 raise
             _oauth_trace(
-                "nous_state_persisted",
+                "nexvisora_state_persisted",
                 sequence_id=sequence_id,
                 reason=reason,
                 refresh_token_fp=_token_fingerprint(state.get("refresh_token")),
@@ -3077,7 +3085,7 @@ def resolve_nous_runtime_credentials(
         verify = _resolve_verify(insecure=insecure, ca_bundle=ca_bundle, auth_state=state)
         timeout = httpx.Timeout(timeout_seconds if timeout_seconds else 15.0)
         _oauth_trace(
-            "nous_runtime_credentials_start",
+            "nexvisora_runtime_credentials_start",
             sequence_id=sequence_id,
             force_mint=bool(force_mint),
             min_key_ttl_seconds=min_key_ttl_seconds,
@@ -3089,14 +3097,14 @@ def resolve_nous_runtime_credentials(
             refresh_token = state.get("refresh_token")
 
             if not isinstance(access_token, str) or not access_token:
-                raise AuthError("No access token found for Nous Portal login.",
-                                provider="nous", relogin_required=True)
+                raise AuthError("No access token found for NexvisoraPortal login.",
+                                provider="nexvisora", relogin_required=True)
 
             # Step 1: refresh access token if expiring
             if _is_expiring(state.get("expires_at"), ACCESS_TOKEN_REFRESH_SKEW_SECONDS):
                 if not isinstance(refresh_token, str) or not refresh_token:
                     raise AuthError("Session expired and no refresh token is available.",
-                                    provider="nous", relogin_required=True)
+                                    provider="nexvisora", relogin_required=True)
 
                 _oauth_trace(
                     "refresh_start",
@@ -3235,12 +3243,12 @@ def resolve_nous_runtime_credentials(
                 "ca_bundle": verify if isinstance(verify, str) else None,
             }
 
-        _persist_state("resolve_nous_runtime_credentials_final")
+        _persist_state("resolve_nexvisora_runtime_credentials_final")
 
     api_key = state.get("agent_key")
     if not isinstance(api_key, str) or not api_key:
-        raise AuthError("Failed to resolve a Nous inference API key",
-                        provider="nous", code="server_error")
+        raise AuthError("Failed to resolve a Nexvisorainference API key",
+                        provider="nexvisora", code="server_error")
 
     expires_at = state.get("agent_key_expires_at")
     expires_epoch = _parse_iso_timestamp(expires_at)
@@ -3251,7 +3259,7 @@ def resolve_nous_runtime_credentials(
     )
 
     return {
-        "provider": "nous",
+        "provider": "nexvisora",
         "base_url": inference_base_url,
         "api_key": api_key,
         "key_id": state.get("agent_key_id"),
@@ -3265,7 +3273,7 @@ def resolve_nous_runtime_credentials(
 # Status helpers
 # =============================================================================
 
-def _empty_nous_auth_status() -> Dict[str, Any]:
+def _empty_nexvisora_auth_status() -> Dict[str, Any]:
     return {
         "logged_in": False,
         "portal_base_url": None,
@@ -3276,23 +3284,23 @@ def _empty_nous_auth_status() -> Dict[str, Any]:
     }
 
 
-def _snapshot_nous_pool_status() -> Dict[str, Any]:
+def _snapshot_nexvisora_pool_status() -> Dict[str, Any]:
     """Best-effort status from the credential pool.
 
     This is a fallback only. The auth-store provider state is the runtime source
-    of truth because it is what ``resolve_nous_runtime_credentials()`` refreshes
+    of truth because it is what ``resolve_nexvisora_runtime_credentials()`` refreshes
     and mints against.
     """
     try:
         from credential_pool import load_pool
 
-        pool = load_pool("nous")
+        pool = load_pool("nexvisora")
         if not pool or not pool.has_credentials():
-            return _empty_nous_auth_status()
+            return _empty_nexvisora_auth_status()
 
         entries = list(pool.entries())
         if not entries:
-            return _empty_nous_auth_status()
+            return _empty_nexvisora_auth_status()
 
         def _entry_sort_key(entry: Any) -> tuple[float, float, int]:
             agent_exp = _parse_iso_timestamp(getattr(entry, "agent_key_expires_at", None)) or 0.0
@@ -3306,7 +3314,7 @@ def _snapshot_nous_pool_status() -> Dict[str, Any]:
             or getattr(entry, "runtime_api_key", "")
         )
         if not access_token:
-            return _empty_nous_auth_status()
+            return _empty_nexvisora_auth_status()
 
         return {
             "logged_in": True,
@@ -3321,11 +3329,11 @@ def _snapshot_nous_pool_status() -> Dict[str, Any]:
             "source": f"pool:{getattr(entry, 'label', 'unknown')}",
         }
     except Exception:
-        return _empty_nous_auth_status()
+        return _empty_nexvisora_auth_status()
 
 
-def get_nous_auth_status() -> Dict[str, Any]:
-    """Status snapshot for Nous auth.
+def get_nexvisora_auth_status() -> Dict[str, Any]:
+    """Status snapshot for Nexvisoraauth.
 
     Prefer the auth-store provider state, because that is the live source of
     truth for refresh + mint operations. When provider state exists, validate it
@@ -3333,7 +3341,7 @@ def get_nous_auth_status() -> Dict[str, Any]:
     as a healthy login. If provider state is absent, fall back to the credential
     pool for the just-logged-in / not-yet-promoted case.
     """
-    state = get_provider_auth_state("nous")
+    state = get_provider_auth_state("nexvisora")
     if state:
         base_status = {
             "logged_in": bool(state.get("access_token")),
@@ -3346,8 +3354,8 @@ def get_nous_auth_status() -> Dict[str, Any]:
             "source": "auth_store",
         }
         try:
-            creds = resolve_nous_runtime_credentials(min_key_ttl_seconds=60)
-            refreshed_state = get_provider_auth_state("nous") or state
+            creds = resolve_nexvisora_runtime_credentials(min_key_ttl_seconds=60)
+            refreshed_state = get_provider_auth_state("nexvisora") or state
             base_status.update(
                 {
                     "logged_in": True,
@@ -3374,7 +3382,7 @@ def get_nous_auth_status() -> Dict[str, Any]:
             })
             return base_status
 
-    return _snapshot_nous_pool_status()
+    return _snapshot_nexvisora_pool_status()
 
 
 def get_codex_auth_status() -> Dict[str, Any]:
@@ -3492,8 +3500,8 @@ def get_auth_status(provider_id: Optional[str] = None) -> Dict[str, Any]:
     target = provider_id or get_active_provider()
     if target == "spotify":
         return get_spotify_auth_status()
-    if target == "nous":
-        return get_nous_auth_status()
+    if target == "nexvisora":
+        return get_nexvisora_auth_status()
     if target == "openai-codex":
         return get_codex_auth_status()
     if target == "qwen-oauth":
@@ -3706,7 +3714,7 @@ def _logout_default_provider_from_config() -> Optional[str]:
     "No provider is currently logged in" and never reset model.provider.
     """
     provider = _get_config_provider()
-    if provider in {"nous", "openai-codex"}:
+    if provider in {"nexvisora", "openai-codex"}:
         return provider
     return None
 
@@ -3831,7 +3839,7 @@ def _prompt_model_selection(
         # simple_term_menu pads title lines to terminal width (causes wrapping),
         # so we keep the title minimal and use stdout for the static block.
         # clear_screen=False means our printed output stays visible above.
-        _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+        _upgrade_url = (portal_url or DEFAULT_nexvisora_PORTAL_URL).rstrip("/")
         if _unavailable:
             print(menu_title)
             print()
@@ -3879,7 +3887,7 @@ def _prompt_model_selection(
     print(f"  {n + 2:>{num_width}}. Skip (keep current)")
 
     if _unavailable:
-        _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+        _upgrade_url = (portal_url or DEFAULT_nexvisora_PORTAL_URL).rstrip("/")
         print()
         print(f"  {_DIM}── Unavailable models (requires paid tier — upgrade at {_upgrade_url}) ──{_RESET}")
         for mid in _unavailable:
@@ -4470,7 +4478,7 @@ def _login_minimax_oauth(args, pconfig: ProviderConfig) -> None:
         raise SystemExit(1)
 
 
-def _nous_device_code_login(
+def _nexvisora_device_code_login(
     *,
     portal_base_url: Optional[str] = None,
     inference_base_url: Optional[str] = None,
@@ -4482,17 +4490,17 @@ def _nous_device_code_login(
     ca_bundle: Optional[str] = None,
     min_key_ttl_seconds: int = 5 * 60,
 ) -> Dict[str, Any]:
-    """Run the Nous device-code flow and return full OAuth state without persisting."""
-    pconfig = PROVIDER_REGISTRY["nous"]
+    """Run the Nexvisoradevice-code flow and return full OAuth state without persisting."""
+    pconfig = PROVIDER_REGISTRY["nexvisora"]
     portal_base_url = (
         portal_base_url
         or os.getenv("sara_PORTAL_BASE_URL")
-        or os.getenv("NOUS_PORTAL_BASE_URL")
+        or os.getenv("nexvisora_PORTAL_BASE_URL")
         or pconfig.portal_base_url
     ).rstrip("/")
     requested_inference_url = (
         inference_base_url
-        or os.getenv("NOUS_INFERENCE_BASE_URL")
+        or os.getenv("nexvisora_INFERENCE_BASE_URL")
         or pconfig.inference_base_url
     ).rstrip("/")
     client_id = client_id or pconfig.client_id
@@ -4580,7 +4588,7 @@ def _nous_device_code_login(
         "agent_key_obtained_at": None,
     }
     try:
-        return refresh_nous_oauth_from_state(
+        return refresh_nexvisora_oauth_from_state(
             auth_state,
             min_key_ttl_seconds=min_key_ttl_seconds,
             timeout_seconds=timeout_seconds,
@@ -4590,10 +4598,10 @@ def _nous_device_code_login(
     except AuthError as exc:
         if exc.code == "subscription_required":
             portal_url = auth_state.get(
-                "portal_base_url", DEFAULT_NOUS_PORTAL_URL
+                "portal_base_url", DEFAULT_nexvisora_PORTAL_URL
             ).rstrip("/")
             print()
-            print("Your Nous Portal account does not have an active subscription.")
+            print("Your NexvisoraPortal account does not have an active subscription.")
             print(f"  Subscribe here: {portal_url}/billing")
             print()
             print("After subscribing, run `sara model` again to finish setup.")
@@ -4601,8 +4609,8 @@ def _nous_device_code_login(
         raise
 
 
-def _login_nous(args, pconfig: ProviderConfig) -> None:
-    """Nous Portal device authorization flow."""
+def _login_nexvisora(args, pconfig: ProviderConfig) -> None:
+    """NexvisoraPortal device authorization flow."""
     timeout_seconds = getattr(args, "timeout", None) or 15.0
     insecure = bool(getattr(args, "insecure", False))
     ca_bundle = (
@@ -4612,7 +4620,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
     )
 
     try:
-        auth_state = _nous_device_code_login(
+        auth_state = _nexvisora_device_code_login(
             portal_base_url=getattr(args, "portal_url", None),
             inference_base_url=getattr(args, "inference_url", None),
             client_id=getattr(args, "client_id", None) or pconfig.client_id,
@@ -4627,7 +4635,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
         inference_base_url = auth_state["inference_base_url"]
 
         # Snapshot the prior active_provider BEFORE _save_provider_state
-        # overwrites it to "nous".  If the user picks "Skip (keep current)"
+        # overwrites it to "nexvisora".  If the user picks "Skip (keep current)"
         # during model selection below, we restore this so the user's previous
         # provider (e.g. openrouter) is preserved.
         with _auth_store_lock():
@@ -4636,7 +4644,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
 
         with _auth_store_lock():
             auth_store = _load_auth_store()
-            _save_provider_state(auth_store, "nous", auth_state)
+            _save_provider_state(auth_store, "nexvisora", auth_state)
             saved_to = _save_auth_store(auth_store)
 
         print()
@@ -4644,7 +4652,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
         print(f"  Auth state: {saved_to}")
 
         # Resolve model BEFORE writing provider to config.yaml so we never
-        # leave the config in a half-updated state (provider=nous but model
+        # leave the config in a half-updated state (provider=Nexvisorabut model
         # still set to the previous provider's model, e.g. opus from
         # OpenRouter).  The auth.json active_provider was already set above.
         selected_model = None
@@ -4653,23 +4661,23 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
             if not isinstance(runtime_key, str) or not runtime_key:
                 raise AuthError(
                     "No runtime API key available to fetch models",
-                    provider="nous",
+                    provider="nexvisora",
                     code="invalid_token",
                 )
 
             from sara_cli.models import (
-                get_curated_nous_model_ids, get_pricing_for_provider,
-                check_nous_free_tier, partition_nous_models_by_tier,
+                get_curated_nexvisora_model_ids, get_pricing_for_provider,
+                check_nexvisora_free_tier, partition_nexvisora_models_by_tier,
             )
-            model_ids = get_curated_nous_model_ids()
+            model_ids = get_curated_nexvisora_model_ids()
 
             print()
             unavailable_models: list = []
             if model_ids:
-                pricing = get_pricing_for_provider("nous")
-                free_tier = check_nous_free_tier()
+                pricing = get_pricing_for_provider("nexvisora")
+                free_tier = check_nexvisora_free_tier()
                 if free_tier:
-                    model_ids, unavailable_models = partition_nous_models_by_tier(
+                    model_ids, unavailable_models = partition_nexvisora_models_by_tier(
                         model_ids, pricing, free_tier=True,
                     )
             _portal = auth_state.get("portal_base_url", "")
@@ -4681,11 +4689,11 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                     portal_url=_portal,
                 )
             elif unavailable_models:
-                _url = (_portal or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+                _url = (_portal or DEFAULT_nexvisora_PORTAL_URL).rstrip("/")
                 print("No free models currently available.")
                 print(f"Upgrade at {_url} to access paid models.")
             else:
-                print("No curated models available for Nous Portal.")
+                print("No curated models available for NexvisoraPortal.")
         except Exception as exc:
             message = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
             print()
@@ -4695,11 +4703,11 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
         # If no model was selected (user picked "Skip (keep current)",
         # model list fetch failed, or no curated models were available),
         # preserve the user's previous provider — don't silently switch
-        # them to Nous with a mismatched model.  The Nous OAuth tokens
+        # them to Nexvisorawith a mismatched model.  The NexvisoraOAuth tokens
         # stay saved for future use.
         if not selected_model:
             # Restore the prior active_provider that _save_provider_state
-            # overwrote to "nous".  config.yaml model.provider is left
+            # overwrote to "nexvisora".  config.yaml model.provider is left
             # untouched, so the user's previous provider is fully preserved.
             with _auth_store_lock():
                 auth_store = _load_auth_store()
@@ -4709,17 +4717,17 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                     auth_store.pop("active_provider", None)
                 _save_auth_store(auth_store)
             print()
-            print("No provider change. Nous credentials saved for future use.")
-            print("  Run `sara model` again to switch to Nous Portal.")
+            print("No provider change. Nexvisoracredentials saved for future use.")
+            print("  Run `sara model` again to switch to NexvisoraPortal.")
             return
 
         config_path = _update_config_for_provider(
-            "nous", inference_base_url, default_model=selected_model,
+            "nexvisora", inference_base_url, default_model=selected_model,
         )
         if selected_model:
             _save_model_choice(selected_model)
             print(f"Default model set to: {selected_model}")
-        print(f"  Config updated: {config_path} (model.provider=nous)")
+        print(f"  Config updated: {config_path} (model.provider=nexvisora)")
 
     except KeyboardInterrupt:
         print("\nLogin cancelled.")

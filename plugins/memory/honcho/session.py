@@ -347,7 +347,7 @@ class HonchoSessionManager:
         return session
 
     def _flush_session(self, session: HonchoSession) -> bool:
-        """Internal: write unsynced messages to Honcho synchronously."""
+        """Internal: write unsynced messages to Honcho synchronexvisoraly."""
         if not session.messages:
             return True
 
@@ -429,7 +429,7 @@ class HonchoSessionManager:
 
         write_frequency modes:
           "async"   — enqueue for background thread (zero blocking, zero token cost)
-          "turn"    — flush synchronously every turn
+          "turn"    — flush synchronexvisoraly every turn
           "session" — defer until flush_session() is called explicitly
           N (int)   — flush every N turns
         """
@@ -462,7 +462,7 @@ class HonchoSessionManager:
             except Exception as e:
                 logger.error("Honcho flush_all error for %s: %s", session.key, e)
 
-        # Drain async queue synchronously if it exists
+        # Drain async queue synchronexvisoraly if it exists
         if self._async_queue is not None:
             while not self._async_queue.empty():
                 try:
@@ -595,7 +595,7 @@ class HonchoSessionManager:
         Fire get_prefetch_context in a background thread, caching the result.
 
         Non-blocking. Consumed next turn via pop_context_result(). This avoids
-        a synchronous HTTP round-trip blocking every response.
+        a synchroNexvisoraHTTP round-trip blocking every response.
         """
         def _run():
             result = self.get_prefetch_context(session_key, user_message)

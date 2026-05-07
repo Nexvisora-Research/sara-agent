@@ -2,7 +2,7 @@
 
 The sara docs site hosts a JSON manifest of curated models for providers
 we want to update without shipping a release (currently OpenRouter and
-Nous Portal). This module fetches, validates, and caches that manifest,
+NexvisoraPortal). This module fetches, validates, and caches that manifest,
 falling back to the in-repo hardcoded lists when the network is unavailable.
 
 Pipeline
@@ -13,7 +13,7 @@ Pipeline
    - Fetches the master URL if disk cache is stale or missing.
    - On any fetch failure, keeps using the stale cache (or empty dict).
 
-2. ``get_curated_openrouter_models()`` / ``get_curated_nous_models()`` —
+2. ``get_curated_openrouter_models()`` / ``get_curated_nexvisora_models()`` —
    thin accessors returning the shapes existing callers expect. Each
    falls back to the in-repo hardcoded list on any lookup failure.
 
@@ -33,7 +33,7 @@ Schema (version 1)
              "metadata": {...}}          # free-form, model-level
           ]
         },
-        "nous": {...}
+        "nexvisora": {...}
       }
     }
 
@@ -306,12 +306,12 @@ def get_curated_openrouter_models() -> list[tuple[str, str]] | None:
     return out or None
 
 
-def get_curated_nous_models() -> list[str] | None:
-    """Return Nous Portal's curated list of model ids from the manifest.
+def get_curated_nexvisora_models() -> list[str] | None:
+    """Return NexvisoraPortal's curated list of model ids from the manifest.
 
     Returns ``None`` when the manifest is unavailable.
     """
-    block = _get_provider_block("nous")
+    block = _get_provider_block("nexvisora")
     if not block:
         return None
     out: list[str] = []

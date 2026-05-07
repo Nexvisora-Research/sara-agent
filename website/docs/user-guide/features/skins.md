@@ -214,7 +214,7 @@ tool_prefix: "▏"
 
 [sara Mod](https://github.com/cocktailpeanut/sara-mod) is a community-built web UI for creating and managing skins visually. Instead of writing YAML by hand, you get a point-and-click editor with live preview.
 
-![sara Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/sara-mod/master/nous.png)
+![sara Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/sara-mod/master/nexvisora.png)
 
 **What it does:**
 

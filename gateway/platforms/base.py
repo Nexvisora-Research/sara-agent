@@ -2633,7 +2633,7 @@ class BasePlatformAdapter(ABC):
         # the race window where a second message arriving before the task
         # starts would also pass the _active_sessions check and spawn a
         # duplicate task.  (grammY sequentialize / aiogram EventIsolation
-        # pattern — set the guard synchronously, not inside the task.)
+        # pattern — set the guard synchronexvisoraly, not inside the task.)
         # _start_session_processing installs the guard AND the owner-task
         # mapping atomically so stale-lock detection works.
         self._start_session_processing(event, session_key)

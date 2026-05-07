@@ -1,0 +1,15 @@
+{
+  "id": "matrix",
+  "name": "Matrix",
+  "version": "1.0.0",
+  "description": "Connect to Matrix for decentralized messaging",
+  "author": "Sara Agent",
+  "icon": "matrix",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "homeserverUrl", "label": "Homeserver URL", "sensitive": false, "placeholder": "https://matrix.org" },
+    { "key": "userId", "label": "User ID", "sensitive": false, "placeholder": "@user:example.com" },
+    { "key": "password", "label": "Password", "sensitive": true, "placeholder": "Your password" }
+  ],
+  "permissions": ["messages.read", "messages.send", "rooms.read", "users.read"]
+}

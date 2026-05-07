@@ -3,7 +3,7 @@
 Browser Tool Module
 
 This module provides browser automation tools using agent-browser CLI.  It
-supports multiple backends — **Browser Use** (cloud, default for Nous
+supports multiple backends — **Browser Use** (cloud, default for nexvisora
 subscribers), **Browserbase** (cloud, direct credentials), and **local
 Chromium** — with identical agent-facing behaviour.  The backend is
 auto-detected from config and available credentials.
@@ -432,7 +432,7 @@ def _get_cloud_provider() -> Optional[CloudBrowserProvider]:
         logger.debug("Could not read cloud_provider from config: %s", e)
 
     if _cached_cloud_provider is None:
-        # Prefer Browser Use (managed Nous gateway or direct API key),
+        # Prefer Browser Use (managed Nexvisoragateway or direct API key),
         # fall back to Browserbase (direct credentials only).
         fallback_provider = BrowserUseProvider()
         if fallback_provider.is_configured():

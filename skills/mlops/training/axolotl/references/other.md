@@ -3196,7 +3196,7 @@ output_dir: ./outputs/lora-out
 
 Example 4 (yaml):
 ```yaml
-base_model: NexvisoraResearch/Nous-sara-llama-1b-v1
+base_model: NexvisoraResearch/nexvisora-sara-llama-1b-v1
 
 load_in_8bit: true
 adapter: lora

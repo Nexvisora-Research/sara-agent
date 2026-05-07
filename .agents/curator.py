@@ -1228,7 +1228,7 @@ def _render_candidate_list() -> str:
 
 def run_curator_review(
     on_summary: Optional[Callable[[str], None]] = None,
-    synchronous: bool = False,
+    synchronexvisora: bool = False,
     dry_run: bool = False,
 ) -> Dict[str, Any]:
     """Execute a single curator review pass.
@@ -1240,7 +1240,7 @@ def run_curator_review(
       3. Update .curator_state with last_run_at and a one-line summary.
       4. Invoke *on_summary* with a user-visible description.
 
-    If *synchronous* is True, the LLM review runs in the calling thread; the
+    If *synchronexvisora* is True, the LLM review runs in the calling thread; the
     default is to spawn a daemon thread so the caller returns immediately.
 
     If *dry_run* is True, the automatic stale/archive transitions are SKIPPED
@@ -1385,7 +1385,7 @@ def run_curator_review(
             except Exception:
                 pass
 
-    if synchronous:
+    if synchronexvisora:
         _llm_pass()
     else:
         t = threading.Thread(target=_llm_pass, daemon=True, name="curator-review")
@@ -1531,7 +1531,7 @@ def _run_llm_review(prompt: str) -> Dict[str, Any]:
         # runs so its tool-call chatter doesn't pollute the foreground
         # terminal. The background-thread runner also hides it; this
         # belt-and-suspenders path matters when a caller invokes
-        # run_curator_review(synchronous=True) from the CLI.
+        # run_curator_review(synchronexvisora=True) from the CLI.
         with open(os.devnull, "w") as _devnull, \
              contextlib.redirect_stdout(_devnull), \
              contextlib.redirect_stderr(_devnull):

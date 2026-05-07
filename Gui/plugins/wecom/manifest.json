@@ -1,0 +1,15 @@
+{
+  "id": "wecom",
+  "name": "WeCom (Enterprise WeChat)",
+  "version": "1.0.0",
+  "description": "Connect to WeCom for enterprise communication",
+  "author": "Sara Agent",
+  "icon": "wecom",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "corpId", "label": "Corp ID", "sensitive": false, "placeholder": "Your Corp ID" },
+    { "key": "agentId", "label": "Agent ID", "sensitive": false, "placeholder": "Your Agent ID" },
+    { "key": "agentSecret", "label": "Agent Secret", "sensitive": true, "placeholder": "Your Agent Secret" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read", "departments.read"]
+}

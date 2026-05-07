@@ -50,7 +50,7 @@ sara_OVERLAYS: Dict[str, saraOverlay] = {
         extra_env_vars=("OPENAI_API_KEY",),
         base_url_env_var="OPENROUTER_BASE_URL",
     ),
-    "nous": saraOverlay(
+    "nexvisora": saraOverlay(
         transport="openai_chat",
         auth_type="oauth_device_code",
         base_url_override="https://inference-api.NexvisoraResearch.com/v1",
@@ -123,6 +123,12 @@ sara_OVERLAYS: Dict[str, saraOverlay] = {
     "deepseek": saraOverlay(
         transport="openai_chat",
         base_url_env_var="DEEPSEEK_BASE_URL",
+    ),
+    "groq": saraOverlay(
+        transport="openai_chat",
+        extra_env_vars=("GROQ_API_KEY",),
+        base_url_override="https://api.groq.com/openai/v1",
+        base_url_env_var="GROQ_BASE_URL",
     ),
     "alibaba": saraOverlay(
         transport="openai_chat",
@@ -355,7 +361,7 @@ ALIASES: Dict[str, str] = {
 # not in the catalog.
 
 _LABEL_OVERRIDES: Dict[str, str] = {
-    "nous": "Nous Portal",
+    "nexvisora": "NexvisoraPortal",
     "openai-codex": "OpenAI Codex",
     "copilot-acp": "GitHub Copilot ACP",
     "stepfun": "StepFun Step Plan",
@@ -367,6 +373,7 @@ _LABEL_OVERRIDES: Dict[str, str] = {
     "bedrock": "AWS Bedrock",
     "ollama-cloud": "Ollama Cloud",
     "ollama-local": "Ollama (local)",
+    "groq": "Groq",
 }
 
 
@@ -396,7 +403,7 @@ def get_provider(name: str) -> Optional[ProviderDef]:
     """Look up a built-in provider by id or alias.
 
     Resolution order:
-      1. sara overlays (for providers not in models.dev: nous, openai-codex, etc.)
+      1. sara overlays (for providers not in models.dev: nexvisora, openai-codex, etc.)
       2. models.dev catalog + sara overlay
 
     User-defined providers from config.yaml (``providers:`` / ``custom_providers:``)
