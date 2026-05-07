@@ -1,0 +1,13 @@
+{
+  "id": "discord",
+  "name": "Discord",
+  "version": "1.0.0",
+  "description": "Connect to Discord via API",
+  "author": "Sara Agent",
+  "icon": "discord",
+  "platforms": ["win", "linux", "android", "mac"],
+  "requiredCredentials": [
+    { "key": "token", "label": "Discord Token", "sensitive": true, "placeholder": "Your Discord Token" }
+  ],
+  "permissions": ["messages.read", "messages.send", "guilds.read", "channels.read"]
+}

@@ -1,7 +1,7 @@
 """OpenAI Chat Completions transport.
 
 Handles the default api_mode ('chat_completions') used by ~16 OpenAI-compatible
-providers (OpenRouter, Nous, NVIDIA, Qwen, Ollama, DeepSeek, xAI, Kimi, etc.).
+providers (OpenRouter, nexvisora, NVIDIA, Qwen, Ollama, DeepSeek, xAI, Kimi, etc.).
 
 Messages and tools are already in OpenAI format — convert_messages and
 convert_tools are near-identity.  The complexity lives in build_kwargs
@@ -177,7 +177,7 @@ class ChatCompletionsTransport(ProviderTransport):
             model_lower: str — lowercase model name for pattern matching
             # Provider detection flags (all optional, default False)
             is_openrouter: bool
-            is_nous: bool
+            is_nexvisora: bool
             is_qwen_portal: bool
             is_github_models: bool
             is_nvidia_nim: bool
@@ -197,7 +197,7 @@ class ChatCompletionsTransport(ProviderTransport):
             supports_reasoning: bool
             github_reasoning_extra: dict | None
             lmstudio_reasoning_options: list[str] | None  # raw allowed_options from /api/v1/models
-            # Claude on OpenRouter/Nous max output
+            # Claude on OpenRouter/Nexvisoramax output
             anthropic_max_output: int | None
             # Extra
             extra_body_additions: dict | None — pre-built extra_body entries
@@ -258,7 +258,7 @@ class ChatCompletionsTransport(ProviderTransport):
         # Tools
         if tools:
             # Moonshot/Kimi uses a stricter flavored JSON Schema.  Rewriting
-            # tool parameters here keeps aggregator routes (Nous, OpenRouter,
+            # tool parameters here keeps aggregator routes (nexvisora, OpenRouter,
             # etc.) compatible, in addition to direct moonshot.ai endpoints.
             if is_moonshot_model(model):
                 tools = sanitize_moonshot_tools(tools)
@@ -334,7 +334,7 @@ class ChatCompletionsTransport(ProviderTransport):
         extra_body: Dict[str, Any] = {}
 
         is_openrouter = params.get("is_openrouter", False)
-        is_nous = params.get("is_nous", False)
+        is_nexvisora = params.get("is_nexvisora", False)
         is_github_models = params.get("is_github_models", False)
         provider_name = str(params.get("provider_name") or "").strip().lower()
         base_url = params.get("base_url")
@@ -363,14 +363,14 @@ class ChatCompletionsTransport(ProviderTransport):
             else:
                 if reasoning_config is not None:
                     rc = dict(reasoning_config)
-                    if is_nous and rc.get("enabled") is False:
-                        pass  # omit for Nous when disabled
+                    if is_nexvisora and rc.get("enabled") is False:
+                        pass  # omit for Nexvisorawhen disabled
                     else:
                         extra_body["reasoning"] = rc
                 else:
                     extra_body["reasoning"] = {"enabled": True, "effort": "medium"}
 
-        if is_nous:
+        if is_nexvisora:
             extra_body["tags"] = ["product=sara-agent"]
 
         # Ollama num_ctx

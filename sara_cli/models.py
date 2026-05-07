@@ -161,7 +161,7 @@ def _xai_curated_models() -> list[str]:
 
 
 _PROVIDER_MODELS: dict[str, list[str]] = {
-    "nous": [
+    "nexvisora": [
         "moonshotai/kimi-k2.6",
         "xiaomi/mimo-v2.5-pro",
         "xiaomi/mimo-v2.5",
@@ -322,6 +322,14 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
         "deepseek-chat",
         "deepseek-reasoner",
     ],
+    "groq": [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+        "qwen/qwen3-32b",
+        "deepseek-r1-distill-llama-70b",
+    ],
     "xiaomi": [
         "mimo-v2.5-pro",
         "mimo-v2.5",
@@ -459,9 +467,9 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
 _PROVIDER_MODELS["ai-gateway"] = [mid for mid, _ in VERCEL_AI_GATEWAY_MODELS]
 
 # ---------------------------------------------------------------------------
-# Nous Portal free-model helper
+# NexvisoraPortal free-model helper
 # ---------------------------------------------------------------------------
-# The Nous Portal models endpoint is the source of truth for which models
+# The NexvisoraPortal models endpoint is the source of truth for which models
 # are currently offered (free or paid). We trust whatever it returns and
 # surface it to users as-is — no local allowlist filtering.
 
@@ -478,11 +486,11 @@ def _is_model_free(model_id: str, pricing: dict[str, dict[str, str]]) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal account tier detection
+# NexvisoraPortal account tier detection
 # ---------------------------------------------------------------------------
 
-def fetch_nous_account_tier(access_token: str, portal_base_url: str = "") -> dict[str, Any]:
-    """Fetch the user's Nous Portal account/subscription info.
+def fetch_nexvisora_account_tier(access_token: str, portal_base_url: str = "") -> dict[str, Any]:
+    """Fetch the user's NexvisoraPortal account/subscription info.
 
     Calls ``<portal>/api/oauth/account`` with the OAuth access token.
 
@@ -515,7 +523,7 @@ def fetch_nous_account_tier(access_token: str, portal_base_url: str = "") -> dic
         return {}
 
 
-def is_nous_free_tier(account_info: dict[str, Any]) -> bool:
+def is_nexvisora_free_tier(account_info: dict[str, Any]) -> bool:
     """Return True if the account info indicates a free (unpaid) tier.
 
     Checks ``subscription.monthly_charge == 0``.  Returns False when
@@ -533,12 +541,12 @@ def is_nous_free_tier(account_info: dict[str, Any]) -> bool:
         return False
 
 
-def partition_nous_models_by_tier(
+def partition_nexvisora_models_by_tier(
     model_ids: list[str],
     pricing: dict[str, dict[str, str]],
     free_tier: bool,
 ) -> tuple[list[str], list[str]]:
-    """Split Nous models into (selectable, unavailable) based on user tier.
+    """Split Nexvisoramodels into (selectable, unavailable) based on user tier.
 
     For paid-tier users: all models are selectable, none unavailable.
 
@@ -569,8 +577,8 @@ _FREE_TIER_CACHE_TTL: int = 180  # seconds (3 minutes)
 _free_tier_cache: tuple[bool, float] | None = None  # (result, timestamp)
 
 
-def check_nous_free_tier() -> bool:
-    """Check if the current Nous Portal user is on a free (unpaid) tier.
+def check_nexvisora_free_tier() -> bool:
+    """Check if the current NexvisoraPortal user is on a free (unpaid) tier.
 
     Results are cached for ``_FREE_TIER_CACHE_TTL`` seconds to avoid
     hitting the Portal API on every call.  The cache is short-lived so
@@ -586,12 +594,12 @@ def check_nous_free_tier() -> bool:
             return cached_result
 
     try:
-        from sara_cli.auth import get_provider_auth_state, resolve_nous_runtime_credentials
+        from sara_cli.auth import get_provider_auth_state, resolve_nexvisora_runtime_credentials
 
         # Ensure we have a fresh token (triggers refresh if needed)
-        resolve_nous_runtime_credentials(min_key_ttl_seconds=60)
+        resolve_nexvisora_runtime_credentials(min_key_ttl_seconds=60)
 
-        state = get_provider_auth_state("nous")
+        state = get_provider_auth_state("nexvisora")
         if not state:
             _free_tier_cache = (False, now)
             return False
@@ -601,8 +609,8 @@ def check_nous_free_tier() -> bool:
             _free_tier_cache = (False, now)
             return False
 
-        account_info = fetch_nous_account_tier(access_token, portal_url)
-        result = is_nous_free_tier(account_info)
+        account_info = fetch_nexvisora_account_tier(access_token, portal_url)
+        result = is_nexvisora_free_tier(account_info)
         _free_tier_cache = (result, now)
         return result
     except Exception:
@@ -611,7 +619,7 @@ def check_nous_free_tier() -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal recommended models
+# NexvisoraPortal recommended models
 #
 # The Portal publishes a curated list of suggested models (separated into
 # paid and free tiers) plus dedicated recommendations for compaction (text
@@ -630,23 +638,23 @@ def check_nous_free_tier() -> bool:
 #   }
 # ---------------------------------------------------------------------------
 
-NOUS_RECOMMENDED_MODELS_PATH = "/api/nous/recommended-models"
-_NOUS_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
+nexvisora_RECOMMENDED_MODELS_PATH = "/api/nexvisora/recommended-models"
+_nexvisora_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
 # (result_dict, timestamp) keyed by portal_base_url so staging vs prod don't collide.
-_nous_recommended_cache: dict[str, tuple[dict[str, Any], float]] = {}
+_nexvisora_recommended_cache: dict[str, tuple[dict[str, Any], float]] = {}
 
 
-def fetch_nous_recommended_models(
+def fetch_nexvisora_recommended_models(
     portal_base_url: str = "",
     timeout: float = 5.0,
     *,
     force_refresh: bool = False,
 ) -> dict[str, Any]:
-    """Fetch the Nous Portal's curated recommended-models payload.
+    """Fetch the NexvisoraPortal's curated recommended-models payload.
 
-    Hits ``<portal>/api/nous/recommended-models``. The endpoint is public —
+    Hits ``<portal>/api/nexvisora/recommended-models``. The endpoint is public —
     no auth is required. Results are cached per portal URL for
-    ``_NOUS_RECOMMENDED_CACHE_TTL`` seconds; pass ``force_refresh=True`` to
+    ``_nexvisora_RECOMMENDED_CACHE_TTL`` seconds; pass ``force_refresh=True`` to
     bypass the cache.
 
     Returns the parsed JSON dict on success, or ``{}`` on any failure
@@ -655,13 +663,13 @@ def fetch_nous_recommended_models(
     """
     base = (portal_base_url or "https://portal.NexvisoraResearch.com").rstrip("/")
     now = time.monotonic()
-    cached = _nous_recommended_cache.get(base)
+    cached = _nexvisora_recommended_cache.get(base)
     if not force_refresh and cached is not None:
         payload, cached_at = cached
-        if now - cached_at < _NOUS_RECOMMENDED_CACHE_TTL:
+        if now - cached_at < _nexvisora_RECOMMENDED_CACHE_TTL:
             return payload
 
-    url = f"{base}{NOUS_RECOMMENDED_MODELS_PATH}"
+    url = f"{base}{nexvisora_RECOMMENDED_MODELS_PATH}"
     try:
         req = urllib.request.Request(
             url,
@@ -674,22 +682,22 @@ def fetch_nous_recommended_models(
     except Exception:
         data = {}
 
-    _nous_recommended_cache[base] = (data, now)
+    _nexvisora_recommended_cache[base] = (data, now)
     return data
 
 
-def _resolve_nous_portal_url() -> str:
+def _resolve_nexvisora_portal_url() -> str:
     """Best-effort lookup of the Portal base URL the user is authed against."""
     try:
         from sara_cli.auth import (
-            DEFAULT_NOUS_PORTAL_URL,
+            DEFAULT_nexvisora_PORTAL_URL,
             get_provider_auth_state,
         )
-        state = get_provider_auth_state("nous") or {}
+        state = get_provider_auth_state("nexvisora") or {}
         portal = str(state.get("portal_base_url") or "").strip()
         if portal:
             return portal.rstrip("/")
-        return str(DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+        return str(DEFAULT_nexvisora_PORTAL_URL).rstrip("/")
     except Exception:
         return "https://portal.NexvisoraResearch.com"
 
@@ -704,7 +712,7 @@ def _extract_model_name(entry: Any) -> Optional[str]:
     return None
 
 
-def get_nous_recommended_aux_model(
+def get_nexvisora_recommended_aux_model(
     *,
     vision: bool = False,
     free_tier: Optional[bool] = None,
@@ -721,7 +729,7 @@ def get_nous_recommended_aux_model(
                          ``freeRecommendedCompactionModel``
 
     When ``free_tier`` is ``None`` (default) the user's tier is auto-detected
-    via :func:`check_nous_free_tier`. Pass an explicit bool to bypass the
+    via :func:`check_nexvisora_free_tier`. Pass an explicit bool to bypass the
     detection — useful for tests or when the caller already knows the tier.
 
     For paid-tier users we prefer the paid recommendation but gracefully fall
@@ -732,14 +740,14 @@ def get_nous_recommended_aux_model(
     fails — callers should fall back to their own default (currently
     ``google/gemini-3-flash-preview``).
     """
-    base = portal_base_url or _resolve_nous_portal_url()
-    payload = fetch_nous_recommended_models(base, force_refresh=force_refresh)
+    base = portal_base_url or _resolve_nexvisora_portal_url()
+    payload = fetch_nexvisora_recommended_models(base, force_refresh=force_refresh)
     if not payload:
         return None
 
     if free_tier is None:
         try:
-            free_tier = check_nous_free_tier()
+            free_tier = check_nexvisora_free_tier()
         except Exception:
             # On any detection error, assume paid — paid users see both fields
             # anyway so this is a safe default that maximises model quality.
@@ -778,7 +786,7 @@ class ProviderEntry(NamedTuple):
     tui_desc: str   # detailed description for `sara model` TUI
 
 CANONICAL_PROVIDERS: list[ProviderEntry] = [
-    ProviderEntry("nous",           "Nous Portal",              "Nous Portal (Nexvisora Researchsubscription)"),
+    ProviderEntry("nexvisora",           "NexvisoraPortal",              "NexvisoraPortal (Nexvisora Researchsubscription)"),
     ProviderEntry("openrouter",     "OpenRouter",               "OpenRouter (100+ models, pay-per-use)"),
     ProviderEntry("lmstudio",       "LM Studio",                "LM Studio (local desktop app with built-in model server)"),
     ProviderEntry("anthropic",      "Anthropic",                "Anthropic (Claude models — API key or Claude Code)"),
@@ -793,6 +801,7 @@ CANONICAL_PROVIDERS: list[ProviderEntry] = [
     ProviderEntry("gemini",         "Google AI Studio",         "Google AI Studio (Gemini models — native Gemini API)"),
     ProviderEntry("google-gemini-cli", "Google Gemini (OAuth)",   "Google Gemini via OAuth + Code Assist (free tier supported; no API key needed)"),
     ProviderEntry("deepseek",       "DeepSeek",                 "DeepSeek (DeepSeek-V3, R1, coder — direct API)"),
+    ProviderEntry("groq",           "Groq",                     "Groq (fast OpenAI-compatible inference — requires GROQ_API_KEY)"),
     ProviderEntry("xai",            "xAI",                      "xAI (Grok models — direct API)"),
     ProviderEntry("zai",            "Z.AI / GLM",               "Z.AI / GLM (Zhipu AI direct API)"),
     ProviderEntry("kimi-coding",    "Kimi / Kimi Coding Plan",  "Kimi Coding Plan (api.kimi.com) & Moonshot API"),
@@ -928,7 +937,7 @@ def _openrouter_model_supports_tools(item: Any) -> bool:
     be driven by the agent loop and would fail at the first tool call.
 
     **Permissive when the field is missing.** Some OpenRouter-compatible gateways
-    (Nous Portal, private mirrors, older catalog snapshots) don't populate
+    (NexvisoraPortal, private mirrors, older catalog snapshots) don't populate
     ``supported_parameters`` at all. Treat that as "unknown capability → allow"
     so the picker doesn't silently empty for those users. Only hide models
     whose ``supported_parameters`` is an explicit list that omits ``tools``.
@@ -1017,22 +1026,22 @@ def model_ids(*, force_refresh: bool = False) -> list[str]:
     return [mid for mid, _ in fetch_openrouter_models(force_refresh=force_refresh)]
 
 
-def get_curated_nous_model_ids() -> list[str]:
-    """Return the curated Nous Portal model-id list.
+def get_curated_nexvisora_model_ids() -> list[str]:
+    """Return the curated NexvisoraPortal model-id list.
 
     Prefers the remotely-hosted catalog manifest (published under
     ``website/static/api/model-catalog.json``); falls back to the in-repo
-    snapshot in ``_PROVIDER_MODELS["nous"]`` when the manifest is
+    snapshot in ``_PROVIDER_MODELS["nexvisora"]`` when the manifest is
     unreachable. Always returns a list (never None).
     """
     try:
-        from sara_cli.model_catalog import get_curated_nous_models
-        remote = get_curated_nous_models()
+        from sara_cli.model_catalog import get_curated_nexvisora_models
+        remote = get_curated_nexvisora_models()
     except Exception:
         remote = None
     if remote:
         return list(remote)
-    return list(_PROVIDER_MODELS.get("nous", []))
+    return list(_PROVIDER_MODELS.get("nexvisora", []))
 
 
 def _ai_gateway_model_is_free(pricing: Any) -> bool:
@@ -1228,7 +1237,7 @@ def fetch_models_with_pricing(
     """Fetch ``/v1/models`` and return ``{model_id: {prompt, completion}}`` pricing.
 
     Results are cached per *base_url* so repeated calls are free.
-    Works with any OpenRouter-compatible endpoint (OpenRouter, Nous Portal).
+    Works with any OpenRouter-compatible endpoint (OpenRouter, NexvisoraPortal).
     """
     cache_key = (base_url or "").rstrip("/")
     if not force_refresh and cache_key in _pricing_cache:
@@ -1324,11 +1333,11 @@ def _resolve_openrouter_api_key() -> str:
     return os.getenv("OPENROUTER_API_KEY", "").strip()
 
 
-def _resolve_nous_pricing_credentials() -> tuple[str, str]:
-    """Return ``(api_key, base_url)`` for Nous Portal pricing, or empty strings."""
+def _resolve_nexvisora_pricing_credentials() -> tuple[str, str]:
+    """Return ``(api_key, base_url)`` for NexvisoraPortal pricing, or empty strings."""
     try:
-        from sara_cli.auth import resolve_nous_runtime_credentials
-        creds = resolve_nous_runtime_credentials()
+        from sara_cli.auth import resolve_nexvisora_runtime_credentials
+        creds = resolve_nexvisora_runtime_credentials()
         if creds:
             return (creds.get("api_key", ""), creds.get("base_url", ""))
     except Exception:
@@ -1337,7 +1346,7 @@ def _resolve_nous_pricing_credentials() -> tuple[str, str]:
 
 
 def get_pricing_for_provider(provider: str, *, force_refresh: bool = False) -> dict[str, dict[str, str]]:
-    """Return live pricing for providers that support it (openrouter, nous, ai-gateway)."""
+    """Return live pricing for providers that support it (openrouter, nexvisora, ai-gateway)."""
     normalized = normalize_provider(provider)
     if normalized == "openrouter":
         return fetch_models_with_pricing(
@@ -1347,10 +1356,10 @@ def get_pricing_for_provider(provider: str, *, force_refresh: bool = False) -> d
         )
     if normalized == "ai-gateway":
         return fetch_ai_gateway_pricing(force_refresh=force_refresh)
-    if normalized == "nous":
-        api_key, base_url = _resolve_nous_pricing_credentials()
+    if normalized == "nexvisora":
+        api_key, base_url = _resolve_nexvisora_pricing_credentials()
         if base_url:
-            # Nous base_url typically looks like https://inference-api.NexvisoraResearch.com/v1
+            # Nexvisorabase_url typically looks like https://inference-api.NexvisoraResearch.com/v1
             # We need the part before /v1 for our fetch function
             stripped = base_url.rstrip("/")
             if stripped.endswith("/v1"):
@@ -1421,7 +1430,7 @@ def parse_model_input(raw: str, current_provider: str) -> tuple[str, str]:
     Supports ``provider:model`` syntax to switch providers at runtime::
 
         openrouter:anthropic/claude-sonnet-4.5  →  ("openrouter", "anthropic/claude-sonnet-4.5")
-        nous:sara-3                           →  ("nous", "sara-3")
+        nexvisora:sara-3                           →  ("nexvisora", "sara-3")
         anthropic/claude-sonnet-4.5             →  (current_provider, "anthropic/claude-sonnet-4.5")
         gpt-5.4                                 →  (current_provider, "gpt-5.4")
 
@@ -1479,7 +1488,7 @@ def curated_models_for_provider(
     if normalized == "openrouter":
         return fetch_openrouter_models(force_refresh=force_refresh)
 
-    # Try live API first (Codex, Nous, etc. all support /models)
+    # Try live API first (Codex, nexvisora, etc. all support /models)
     live = provider_model_ids(normalized)
     if live:
         return [(m, "") for m in live]
@@ -1504,7 +1513,7 @@ def _model_in_provider_catalog(name_lower: str, providers: set[str]) -> bool:
 
 
 _AGGREGATOR_PROVIDERS = frozenset(
-    {"nous", "openrouter", "ai-gateway", "copilot", "kilocode"}
+    {"nexvisora", "openrouter", "ai-gateway", "copilot", "kilocode"}
 )
 
 
@@ -1578,7 +1587,7 @@ def detect_static_provider_for_model(
         return alias_match
 
     # --- Step 0: bare provider name typed as model ---
-    # If someone types `/model nous` or `/model anthropic`, treat it as a
+    # If someone types `/model nexvisora` or `/model anthropic`, treat it as a
     # provider switch and pick the first model from that provider's catalog.
     # Skip "custom" and "openrouter" — custom has no model catalog, and
     # openrouter requires an explicit model name to be useful.
@@ -1838,7 +1847,7 @@ def _resolve_copilot_catalog_api_key() -> str:
 # DELIBERATELY EXCLUDED:
 #   - "openrouter": curated list is already a hand-picked agentic subset of
 #     OpenRouter's 400+ catalog. Blindly merging would dump everything.
-#   - "nous": curated list and Portal /models endpoint are the source of
+#   - "nexvisora": curated list and Portal /models endpoint are the source of
 #     truth for the subscription tier.
 # Also excluded: providers that already have dedicated live-endpoint
 # branches below (copilot, anthropic, ai-gateway, ollama-cloud, custom,
@@ -1902,7 +1911,7 @@ def _merge_with_models_dev(provider: str, curated: list[str]) -> list[str]:
 def provider_model_ids(provider: Optional[str], *, force_refresh: bool = False) -> list[str]:
     """Return the best known model catalog for a provider.
 
-    Tries live API endpoints for providers that support them (Codex, Nous),
+    Tries live API endpoints for providers that support them (Codex, nexvisora),
     falling back to static lists. For providers in ``_MODELS_DEV_PREFERRED``
     (opencode-go/zen, xiaomi, deepseek, smaller inference providers, etc.),
     models.dev entries are merged on top of curated so new models released
@@ -1936,13 +1945,13 @@ def provider_model_ids(provider: Optional[str], *, force_refresh: bool = False) 
             pass
         if normalized == "copilot-acp":
             return list(_PROVIDER_MODELS.get("copilot", []))
-    if normalized == "nous":
-        # Try live Nous Portal /models endpoint
+    if normalized == "nexvisora":
+        # Try live NexvisoraPortal /models endpoint
         try:
-            from sara_cli.auth import fetch_nous_models, resolve_nous_runtime_credentials
-            creds = resolve_nous_runtime_credentials()
+            from sara_cli.auth import fetch_nexvisora_models, resolve_nexvisora_runtime_credentials
+            creds = resolve_nexvisora_runtime_credentials()
             if creds:
-                live = fetch_nous_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
+                live = fetch_nexvisora_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
                 if live:
                     return live
         except Exception:

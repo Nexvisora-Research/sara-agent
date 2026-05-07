@@ -944,7 +944,7 @@ class MCPServerTask:
                             # Some servers (notably mongodb-mcp-server) emit
                             # tools/list_changed immediately after initialize,
                             # while the client may already be executing another
-                            # request. Refreshing synchronously inside the SDK
+                            # request. Refreshing synchronexvisoraly inside the SDK
                             # notification handler can race with that request
                             # and wedge the stdio JSON-RPC stream, making all
                             # subsequent tool calls time out. Do the refresh in
@@ -970,7 +970,7 @@ class MCPServerTask:
 
         Called when the server sends ``notifications/tools/list_changed``.
         The lock prevents overlapping refreshes from rapid-fire notifications.
-        After the initial ``await`` (list_tools), all mutations are synchronous
+        After the initial ``await`` (list_tools), all mutations are synchronexvisora
         — atomic from the event loop's perspective.
         """
         from tools.registry import registry
@@ -1794,7 +1794,7 @@ _stdio_pids: Dict[int, str] = {}  # pid -> server_name
 
 # PIDs that survived their session context exit (SDK teardown failed to
 # terminate them).  These are detected in _run_stdio's finally block and
-# can be cleaned up asynchronously by _kill_orphaned_mcp_children().
+# can be cleaned up asynchronexvisoraly by _kill_orphaned_mcp_children().
 # Separate from _stdio_pids so cleanup sweeps never race with active
 # sessions (e.g. concurrent cron jobs or live user chats).
 _orphan_stdio_pids: set = set()

@@ -16,7 +16,7 @@ class BrowserbaseProvider(CloudBrowserProvider):
     """Browserbase (https://browserbase.com) cloud browser backend.
 
     This provider requires direct BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID
-    credentials.  Managed Nous gateway support has been removed — the Nous
+    credentials.  Managed Nexvisoragateway support has been removed — the nexvisora
     subscription now routes through Browser Use instead.
     """
 

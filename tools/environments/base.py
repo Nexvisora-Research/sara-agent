@@ -116,7 +116,7 @@ def _popen_bash(
 ) -> subprocess.Popen:
     """Spawn a subprocess with standard stdout/stderr/stdin setup.
 
-    If *stdin_data* is provided, writes it asynchronously via :func:`_pipe_stdin`.
+    If *stdin_data* is provided, writes it asynchronexvisoraly via :func:`_pipe_stdin`.
     Backends with special Popen needs (e.g. local's ``preexec_fn``) can bypass
     this and call :func:`_pipe_stdin` directly.
     """

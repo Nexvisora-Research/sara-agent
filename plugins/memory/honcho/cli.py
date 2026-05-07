@@ -1267,7 +1267,7 @@ def cmd_migrate(args) -> None:
     print("              of truth; Honcho holds the live representation.")
     print()
     print("  Context injection")
-    print("    OpenClaw: file excerpts injected synchronously before each LLM call.")
+    print("    OpenClaw: file excerpts injected synchronexvisoraly before each LLM call.")
     print("    sara:   Honcho context fetched async at turn end, injected next turn.")
     print("              First turn has no Honcho context; subsequent turns are loaded.")
     print()

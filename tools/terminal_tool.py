@@ -70,7 +70,7 @@ from tools.environments.singularity import _get_scratch_dir
 from tools.tool_backend_helpers import (
     coerce_modal_mode,
     has_direct_modal_credentials,
-    managed_nous_tools_enabled,
+    managed_nexvisora_tools_enabled,
     resolve_modal_backend_state,
 )
 
@@ -1179,7 +1179,7 @@ def _create_environment(env_type: str, image: str, cwd: str, timeout: int,
             if modal_state["managed_mode_blocked"]:
                 raise ValueError(
                     "Modal backend is configured for managed mode, but "
-                    "a paid Nous subscription is required for the Tool Gateway and no direct "
+                    "a paid Nexvisorasubscription is required for the Tool Gateway and no direct "
                     "Modal credentials/config were found. Log in with `sara model` or "
                     "choose TERMINAL_MODAL_MODE=direct/auto."
                 )
@@ -1192,7 +1192,7 @@ def _create_environment(env_type: str, image: str, cwd: str, timeout: int,
                     "Modal backend is configured for direct mode, but no direct Modal credentials/config were found."
                 )
             message = "Modal backend selected but no direct Modal credentials/config was found."
-            if managed_nous_tools_enabled():
+            if managed_nexvisora_tools_enabled():
                 message = (
                     "Modal backend selected but no direct Modal credentials/config or managed tool gateway was found."
                 )
@@ -1946,7 +1946,7 @@ def terminal_tool(
                 # Mutual exclusion: if both notify_on_complete and watch_patterns
                 # are set, drop watch_patterns. The combination produces duplicate
                 # notifications (one per match + one on exit) that deliver
-                # asynchronously and can spam the user long after the process ends.
+                # asynchronexvisoraly and can spam the user long after the process ends.
                 # notify_on_complete is the more useful signal for "let me know
                 # when the task finishes"; watch_patterns should be reserved for
                 # standalone mid-process signals on long-lived processes.
@@ -2156,7 +2156,7 @@ def check_terminal_requirements() -> bool:
                 if modal_state["managed_mode_blocked"]:
                     logger.error(
                         "Modal backend selected with TERMINAL_MODAL_MODE=managed, but "
-                        "a paid Nous subscription is required for the Tool Gateway and no direct "
+                        "a paid Nexvisorasubscription is required for the Tool Gateway and no direct "
                         "Modal credentials/config were found. Log in with `sara model` "
                         "or choose TERMINAL_MODAL_MODE=direct/auto."
                     )
@@ -2169,7 +2169,7 @@ def check_terminal_requirements() -> bool:
                     )
                     return False
                 elif modal_state["mode"] == "direct":
-                    if managed_nous_tools_enabled():
+                    if managed_nexvisora_tools_enabled():
                         logger.error(
                             "Modal backend selected with TERMINAL_MODAL_MODE=direct, but no direct "
                             "Modal credentials/config were found. Configure Modal or choose "
@@ -2183,7 +2183,7 @@ def check_terminal_requirements() -> bool:
                         )
                     return False
                 else:
-                    if managed_nous_tools_enabled():
+                    if managed_nexvisora_tools_enabled():
                         logger.error(
                             "Modal backend selected but no direct Modal credentials/config or managed "
                             "tool gateway was found. Configure Modal, set up the managed gateway, "

@@ -697,7 +697,7 @@ class QQAdapter(BasePlatformAdapter):
         """Schedule a coroutine, silently skipping if no event loop is running.
 
         This avoids ``RuntimeError: no running event loop`` when tests call
-        ``_dispatch_payload`` synchronously outside of ``asyncio.run()``.
+        ``_dispatch_payload`` synchronexvisoraly outside of ``asyncio.run()``.
         """
         try:
             loop = asyncio.get_running_loop()
@@ -706,7 +706,7 @@ class QQAdapter(BasePlatformAdapter):
             return None
 
     def _dispatch_payload(self, payload: Dict[str, Any]) -> None:
-        """Route inbound WebSocket payloads (dispatch synchronously, spawn async handlers)."""
+        """Route inbound WebSocket payloads (dispatch synchronexvisoraly, spawn async handlers)."""
         op = payload.get("op")
         t = payload.get("t")
         s = payload.get("s")

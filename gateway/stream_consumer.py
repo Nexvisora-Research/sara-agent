@@ -1,6 +1,6 @@
 """Gateway streaming consumer — bridges sync agent callbacks to async platform delivery.
 
-The agent fires stream_delta_callback(text) synchronously from its worker thread.
+The agent fires stream_delta_callback(text) synchronexvisoraly from its worker thread.
 GatewayStreamConsumer:
   1. Receives deltas via on_delta() (thread-safe, sync)
   2. Queues them to an asyncio task via queue.Queue

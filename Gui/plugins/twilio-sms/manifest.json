@@ -1,0 +1,15 @@
+{
+  "id": "twilio-sms",
+  "name": "SMS (Twilio)",
+  "version": "1.0.0",
+  "description": "Send SMS via Twilio",
+  "author": "Sara Agent",
+  "icon": "sms",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "accountSid", "label": "Twilio Account SID", "sensitive": true, "placeholder": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+    { "key": "authToken", "label": "Twilio Auth Token", "sensitive": true, "placeholder": "Your auth token" },
+    { "key": "fromNumber", "label": "Twilio Phone Number", "sensitive": false, "placeholder": "+1234567890" }
+  ],
+  "permissions": ["messages.send", "messages.read"]
+}

@@ -1,4 +1,4 @@
-"""Helpers for Nous subscription managed-tool capabilities."""
+"""Helpers for Nexvisorasubscription managed-tool capabilities."""
 
 from __future__ import annotations
 
@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Dict, Iterable, Optional, Set
 import importlib
 
-from sara_cli.auth import get_nous_auth_status
+from sara_cli.auth import get_nexvisora_auth_status
 from sara_cli.config import get_env_value, load_config
 from utils import is_truthy_value
 from tools.tool_backend_helpers import (
     fal_key_is_configured,
     has_direct_modal_credentials,
-    managed_nous_tools_enabled,
+    managed_nexvisora_tools_enabled,
     normalize_browser_cloud_provider,
     normalize_modal_mode,
     resolve_modal_backend_state,
@@ -44,13 +44,13 @@ def _uses_gateway(section: object) -> bool:
 
 
 @dataclass(frozen=True)
-class NousFeatureState:
+class nexvisoraFeatureState:
     key: str
     label: str
     included_by_default: bool
     available: bool
     active: bool
-    managed_by_nous: bool
+    managed_by_nexvisora: bool
     direct_override: bool
     toolset_enabled: bool
     current_provider: str = ""
@@ -58,33 +58,33 @@ class NousFeatureState:
 
 
 @dataclass(frozen=True)
-class NousSubscriptionFeatures:
+class nexvisoraSubscriptionFeatures:
     subscribed: bool
-    nous_auth_present: bool
-    provider_is_nous: bool
-    features: Dict[str, NousFeatureState]
+    nexvisora_auth_present: bool
+    provider_is_nexvisora: bool
+    features: Dict[str, nexvisoraFeatureState]
 
     @property
-    def web(self) -> NousFeatureState:
+    def web(self) -> nexvisoraFeatureState:
         return self.features["web"]
 
     @property
-    def image_gen(self) -> NousFeatureState:
+    def image_gen(self) -> nexvisoraFeatureState:
         return self.features["image_gen"]
 
     @property
-    def tts(self) -> NousFeatureState:
+    def tts(self) -> nexvisoraFeatureState:
         return self.features["tts"]
 
     @property
-    def browser(self) -> NousFeatureState:
+    def browser(self) -> nexvisoraFeatureState:
         return self.features["browser"]
 
     @property
-    def modal(self) -> NousFeatureState:
+    def modal(self) -> nexvisoraFeatureState:
         return self.features["modal"]
 
-    def items(self) -> Iterable[NousFeatureState]:
+    def items(self) -> Iterable[nexvisoraFeatureState]:
         ordered = ("web", "image_gen", "tts", "browser", "modal")
         for key in ordered:
             yield self.features[key]
@@ -235,23 +235,23 @@ def _resolve_browser_feature_state(
     return "local", available, active, False
 
 
-def get_nous_subscription_features(
+def get_nexvisora_subscription_features(
     config: Optional[Dict[str, object]] = None,
-) -> NousSubscriptionFeatures:
+) -> nexvisoraSubscriptionFeatures:
     if config is None:
         config = load_config() or {}
     config = dict(config)
     model_cfg = _model_config_dict(config)
-    provider_is_nous = str(model_cfg.get("provider") or "").strip().lower() == "nous"
+    provider_is_Nexvisora= str(model_cfg.get("provider") or "").strip().lower() == "nexvisora"
 
     try:
-        nous_status = get_nous_auth_status()
+        nexvisora_status = get_nexvisora_auth_status()
     except Exception:
-        nous_status = {}
+        nexvisora_status = {}
 
-    managed_tools_flag = managed_nous_tools_enabled()
-    nous_auth_present = bool(nous_status.get("logged_in"))
-    subscribed = provider_is_nous or nous_auth_present
+    managed_tools_flag = managed_nexvisora_tools_enabled()
+    nexvisora_auth_present = bool(nexvisora_status.get("logged_in"))
+    subscribed = provider_is_Nexvisora or nexvisora_auth_present
 
     web_tool_enabled = _toolset_enabled(config, "web")
     image_tool_enabled = _toolset_enabled(config, "image_gen")
@@ -313,11 +313,11 @@ def get_nous_subscription_features(
         direct_browser_use = False
         direct_browserbase = False
 
-    managed_web_available = managed_tools_flag and nous_auth_present and is_managed_tool_gateway_ready("firecrawl")
-    managed_image_available = managed_tools_flag and nous_auth_present and is_managed_tool_gateway_ready("fal-queue")
-    managed_tts_available = managed_tools_flag and nous_auth_present and is_managed_tool_gateway_ready("openai-audio")
-    managed_browser_available = managed_tools_flag and nous_auth_present and is_managed_tool_gateway_ready("browser-use")
-    managed_modal_available = managed_tools_flag and nous_auth_present and is_managed_tool_gateway_ready("modal")
+    managed_web_available = managed_tools_flag and nexvisora_auth_present and is_managed_tool_gateway_ready("firecrawl")
+    managed_image_available = managed_tools_flag and nexvisora_auth_present and is_managed_tool_gateway_ready("fal-queue")
+    managed_tts_available = managed_tools_flag and nexvisora_auth_present and is_managed_tool_gateway_ready("openai-audio")
+    managed_browser_available = managed_tools_flag and nexvisora_auth_present and is_managed_tool_gateway_ready("browser-use")
+    managed_modal_available = managed_tools_flag and nexvisora_auth_present and is_managed_tool_gateway_ready("modal")
     modal_state = resolve_modal_backend_state(
         modal_mode,
         has_direct=direct_modal,
@@ -413,61 +413,61 @@ def get_nous_subscription_features(
         tts_explicit_configured = tts_provider not in {"", "edge"}
 
     features = {
-        "web": NousFeatureState(
+        "web": nexvisoraFeatureState(
             key="web",
             label="Web tools",
             included_by_default=True,
             available=web_available,
             active=web_active,
-            managed_by_nous=web_managed,
+            managed_by_nexvisora=web_managed,
             direct_override=web_active and not web_managed,
             toolset_enabled=web_tool_enabled,
             current_provider=web_backend or "",
             explicit_configured=bool(web_backend),
         ),
-        "image_gen": NousFeatureState(
+        "image_gen": nexvisoraFeatureState(
             key="image_gen",
             label="Image generation",
             included_by_default=True,
             available=image_available,
             active=image_active,
-            managed_by_nous=image_managed,
+            managed_by_nexvisora=image_managed,
             direct_override=image_active and not image_managed,
             toolset_enabled=image_tool_enabled,
-            current_provider="FAL" if direct_fal else ("Nous Subscription" if image_managed else ""),
+            current_provider="FAL" if direct_fal else ("NexvisoraSubscription" if image_managed else ""),
             explicit_configured=direct_fal,
         ),
-        "tts": NousFeatureState(
+        "tts": nexvisoraFeatureState(
             key="tts",
             label="OpenAI TTS",
             included_by_default=True,
             available=tts_available,
             active=tts_active,
-            managed_by_nous=tts_managed,
+            managed_by_nexvisora=tts_managed,
             direct_override=tts_active and not tts_managed,
             toolset_enabled=tts_tool_enabled,
             current_provider=_tts_label(tts_current_provider),
             explicit_configured=tts_explicit_configured,
         ),
-        "browser": NousFeatureState(
+        "browser": nexvisoraFeatureState(
             key="browser",
             label="Browser automation",
             included_by_default=True,
             available=browser_available,
             active=browser_active,
-            managed_by_nous=browser_managed,
+            managed_by_nexvisora=browser_managed,
             direct_override=browser_active and not browser_managed,
             toolset_enabled=browser_tool_enabled,
             current_provider=_browser_label(browser_current_provider),
             explicit_configured=browser_provider_explicit,
         ),
-        "modal": NousFeatureState(
+        "modal": nexvisoraFeatureState(
             key="modal",
             label="Modal execution",
             included_by_default=False,
             available=modal_available,
             active=modal_active,
-            managed_by_nous=modal_managed,
+            managed_by_nexvisora=modal_managed,
             direct_override=terminal_backend == "modal" and modal_direct_override,
             toolset_enabled=modal_tool_enabled,
             current_provider="Modal" if terminal_backend == "modal" else terminal_backend or "local",
@@ -475,10 +475,10 @@ def get_nous_subscription_features(
         ),
     }
 
-    return NousSubscriptionFeatures(
+    return nexvisoraSubscriptionFeatures(
         subscribed=subscribed,
-        nous_auth_present=nous_auth_present,
-        provider_is_nous=provider_is_nous,
+        nexvisora_auth_present=nexvisora_auth_present,
+        provider_is_nexvisora=provider_is_Nexvisora,
         features=features,
     )
 
@@ -486,16 +486,16 @@ def get_nous_subscription_features(
 
 
 
-def apply_nous_managed_defaults(
+def apply_nexvisora_managed_defaults(
     config: Dict[str, object],
     *,
     enabled_toolsets: Optional[Iterable[str]] = None,
 ) -> set[str]:
-    if not managed_nous_tools_enabled():
+    if not managed_nexvisora_tools_enabled():
         return set()
 
-    features = get_nous_subscription_features(config)
-    if not features.provider_is_nous:
+    features = get_nexvisora_subscription_features(config)
+    if not features.provider_is_nexvisora:
         return set()
 
     selected_toolsets = set(enabled_toolsets or ())
@@ -598,24 +598,24 @@ def get_gateway_eligible_tools(
     - has_direct: tools where the user has their own API keys
     - already_managed: tools already routed through the gateway
 
-    All lists are empty when the user is not a paid Nous subscriber or
-    is not using Nous as their provider.
+    All lists are empty when the user is not a paid Nexvisorasubscriber or
+    is not using Nexvisoraas their provider.
     """
-    if not managed_nous_tools_enabled():
+    if not managed_nexvisora_tools_enabled():
         return [], [], []
 
     if config is None:
         config = load_config() or {}
 
-    # Quick provider check without the heavy get_nous_subscription_features call
+    # Quick provider check without the heavy get_nexvisora_subscription_features call
     model_cfg = config.get("model")
-    if not isinstance(model_cfg, dict) or str(model_cfg.get("provider") or "").strip().lower() != "nous":
+    if not isinstance(model_cfg, dict) or str(model_cfg.get("provider") or "").strip().lower() != "nexvisora":
         return [], [], []
 
     direct = _get_gateway_direct_credentials()
 
     # Check which tools the user has explicitly opted into the gateway for.
-    # This is distinct from managed_by_nous which fires implicitly when
+    # This is distinct from managed_by_Nexvisorawhich fires implicitly when
     # no direct keys exist — we only skip the prompt for tools where
     # use_gateway was explicitly set.
     opted_in = {
@@ -714,7 +714,7 @@ def prompt_enable_tool_gateway(config: Dict[str, object]) -> set[str]:
     desc_parts: list[str] = [
         "",
         "  The Tool Gateway gives you access to web search, image generation,",
-        "  text-to-speech, and browser automation through your Nous subscription.",
+        "  text-to-speech, and browser automation through your Nexvisorasubscription.",
         "  No need to sign up for separate API keys — just pick the tools you want.",
         "",
     ]
@@ -763,7 +763,7 @@ def prompt_enable_tool_gateway(config: Dict[str, object]) -> set[str]:
 
     try:
         idx = prompt_choice(
-            "Your Nous subscription includes the Tool Gateway.",
+            "Your Nexvisorasubscription includes the Tool Gateway.",
             choices,
             default_idx,
             description=description,
@@ -790,7 +790,7 @@ def prompt_enable_tool_gateway(config: Dict[str, object]) -> set[str]:
         newly_switched = changed - set(already_managed)
         for key in sorted(newly_switched):
             label = _GATEWAY_TOOL_LABELS.get(key, key)
-            print(f"  ✓ {label}: enabled via Nous subscription")
+            print(f"  ✓ {label}: enabled via Nexvisorasubscription")
         if already_managed and not newly_switched:
             print("  (all tools already using Tool Gateway)")
     return changed

@@ -1,0 +1,14 @@
+{
+  "id": "signal",
+  "name": "Signal",
+  "version": "1.0.0",
+  "description": "Connect to Signal for encrypted messaging",
+  "author": "Sara Agent",
+  "icon": "signal",
+  "platforms": ["win", "linux", "mac", "android"],
+  "requiredCredentials": [
+    { "key": "phone", "label": "Phone Number", "sensitive": false, "placeholder": "+1234567890" },
+    { "key": "signalPin", "label": "Signal PIN (if enabled)", "sensitive": true, "placeholder": "Optional" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read", "groups.read"]
+}

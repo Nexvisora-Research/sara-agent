@@ -17,6 +17,8 @@ Improvements over v2:
   - Richer tool call/result detail in summarizer input
 """
 
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
 import hashlib
 import json
 import logging

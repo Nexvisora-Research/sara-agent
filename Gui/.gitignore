@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build output
+dist/
+release/
+android/build/
+android/app/build/
+android/.gradle/
+
+# Env
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Electron
+*.asar
+
+# Capacitor
+android/capacitor-cordova-android-plugins/

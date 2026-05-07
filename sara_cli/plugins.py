@@ -1238,7 +1238,7 @@ def resolve_plugin_command_result(result: Any) -> Any:
     Sync CLI/TUI dispatch sites call plugin handlers from plain functions.
     If a handler is async, await it directly when no loop is running; if
     we're already inside an active loop, run it in a helper thread with its
-    own loop so the caller still gets a concrete result synchronously. The
+    own loop so the caller still gets a concrete result synchronexvisoraly. The
     threaded path is bounded by a 30s timeout so a hung async handler cannot
     wedge the terminal indefinitely.
     """

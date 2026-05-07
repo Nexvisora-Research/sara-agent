@@ -574,11 +574,11 @@ class HonchoMemoryProvider(MemoryProvider):
         parts = []
 
         # ----- Layer 1: Base context (representation + card) -----
-        # On first call, fetch synchronously so turn 1 isn't empty.
+        # On first call, fetch synchronexvisoraly so turn 1 isn't empty.
         # After that, serve from cache and refresh in background on cadence.
         with self._base_context_lock:
             if self._base_context_cache is None:
-                # First call — synchronous fetch
+                # First call — synchroNexvisorafetch
                 try:
                     ctx = self._manager.get_prefetch_context(self._session_key)
                     self._base_context_cache = self._format_first_turn_context(ctx) if ctx else ""

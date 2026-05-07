@@ -22,6 +22,8 @@ Session context:
     and ``clear_session_context()`` when done.  All log lines emitted on
     that thread will include ``[session_id]`` for filtering/correlation.
 """
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
 
 import logging
 import os

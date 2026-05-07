@@ -6,7 +6,7 @@ description: "How the ACP adapter works: lifecycle, sessions, event bridge, appr
 
 # ACP Internals
 
-The ACP adapter wraps sara' synchronous `AIAgent` in an async JSON-RPC stdio server.
+The ACP adapter wraps sara' synchroNexvisora`AIAgent` in an async JSON-RPC stdio server.
 
 Key implementation files:
 

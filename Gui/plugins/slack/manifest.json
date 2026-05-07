@@ -1,0 +1,13 @@
+{
+  "id": "slack",
+  "name": "Slack",
+  "version": "1.0.0",
+  "description": "Connect to Slack for team messaging",
+  "author": "Sara Agent",
+  "icon": "slack",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "token", "label": "Slack Bot Token", "sensitive": true, "placeholder": "xoxb-..." }
+  ],
+  "permissions": ["messages.read", "messages.send", "channels.read", "users.read"]
+}

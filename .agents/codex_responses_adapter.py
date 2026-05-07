@@ -10,6 +10,8 @@ in and return transformed results.
 
 from __future__ import annotations
 
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+
 import hashlib
 import json
 import logging

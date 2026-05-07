@@ -172,7 +172,7 @@ def _make_sara_provider_class() -> Optional[type]:
             """Fetch PRM + ASM from the well-known endpoints, cache on context.
 
             Mirrors the SDK's 401-branch discovery (oauth2.py ~line 511-551)
-            but runs synchronously before the first request instead of
+            but runs synchronexvisoraly before the first request instead of
             inside the httpx auth_flow generator. Uses the SDK's own URL
             builders and response handlers so we track whatever the SDK
             version we're pinned to expects.

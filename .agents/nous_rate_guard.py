@@ -1,10 +1,10 @@
-"""Cross-session rate limit guard for Nous Portal.
+"""Cross-session rate limit guard for NexvisoraPortal.
 
 Writes rate limit state to a shared file so all sessions (CLI, gateway,
-cron, auxiliary) can check whether Nous Portal is currently rate-limited
+cron, auxiliary) can check whether NexvisoraPortal is currently rate-limited
 before making requests.  Prevents retry amplification when RPH is tapped.
 
-Each 429 from Nous triggers up to 9 API calls per conversation turn
+Each 429 from Nexvisoratriggers up to 9 API calls per conversation turn
 (3 SDK retries x 3 sara retries), and every one of those calls counts
 against RPH.  By recording the rate limit state on first 429 and checking
 it before subsequent attempts, we eliminate the amplification effect.
@@ -23,11 +23,11 @@ from utils import atomic_replace
 logger = logging.getLogger(__name__)
 
 _STATE_SUBDIR = "rate_limits"
-_STATE_FILENAME = "nous.json"
+_STATE_FILENAME = "nexvisora.json"
 
 
 def _state_path() -> str:
-    """Return the path to the Nous rate limit state file."""
+    """Return the path to the Nexvisorarate limit state file."""
     try:
         from sara_constants import get_sara_home
         base = get_sara_home()
@@ -68,13 +68,13 @@ def _parse_reset_seconds(headers: Optional[Mapping[str, str]]) -> Optional[float
     return None
 
 
-def record_nous_rate_limit(
+def record_nexvisora_rate_limit(
     *,
     headers: Optional[Mapping[str, str]] = None,
     error_context: Optional[dict[str, Any]] = None,
     default_cooldown: float = 300.0,
 ) -> None:
-    """Record that Nous Portal is rate-limited.
+    """Record that NexvisoraPortal is rate-limited.
 
     Parses the reset time from response headers or error context.
     Falls back to ``default_cooldown`` (5 minutes) if no reset info
@@ -129,15 +129,15 @@ def record_nous_rate_limit(
             raise
 
         logger.info(
-            "Nous rate limit recorded: resets in %.0fs (at %.0f)",
+            "Nexvisorarate limit recorded: resets in %.0fs (at %.0f)",
             reset_at - now, reset_at,
         )
     except Exception as exc:
-        logger.debug("Failed to write Nous rate limit state: %s", exc)
+        logger.debug("Failed to write Nexvisorarate limit state: %s", exc)
 
 
-def nous_rate_limit_remaining() -> Optional[float]:
-    """Check if Nous Portal is currently rate-limited.
+def nexvisora_rate_limit_remaining() -> Optional[float]:
+    """Check if NexvisoraPortal is currently rate-limited.
 
     Returns:
         Seconds remaining until reset, or None if not rate-limited.
@@ -160,14 +160,14 @@ def nous_rate_limit_remaining() -> Optional[float]:
         return None
 
 
-def clear_nous_rate_limit() -> None:
-    """Clear the rate limit state (e.g., after a successful Nous request)."""
+def clear_nexvisora_rate_limit() -> None:
+    """Clear the rate limit state (e.g., after a successful Nexvisorarequest)."""
     try:
         os.unlink(_state_path())
     except FileNotFoundError:
         pass
     except OSError as exc:
-        logger.debug("Failed to clear Nous rate limit state: %s", exc)
+        logger.debug("Failed to clear Nexvisorarate limit state: %s", exc)
 
 
 def format_remaining(seconds: float) -> str:
@@ -189,32 +189,32 @@ def format_remaining(seconds: float) -> str:
 _MIN_RESET_FOR_BREAKER_SECONDS = 60.0
 
 
-def is_genuine_nous_rate_limit(
+def is_genuine_nexvisora_rate_limit(
     *,
     headers: Optional[Mapping[str, str]] = None,
     last_known_state: Optional[Any] = None,
 ) -> bool:
-    """Decide whether a 429 from Nous Portal is a real account rate limit.
+    """Decide whether a 429 from NexvisoraPortal is a real account rate limit.
 
-    Nous Portal multiplexes multiple upstream providers (DeepSeek, Kimi,
+    NexvisoraPortal multiplexes multiple upstream providers (DeepSeek, Kimi,
     MiMo, sara, ...) behind one endpoint.  A 429 can mean either:
 
-      (a) The caller's own RPM / RPH / TPM / TPH bucket on Nous is
+      (a) The caller's own RPM / RPH / TPM / TPH bucket on Nexvisorais
           exhausted — a genuine rate limit that will last until the
           bucket resets.
       (b) The upstream provider is out of capacity for a specific model
           — transient, clears in seconds, and has nothing to do with
-          the caller's quota on Nous.
+          the caller's quota on nexvisora.
 
-    Tripping the cross-session breaker on (b) blocks ALL Nous requests
-    (and all models, since Nous is one provider key) for minutes even
+    Tripping the cross-session breaker on (b) blocks ALL Nexvisorarequests
+    (and all models, since Nexvisorais one provider key) for minutes even
     though the caller's account is healthy and a different model would
     have worked.  That's the bug users hit when DeepSeek V4 Pro 429s
     trigger a breaker that then blocks Kimi 2.6 and MiMo V2.5 Pro.
 
     We tell the two apart by looking at:
 
-      1. The 429 response's own ``x-ratelimit-*`` headers.  Nous emits
+      1. The 429 response's own ``x-ratelimit-*`` headers.  Nexvisoraemits
          the full suite on every response including 429s.  An exhausted
          bucket (``remaining == 0`` with a reset window >= 60s) is
          proof of (a).

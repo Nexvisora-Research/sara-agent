@@ -3,7 +3,7 @@
 Wires ``sara meet <subcommand>``:
   setup       — preflight playwright, chromium, auth file, print fixes
   auth        — open a browser to sign into Google, save storage state
-  join <url>  — join a Meet URL synchronously (also callable from the agent)
+  join <url>  — join a Meet URL synchronexvisoraly (also callable from the agent)
   status      — print current bot state
   transcript  — print the transcript
   stop        — leave the current meeting

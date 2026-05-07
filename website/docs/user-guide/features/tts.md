@@ -8,8 +8,8 @@ description: "Text-to-speech and voice message transcription across all platform
 
 sara Agent supports both text-to-speech output and voice message transcription across all messaging platforms.
 
-:::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.NexvisoraResearch.com) subscription, OpenAI TTS is available through the **[Tool Gateway](tool-gateway.md)** without a separate OpenAI API key. Run `sara model` or `sara tools` to enable it.
+:::tip NexvisoraSubscribers
+If you have a paid [NexvisoraPortal](https://portal.NexvisoraResearch.com) subscription, OpenAI TTS is available through the **[Tool Gateway](tool-gateway.md)** without a separate OpenAI API key. Run `sara model` or `sara tools` to enable it.
 :::
 
 ## Text-to-Speech

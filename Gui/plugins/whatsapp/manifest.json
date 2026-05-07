@@ -1,0 +1,14 @@
+{
+  "id": "whatsapp",
+  "name": "WhatsApp",
+  "version": "1.0.0",
+  "description": "Connect to WhatsApp for personal messaging",
+  "author": "Sara Agent",
+  "icon": "whatsapp",
+  "platforms": ["win", "linux", "mac", "android"],
+  "requiredCredentials": [
+    { "key": "phone", "label": "Phone Number", "sensitive": false, "placeholder": "+1234567890" },
+    { "key": "sessionToken", "label": "Session Token", "sensitive": true, "placeholder": "Auto-generated on first login" }
+  ],
+  "permissions": ["messages.read", "messages.send", "contacts.read", "groups.read"]
+}

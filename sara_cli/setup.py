@@ -26,8 +26,8 @@ _AGENTS_DIR = Path(__file__).parent.parent.resolve() / ".agents"
 if str(_AGENTS_DIR) not in sys.path:
     sys.path.insert(0, str(_AGENTS_DIR))
 
-from sara_cli.nous_subscription import get_nous_subscription_features
-from tools.tool_backend_helpers import managed_nous_tools_enabled
+from sara_cli.nexvisora_subscription import get_nexvisora_subscription_features
+from tools.tool_backend_helpers import managed_nexvisora_tools_enabled
 from utils import base_url_hostname
 from sara_constants import get_optional_skills_dir
 
@@ -357,7 +357,7 @@ def _print_setup_summary(config: dict, sara_home):
     print_header("Tool Availability Summary")
 
     tool_status = []
-    subscription_features = get_nous_subscription_features(config)
+    subscription_features = get_nexvisora_subscription_features(config)
 
     # Vision — use the same runtime resolver as the actual vision tools
     try:
@@ -379,8 +379,8 @@ def _print_setup_summary(config: dict, sara_home):
         tool_status.append(("Mixture of Agents", False, "OPENROUTER_API_KEY"))
 
     # Web tools (Exa, Parallel, Firecrawl, or Tavily)
-    if subscription_features.web.managed_by_nous:
-        tool_status.append(("Web Search & Extract (Nous subscription)", True, None))
+    if subscription_features.web.managed_by_nexvisora:
+        tool_status.append(("Web Search & Extract (Nexvisorasubscription)", True, None))
     elif subscription_features.web.available:
         label = "Web Search & Extract"
         if subscription_features.web.current_provider:
@@ -391,8 +391,8 @@ def _print_setup_summary(config: dict, sara_home):
 
     # Browser tools (local Chromium, Camofox, Browserbase, Browser Use, or Firecrawl)
     browser_provider = subscription_features.browser.current_provider
-    if subscription_features.browser.managed_by_nous:
-        tool_status.append(("Browser Automation (Nous Browser Use)", True, None))
+    if subscription_features.browser.managed_by_nexvisora:
+        tool_status.append(("Browser Automation (NexvisoraBrowser Use)", True, None))
     elif subscription_features.browser.available:
         label = "Browser Automation"
         if browser_provider:
@@ -417,10 +417,10 @@ def _print_setup_summary(config: dict, sara_home):
             ("Browser Automation", False, missing_browser_hint)
         )
 
-    # Image generation — FAL (direct or via Nous), or any plugin-registered
+    # Image generation — FAL (direct or via nexvisora), or any plugin-registered
     # provider (OpenAI, etc.)
-    if subscription_features.image_gen.managed_by_nous:
-        tool_status.append(("Image Generation (Nous subscription)", True, None))
+    if subscription_features.image_gen.managed_by_nexvisora:
+        tool_status.append(("Image Generation (Nexvisorasubscription)", True, None))
     elif subscription_features.image_gen.available:
         tool_status.append(("Image Generation", True, None))
     else:
@@ -450,8 +450,8 @@ def _print_setup_summary(config: dict, sara_home):
 
     # TTS — show configured provider
     tts_provider = cfg_get(config, "tts", "provider", default="edge")
-    if subscription_features.tts.managed_by_nous:
-        tool_status.append(("Text-to-Speech (OpenAI via Nous subscription)", True, None))
+    if subscription_features.tts.managed_by_nexvisora:
+        tool_status.append(("Text-to-Speech (OpenAI via Nexvisorasubscription)", True, None))
     elif tts_provider == "elevenlabs" and get_env_value("ELEVENLABS_API_KEY"):
         tool_status.append(("Text-to-Speech (ElevenLabs)", True, None))
     elif tts_provider == "openai" and (
@@ -486,15 +486,15 @@ def _print_setup_summary(config: dict, sara_home):
     else:
         tool_status.append(("Text-to-Speech (Edge TTS)", True, None))
 
-    if subscription_features.modal.managed_by_nous:
-        tool_status.append(("Modal Execution (Nous subscription)", True, None))
+    if subscription_features.modal.managed_by_nexvisora:
+        tool_status.append(("Modal Execution (Nexvisorasubscription)", True, None))
     elif cfg_get(config, "terminal", "backend") == "modal":
         if subscription_features.modal.direct_override:
             tool_status.append(("Modal Execution (direct Modal)", True, None))
         else:
             tool_status.append(("Modal Execution", False, "run 'sara setup terminal'"))
-    elif managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        tool_status.append(("Modal Execution (optional via Nous subscription)", True, None))
+    elif managed_nexvisora_tools_enabled() and subscription_features.nexvisora_auth_present:
+        tool_status.append(("Modal Execution (optional via Nexvisorasubscription)", True, None))
 
     # Tinker + WandB (RL training)
     if get_env_value("TINKER_API_KEY") and get_env_value("WANDB_API_KEY"):
@@ -910,7 +910,7 @@ def setup_model_provider(config: dict, *, quick: bool = False):
 
     if _vision_needs_setup:
         _prov_names = {
-            "nous-api": "Nous Portal API key",
+            "nexvisora-api": "NexvisoraPortal API key",
             "copilot": "GitHub Copilot",
             "copilot-acp": "GitHub Copilot ACP",
             "zai": "Z.AI / GLM",
@@ -980,10 +980,10 @@ def setup_model_provider(config: dict, *, quick: bool = False):
             print_info("Skipped — add later with 'sara setup' or configure AUXILIARY_VISION_* settings")
 
 
-    # Tool Gateway prompt is already shown by _model_flow_nous() above.
+    # Tool Gateway prompt is already shown by _model_flow_nexvisora() above.
     save_config(config)
 
-    if not quick and selected_provider != "nous":
+    if not quick and selected_provider != "nexvisora":
         _setup_tts_provider(config)
 
 
@@ -1076,7 +1076,7 @@ def _setup_tts_provider(config: dict):
     """Interactive TTS provider selection with install flow for NeuTTS."""
     tts_config = config.get("tts", {})
     current_provider = tts_config.get("provider", "edge")
-    subscription_features = get_nous_subscription_features(config)
+    subscription_features = get_nexvisora_subscription_features(config)
 
     provider_labels = {
         "edge": "Edge TTS",
@@ -1098,9 +1098,9 @@ def _setup_tts_provider(config: dict):
 
     choices = []
     providers = []
-    if managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        choices.append("Nous Subscription (managed OpenAI TTS, billed to your subscription)")
-        providers.append("nous-openai")
+    if managed_nexvisora_tools_enabled() and subscription_features.nexvisora_auth_present:
+        choices.append("NexvisoraSubscription (managed OpenAI TTS, billed to your subscription)")
+        providers.append("nexvisora-openai")
     choices.extend(
         [
             "Edge TTS (free, cloud-based, no setup needed)",
@@ -1123,10 +1123,10 @@ def _setup_tts_provider(config: dict):
         return
 
     selected = providers[idx]
-    selected_via_nous = selected == "nous-openai"
-    if selected == "nous-openai":
+    selected_via_Nexvisora= selected == "nexvisora-openai"
+    if selected == "nexvisora-openai":
         selected = "openai"
-        print_info("OpenAI TTS will use the managed Nous gateway and bill to your subscription.")
+        print_info("OpenAI TTS will use the managed Nexvisoragateway and bill to your subscription.")
         if get_env_value("VOICE_TOOLS_OPENAI_KEY") or get_env_value("OPENAI_API_KEY"):
             print_warning(
                 "Direct OpenAI credentials are still configured and may take precedence until removed from ~/.sara/.env."
@@ -1167,7 +1167,7 @@ def _setup_tts_provider(config: dict):
                 print_warning("No API key provided. Falling back to Edge TTS.")
                 selected = "edge"
 
-    elif selected == "openai" and not selected_via_nous:
+    elif selected == "openai" and not selected_via_nexvisora:
         existing = get_env_value("VOICE_TOOLS_OPENAI_KEY") or get_env_value("OPENAI_API_KEY")
         if not existing:
             print()
@@ -1410,16 +1410,16 @@ def setup_terminal_backend(config: dict):
                 return False
 
         managed_modal_available = bool(
-            managed_nous_tools_enabled()
+            managed_nexvisora_tools_enabled()
             and
-            get_nous_subscription_features(config).nous_auth_present
+            get_nexvisora_subscription_features(config).nexvisora_auth_present
             and is_managed_tool_gateway_ready("modal")
         )
         modal_mode = normalize_modal_mode(cfg_get(config, "terminal", "modal_mode"))
         use_managed_modal = False
         if managed_modal_available:
             modal_choices = [
-                "Use my Nous subscription",
+                "Use my Nexvisorasubscription",
                 "Use my own Modal account",
             ]
             if modal_mode == "managed":
@@ -1437,7 +1437,7 @@ def setup_terminal_backend(config: dict):
 
         if use_managed_modal:
             config["terminal"]["modal_mode"] = "managed"
-            print_info("Modal execution will use the managed Nous gateway and bill to your subscription.")
+            print_info("Modal execution will use the managed Nexvisoragateway and bill to your subscription.")
             if get_env_value("MODAL_TOKEN_ID") or get_env_value("MODAL_TOKEN_SECRET"):
                 print_info(
                     "Direct Modal credentials are still configured, but this backend is pinned to managed mode."
@@ -2576,7 +2576,7 @@ def _model_section_has_credentials(config: dict) -> bool:
       * ``PROVIDER_REGISTRY`` in ``sara_cli.auth`` — lists every supported
         provider along with its ``api_key_env_vars``.
       * ``active_provider`` in the auth store — covers OAuth device-code /
-        external-OAuth providers (Nous, Codex, Qwen, Gemini CLI, ...).
+        external-OAuth providers (nexvisora, Codex, Qwen, Gemini CLI, ...).
       * The legacy OpenRouter aggregator env vars, which route generic
         ``OPENAI_API_KEY`` / ``OPENROUTER_API_KEY`` values through OpenRouter.
     """

@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root {
+  width: 100%; height: 100%;
+  background: theme('colors.bg.dark');
+  color: theme('colors.text.primary');
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: theme('colors.bg.hover'); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: theme('colors.primary.DEFAULT'); }
+
+.glass { background: rgba(26,26,62,.7); backdrop-filter: blur(12px); border: 1px solid rgba(99,102,241,.1); }
+.glow { box-shadow: 0 0 20px rgba(99,102,241,.3); }
+.voice-active { animation: pulse-ring 1.5s cubic-bezier(.215,.61,.355,1) infinite; }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); }
+  70% { box-shadow: 0 0 0 20px rgba(99,102,241,0); }
+  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+}

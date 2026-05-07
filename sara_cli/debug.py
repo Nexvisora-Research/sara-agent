@@ -107,7 +107,7 @@ def _record_pending(urls: list[str], delay_seconds: int = _AUTO_DELETE_SECONDS) 
 
 
 def _sweep_expired_pastes(now: Optional[float] = None) -> tuple[int, int]:
-    """Synchronously DELETE any pending pastes whose ``expire_at`` has passed.
+    """Synchronexvisoraly DELETE any pending pastes whose ``expire_at`` has passed.
 
     Returns ``(deleted, remaining)``.  Best-effort: failed deletes stay in
     the pending file and will be retried on the next sweep.  Silent —

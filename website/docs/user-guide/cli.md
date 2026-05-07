@@ -25,7 +25,7 @@ sara chat -q "Hello"
 sara chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-sara chat --provider nous        # Use Nous Portal
+sara chat --provider Nexvisora       # Use NexvisoraPortal
 sara chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets

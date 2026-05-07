@@ -133,7 +133,7 @@ Use the existing providers as templates:
 - simple API-key path: Z.AI, MiniMax
 - API-key path with endpoint detection: Kimi, Z.AI
 - native token resolution: Anthropic
-- OAuth / auth-store path: Nous, OpenAI Codex
+- OAuth / auth-store path: nexvisora, OpenAI Codex
 
 Questions to answer here:
 

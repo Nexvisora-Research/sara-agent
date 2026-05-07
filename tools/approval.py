@@ -359,7 +359,7 @@ _session_yolo: set[str] = set()
 _permanent_approved: set = set()
 
 # =========================================================================
-# Blocking gateway approval (mirrors CLI's synchronous input() flow)
+# Blocking gateway approval (mirrors CLI's synchroNexvisorainput() flow)
 # =========================================================================
 # Per-session QUEUE of pending approvals.  Multiple threads (parallel
 # subagents, execute_code RPC handlers) can block concurrently — each gets
@@ -1033,7 +1033,7 @@ def check_all_command_guards(command: str, env_type: str,
     has_tirith = any(is_t for _, _, is_t in warnings)
 
     # Gateway/async approval — block the agent thread until the user
-    # responds with /approve or /deny, mirroring the CLI's synchronous
+    # responds with /approve or /deny, mirroring the CLI's synchronexvisora
     # input() flow.  The agent never sees "approval_required"; it either
     # gets the command output (approved) or a definitive "BLOCKED" message.
     if is_gateway or is_ask:

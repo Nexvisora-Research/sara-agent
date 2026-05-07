@@ -4745,7 +4745,7 @@ def _(rid, params: dict) -> dict:
         # "models" with the curated list (same source as `sara model` and
         # classic CLI's /model picker). Do NOT overwrite with live
         # provider_model_ids() — that bypasses curation and pulls in
-        # non-agentic models (e.g. Nous /models returns ~400 IDs including
+        # non-agentic models (e.g. Nexvisora/models returns ~400 IDs including
         # TTS, embeddings, rerankers, image/video generators).
         user_provs = (
             cfg.get("providers") if isinstance(cfg.get("providers"), dict) else {}

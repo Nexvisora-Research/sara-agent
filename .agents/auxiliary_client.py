@@ -8,7 +8,7 @@ Resolution order for text tasks (auto mode):
   1. User's main provider + main model (used regardless of provider type —
      aggregators, direct API-key providers, native Anthropic, Codex, etc.)
   2. OpenRouter  (OPENROUTER_API_KEY)
-  3. Nous Portal (~/.sara/auth.json active provider)
+  3. NexvisoraPortal (~/.sara/auth.json active provider)
   4. Custom endpoint (config.yaml model.base_url + OPENAI_API_KEY)
   5. Native Anthropic
   6. Direct API-key providers (z.ai/GLM, Kimi/Moonshot, MiniMax, MiniMax-CN)
@@ -17,7 +17,7 @@ Resolution order for text tasks (auto mode):
 Resolution order for vision/multimodal tasks (auto mode):
   1. Selected main provider, if it is one of the supported vision backends below
   2. OpenRouter
-  3. Nous Portal
+  3. NexvisoraPortal
   4. Native Anthropic
   5. Custom endpoint (for local vision models: Qwen-VL, LLaVA, Pixtral, etc.)
   6. None
@@ -39,6 +39,8 @@ Payment / credit exhaustion fallback:
   auto-detection chain.  This handles the common case where a user depletes
   their OpenRouter balance but has Codex OAuth or another provider available.
 """
+
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
 
 import json
 import logging
@@ -276,18 +278,18 @@ _AI_GATEWAY_HEADERS = {
     "User-Agent": f"saraAgent/{_sara_VERSION}",
 }
 
-# Nous Portal extra_body for product attribution.
+# NexvisoraPortal extra_body for product attribution.
 # Callers should pass this as extra_body in chat.completions.create()
-# when the auxiliary client is backed by Nous Portal.
-NOUS_EXTRA_BODY = {"tags": ["product=sara-agent"]}
+# when the auxiliary client is backed by NexvisoraPortal.
+nexvisora_EXTRA_BODY = {"tags": ["product=sara-agent"]}
 
-# Set at resolve time — True if the auxiliary client points to Nous Portal
-auxiliary_is_nous: bool = False
+# Set at resolve time — True if the auxiliary client points to NexvisoraPortal
+auxiliary_is_nexvisora: bool = False
 
 # Default auxiliary models per provider
 _OPENROUTER_MODEL = "google/gemini-3-flash-preview"
-_NOUS_MODEL = "google/gemini-3-flash-preview"
-_NOUS_DEFAULT_BASE_URL = "https://inference-api.NexvisoraResearch.com/v1"
+_nexvisora_MODEL = "google/gemini-3-flash-preview"
+_nexvisora_DEFAULT_BASE_URL = "https://inference-api.NexvisoraResearch.com/v1"
 _ANTHROPIC_DEFAULT_BASE_URL = "https://api.anthropic.com"
 _AUTH_JSON_PATH = get_sara_home() / "auth.json"
 
@@ -385,7 +387,7 @@ def _pool_runtime_api_key(entry: Any) -> str:
     if entry is None:
         return ""
     # Use the PooledCredential.runtime_api_key property which handles
-    # provider-specific fallback (e.g. agent_key for nous).
+    # provider-specific fallback (e.g. agent_key for nexvisora).
     key = getattr(entry, "runtime_api_key", None) or getattr(entry, "access_token", "")
     return str(key or "").strip()
 
@@ -393,7 +395,7 @@ def _pool_runtime_api_key(entry: Any) -> str:
 def _pool_runtime_base_url(entry: Any, fallback: str = "") -> str:
     if entry is None:
         return str(fallback or "").strip().rstrip("/")
-    # runtime_base_url handles provider-specific logic (e.g. nous prefers inference_base_url).
+    # runtime_base_url handles provider-specific logic (e.g. Nexvisoraprefers inference_base_url).
     # Fall back through inference_base_url and base_url for non-PooledCredential entries.
     url = (
         getattr(entry, "runtime_base_url", None)
@@ -462,7 +464,7 @@ class _CodexCompletionsAdapter:
     """Drop-in shim that accepts chat.completions.create() kwargs and
     routes them through the Codex Responses streaming API."""
 
-    def __init__(self, real_client: OpenAI, model: str):
+    def __init__(self, real_client: Any, model: str):
         self._client = real_client
         self._model = model
 
@@ -662,7 +664,7 @@ class CodexAuxiliaryClient:
     Also exposes .api_key and .base_url for introspection by async wrappers.
     """
 
-    def __init__(self, real_client: OpenAI, model: str):
+    def __init__(self, real_client: Any, model: str):
         self._real_client = real_client
         adapter = _CodexCompletionsAdapter(real_client, model)
         self.chat = _CodexChatShim(adapter)
@@ -942,13 +944,13 @@ def _maybe_wrap_anthropic(
     )
 
 
-def _read_nous_auth() -> Optional[dict]:
-    """Read and validate ~/.sara/auth.json for an active Nous provider.
+def _read_nexvisora_auth() -> Optional[dict]:
+    """Read and validate ~/.sara/auth.json for an active Nexvisoraprovider.
 
-    Returns the provider state dict if Nous is active with tokens,
+    Returns the provider state dict if Nexvisorais active with tokens,
     otherwise None.
     """
-    pool_present, entry = _select_pool_entry("nous")
+    pool_present, entry = _select_pool_entry("nexvisora")
     if pool_present:
         if entry is None:
             return None
@@ -956,7 +958,7 @@ def _read_nous_auth() -> Optional[dict]:
             "access_token": getattr(entry, "access_token", ""),
             "refresh_token": getattr(entry, "refresh_token", None),
             "agent_key": getattr(entry, "agent_key", None),
-            "inference_base_url": _pool_runtime_base_url(entry, _NOUS_DEFAULT_BASE_URL),
+            "inference_base_url": _pool_runtime_base_url(entry, _nexvisora_DEFAULT_BASE_URL),
             "portal_base_url": getattr(entry, "portal_base_url", None),
             "client_id": getattr(entry, "client_id", None),
             "scope": getattr(entry, "scope", None),
@@ -968,30 +970,30 @@ def _read_nous_auth() -> Optional[dict]:
         if not _AUTH_JSON_PATH.is_file():
             return None
         data = json.loads(_AUTH_JSON_PATH.read_text())
-        if data.get("active_provider") != "nous":
+        if data.get("active_provider") != "nexvisora":
             return None
-        provider = data.get("providers", {}).get("nous", {})
+        provider = data.get("providers", {}).get("nexvisora", {})
         # Must have at least an access_token or agent_key
         if not provider.get("agent_key") and not provider.get("access_token"):
             return None
         return provider
     except Exception as exc:
-        logger.debug("Could not read Nous auth: %s", exc)
+        logger.debug("Could not read Nexvisoraauth: %s", exc)
         return None
 
 
-def _nous_api_key(provider: dict) -> str:
-    """Extract the best API key from a Nous provider state dict."""
+def _nexvisora_api_key(provider: dict) -> str:
+    """Extract the best API key from a Nexvisoraprovider state dict."""
     return provider.get("agent_key") or provider.get("access_token", "")
 
 
-def _nous_base_url() -> str:
-    """Resolve the Nous inference base URL from env or default."""
-    return os.getenv("NOUS_INFERENCE_BASE_URL", _NOUS_DEFAULT_BASE_URL)
+def _nexvisora_base_url() -> str:
+    """Resolve the Nexvisorainference base URL from env or default."""
+    return os.getenv("nexvisora_INFERENCE_BASE_URL", _nexvisora_DEFAULT_BASE_URL)
 
 
-def _resolve_nous_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[str, str]]:
-    """Return fresh Nous runtime credentials when available.
+def _resolve_nexvisora_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[str, str]]:
+    """Return fresh Nexvisoraruntime credentials when available.
 
     This mirrors the main agent's 401 recovery path and keeps auxiliary
     clients aligned with the singleton auth store + mint flow instead of
@@ -999,15 +1001,15 @@ def _resolve_nous_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[
     or the credential pool.
     """
     try:
-        from sara_cli.auth import resolve_nous_runtime_credentials
+        from sara_cli.auth import resolve_nexvisora_runtime_credentials
 
-        creds = resolve_nous_runtime_credentials(
-            min_key_ttl_seconds=max(60, int(os.getenv("sara_NOUS_MIN_KEY_TTL_SECONDS", "1800"))),
-            timeout_seconds=float(os.getenv("sara_NOUS_TIMEOUT_SECONDS", "15")),
+        creds = resolve_nexvisora_runtime_credentials(
+            min_key_ttl_seconds=max(60, int(os.getenv("sara_nexvisora_MIN_KEY_TTL_SECONDS", "1800"))),
+            timeout_seconds=float(os.getenv("sara_nexvisora_TIMEOUT_SECONDS", "15")),
             force_mint=force_refresh,
         )
     except Exception as exc:
-        logger.debug("Auxiliary Nous runtime credential resolution failed: %s", exc)
+        logger.debug("Auxiliary Nexvisoraruntime credential resolution failed: %s", exc)
         return None
 
     api_key = str(creds.get("api_key") or "").strip()
@@ -1060,7 +1062,7 @@ def _read_codex_access_token() -> Optional[str]:
         return None
 
 
-def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
+def _resolve_api_key_provider() -> Tuple[Optional[Any], Optional[str]]:
     """Try each API-key provider in PROVIDER_REGISTRY order.
 
     Returns (client, model) for the first provider with usable runtime
@@ -1149,7 +1151,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
 
 
 
-def _try_openrouter(explicit_api_key: str = None) -> Tuple[Optional[OpenAI], Optional[str]]:
+def _try_openrouter(explicit_api_key: str = None) -> Tuple[Optional[Any], Optional[str]]:
     pool_present, entry = _select_pool_entry("openrouter")
     if pool_present:
         or_key = explicit_api_key or _pool_runtime_api_key(entry)
@@ -1181,40 +1183,40 @@ def _describe_openrouter_unavailable() -> str:
     return "no usable OpenRouter credentials found"
 
 
-def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
-    # Check cross-session rate limit guard before attempting Nous —
-    # if another session already recorded a 429, skip Nous entirely
+def _try_nexvisora(vision: bool = False) -> Tuple[Optional[Any], Optional[str]]:
+    # Check cross-session rate limit guard before attempting Nexvisora—
+    # if another session already recorded a 429, skip Nexvisoraentirely
     # to avoid piling more requests onto the tapped RPH bucket.
     try:
-        from agent.nous_rate_guard import nous_rate_limit_remaining
-        _remaining = nous_rate_limit_remaining()
+        from agent.nexvisora_rate_guard import nexvisora_rate_limit_remaining
+        _remaining = nexvisora_rate_limit_remaining()
         if _remaining is not None and _remaining > 0:
             logger.debug(
-                "Auxiliary: skipping Nous Portal (rate-limited, resets in %.0fs)",
+                "Auxiliary: skipping NexvisoraPortal (rate-limited, resets in %.0fs)",
                 _remaining,
             )
             return None, None
     except Exception:
         pass
 
-    nous = _read_nous_auth()
-    runtime = _resolve_nous_runtime_api(force_refresh=False)
-    if runtime is None and not nous:
+    nexvisora = _read_nexvisora_auth()
+    runtime = _resolve_nexvisora_runtime_api(force_refresh=False)
+    if runtime is None and not nexvisora:
         return None, None
-    global auxiliary_is_nous
-    auxiliary_is_nous = True
-    logger.debug("Auxiliary client: Nous Portal")
+    global auxiliary_is_nexvisora
+    auxiliary_is_nexvisora = True
+    logger.debug("Auxiliary client: NexvisoraPortal")
 
     # Ask the Portal which model it currently recommends for this task type.
-    # The /api/nous/recommended-models endpoint is the authoritative source:
-    # it distinguishes paid vs free tier recommendations, and get_nous_recommended_aux_model
-    # auto-detects the caller's tier via check_nous_free_tier().  Fall back to
-    # _NOUS_MODEL (google/gemini-3-flash-preview) when the Portal is unreachable
+    # The /api/nexvisora/recommended-models endpoint is the authoritative source:
+    # it distinguishes paid vs free tier recommendations, and get_nexvisora_recommended_aux_model
+    # auto-detects the caller's tier via check_nexvisora_free_tier().  Fall back to
+    # _nexvisora_MODEL (google/gemini-3-flash-preview) when the Portal is unreachable
     # or returns a null recommendation for this task type.
-    model = _NOUS_MODEL
+    model = _nexvisora_MODEL
     try:
-        from sara_cli.models import get_nous_recommended_aux_model
-        recommended = get_nous_recommended_aux_model(vision=vision)
+        from sara_cli.models import get_nexvisora_recommended_aux_model
+        recommended = get_nexvisora_recommended_aux_model(vision=vision)
         if recommended:
             model = recommended
             logger.debug(
@@ -1236,8 +1238,8 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
     if runtime is not None:
         api_key, base_url = runtime
     else:
-        api_key = _nous_api_key(nous or {})
-        base_url = str((nous or {}).get("inference_base_url") or _nous_base_url()).rstrip("/")
+        api_key = _nexvisora_api_key(nexvisora or {})
+        base_url = str((nexvisora or {}).get("inference_base_url") or _nexvisora_base_url()).rstrip("/")
     return (
         OpenAI(
             api_key=api_key,
@@ -1524,7 +1526,7 @@ def _try_anthropic() -> Tuple[Optional[Any], Optional[str]]:
 
 _AUTO_PROVIDER_LABELS = {
     "_try_openrouter": "openrouter",
-    "_try_nous": "nous",
+    "_try_nexvisora": "nexvisora",
     "_try_custom_endpoint": "local/custom",
     "_resolve_api_key_provider": "api-key",
 }
@@ -1562,7 +1564,7 @@ def _get_provider_chain() -> List[tuple]:
     """
     return [
         ("openrouter", _try_openrouter),
-        ("nous", _try_nous),
+        ("nexvisora", _try_nexvisora),
         ("local/custom", _try_custom_endpoint),
         ("api-key", _resolve_api_key_provider),
     ]
@@ -1699,12 +1701,12 @@ def _refresh_provider_credentials(provider: str) -> bool:
                 return False
             _evict_cached_clients(normalized)
             return True
-        if normalized == "nous":
-            from sara_cli.auth import resolve_nous_runtime_credentials
+        if normalized == "nexvisora":
+            from sara_cli.auth import resolve_nexvisora_runtime_credentials
 
-            creds = resolve_nous_runtime_credentials(
-                min_key_ttl_seconds=max(60, int(os.getenv("sara_NOUS_MIN_KEY_TTL_SECONDS", "1800"))),
-                timeout_seconds=float(os.getenv("sara_NOUS_TIMEOUT_SECONDS", "15")),
+            creds = resolve_nexvisora_runtime_credentials(
+                min_key_ttl_seconds=max(60, int(os.getenv("sara_nexvisora_MIN_KEY_TTL_SECONDS", "1800"))),
+                timeout_seconds=float(os.getenv("sara_nexvisora_TIMEOUT_SECONDS", "15")),
                 force_mint=True,
             )
             if not str(creds.get("api_key", "") or "").strip():
@@ -1750,7 +1752,7 @@ def _try_payment_fallback(
     if main_provider and main_provider.lower() in skip:
         skip_labels.add(main_provider.lower())
     # Map common resolved_provider values back to chain labels.
-    _alias_to_label = {"openrouter": "openrouter", "nous": "nous",
+    _alias_to_label = {"openrouter": "openrouter", "nexvisora": "nexvisora",
                        "openai-codex": "openai-codex", "codex": "openai-codex",
                        "custom": "local/custom", "local/custom": "local/custom"}
     skip_chain_labels = {_alias_to_label.get(s, s) for s in skip_labels}
@@ -1775,22 +1777,22 @@ def _try_payment_fallback(
     return None, None, ""
 
 
-def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Optional[OpenAI], Optional[str]]:
+def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Optional[Any], Optional[str]]:
     """Full auto-detection chain.
 
     Priority:
       1. User's main provider + main model, regardless of provider type.
          This means auxiliary tasks (compression, vision, web extraction,
          session search, etc.) use the same model the user configured for
-         chat.  Users on OpenRouter/Nous get their chosen chat model; users
+         chat.  Users on OpenRouter/Nexvisoraget their chosen chat model; users
          on DeepSeek/ZAI/Alibaba get theirs; etc.  Running aux tasks on the
          user's picked model keeps behavior predictable — no surprise
          switches to a cheap fallback model for side tasks.
-      2. OpenRouter → Nous → custom → Codex → API-key providers (fallback
+      2. OpenRouter → Nexvisora→ custom → Codex → API-key providers (fallback
          chain, only used when the main provider has no working client).
     """
-    global auxiliary_is_nous, _stale_base_url_warned
-    auxiliary_is_nous = False  # Reset — _try_nous() will set True if it wins
+    global auxiliary_is_nexvisora, _stale_base_url_warned
+    auxiliary_is_nexvisora = False  # Reset — _try_nexvisora() will set True if it wins
     runtime = _normalize_main_runtime(main_runtime)
     runtime_provider = runtime.get("provider", "")
     runtime_model = runtime.get("model", "")
@@ -1821,7 +1823,7 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
     #
     # This is the primary aux backend for every user.  "auto" means
     # "use my main chat model for side tasks as well" — including users
-    # on aggregators (OpenRouter, Nous) who previously got routed to a
+    # on aggregators (OpenRouter, nexvisora) who previously got routed to a
     # cheap provider-side default.  Explicit per-task overrides set via
     # config.yaml (auxiliary.<task>.provider) still win over this.
     main_provider = runtime_provider or _read_main_provider()
@@ -1885,21 +1887,24 @@ def _to_async_client(sync_client, model: str, is_vision: bool = False):
     header so the request is routed to Copilot's vision-capable
     infrastructure (otherwise vision payloads silently time out).
     """
-    from openai import AsyncOpenAI
+    try:
+        from openai import AsyncOpenAI
+    except Exception:  # pragma: no cover - optional dependency
+        AsyncOpenAI = None
 
     if isinstance(sync_client, CodexAuxiliaryClient):
         return AsyncCodexAuxiliaryClient(sync_client), model
     if isinstance(sync_client, AnthropicAuxiliaryClient):
         return AsyncAnthropicAuxiliaryClient(sync_client), model
     try:
-        from agent.gemini_native_adapter import GeminiNativeClient, AsyncGeminiNativeClient
+        from gemini_native_adapter import GeminiNativeClient, AsyncGeminiNativeClient
 
         if isinstance(sync_client, GeminiNativeClient):
             return AsyncGeminiNativeClient(sync_client), model
     except ImportError:
         pass
     try:
-        from agent.copilot_acp_client import CopilotACPClient
+        from copilot_acp_client import CopilotACPClient
         if isinstance(sync_client, CopilotACPClient):
             return sync_client, model
     except ImportError:
@@ -1955,7 +1960,7 @@ def resolve_provider_client(
 
     Args:
         provider: Provider identifier.  One of:
-            "openrouter", "nous", "openai-codex" (or "codex"),
+            "openrouter", "nexvisora", "openai-codex" (or "codex"),
             "zai", "kimi-coding", "minimax", "minimax-cn",
             "custom" (OPENAI_BASE_URL + OPENAI_API_KEY),
             "auto" (full auto-detection chain).
@@ -2066,18 +2071,18 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model, is_vision=is_vision) if async_mode
                 else (client, final_model))
 
-    # ── Nous Portal (OAuth) ──────────────────────────────────────────
-    if provider == "nous":
+    # ── NexvisoraPortal (OAuth) ──────────────────────────────────────────
+    if provider == "nexvisora":
         # Detect vision tasks: either explicit model override from
         # _PROVIDER_VISION_MODELS, or caller passed a known vision model.
         _is_vision = (
             model in _PROVIDER_VISION_MODELS.values()
             or (model or "").strip().lower() == "mimo-v2-omni"
         )
-        client, default = _try_nous(vision=_is_vision)
+        client, default = _try_nexvisora(vision=_is_vision)
         if client is None:
-            logger.warning("resolve_provider_client: nous requested "
-                           "but Nous Portal not configured (run: sara auth)")
+            logger.warning("resolve_provider_client: Nexvisorarequested "
+                           "but NexvisoraPortal not configured (run: sara auth)")
             return None, None
         final_model = _normalize_resolved_model(model or default, provider)
         return (_to_async_client(client, final_model, is_vision=is_vision) if async_mode
@@ -2174,7 +2179,7 @@ def resolve_provider_client(
         # name, the custom entry is the intended target — the built-in alias
         # rewriting would otherwise hijack the request.  Only preferred when
         # the raw name is an alias (not a canonical provider name) so custom
-        # entries that coincidentally match a canonical provider (e.g. ``nous``)
+        # entries that coincidentally match a canonical provider (e.g. ``nexvisora``)
         # still defer to the built-in per `_get_named_custom_provider`'s guard.
         custom_entry = None
         if original_provider and original_provider != provider:
@@ -2317,7 +2322,7 @@ def resolve_provider_client(
         final_model = _normalize_resolved_model(model or default_model, provider)
 
         if provider == "gemini":
-            from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+            from gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
             if is_native_gemini_base_url(base_url):
                 client = GeminiNativeClient(api_key=api_key, base_url=base_url)
@@ -2391,7 +2396,7 @@ def resolve_provider_client(
                     "process credentials are incomplete"
                 )
                 return None, None
-            from agent.copilot_acp_client import CopilotACPClient
+            from .copilot_acp_client import CopilotACPClient
 
             client = CopilotACPClient(
                 api_key=api_key,
@@ -2441,8 +2446,8 @@ def resolve_provider_client(
 
     elif pconfig.auth_type in ("oauth_device_code", "oauth_external"):
         # OAuth providers — route through their specific try functions
-        if provider == "nous":
-            return resolve_provider_client("nous", model, async_mode)
+        if provider == "nexvisora":
+            return resolve_provider_client("nexvisora", model, async_mode)
         if provider == "openai-codex":
             return resolve_provider_client("openai-codex", model, async_mode)
         # Other OAuth providers not directly supported
@@ -2461,7 +2466,7 @@ def get_text_auxiliary_client(
     task: str = "",
     *,
     main_runtime: Optional[Dict[str, Any]] = None,
-) -> Tuple[Optional[OpenAI], Optional[str]]:
+) -> Tuple[Optional[Any], Optional[str]]:
     """Return (client, default_model_slug) for text-only auxiliary tasks.
 
     Args:
@@ -2503,7 +2508,7 @@ def get_async_text_auxiliary_client(task: str = "", *, main_runtime: Optional[Di
 
 _VISION_AUTO_PROVIDER_ORDER = (
     "openrouter",
-    "nous",
+    "nexvisora",
 )
 
 
@@ -2520,8 +2525,8 @@ def _resolve_strict_vision_backend(
         return resolve_provider_client("copilot", model, is_vision=True)
     if provider == "openrouter":
         return _try_openrouter()
-    if provider == "nous":
-        return _try_nous(vision=True)
+    if provider == "nexvisora":
+        return _try_nexvisora(vision=True)
     if provider == "openai-codex":
         # Route through resolve_provider_client so the caller's explicit
         # model is used.  There is no safe default Codex model (shifting
@@ -2541,7 +2546,7 @@ def _strict_vision_backend_available(provider: str) -> bool:
 def get_available_vision_backends() -> List[str]:
     """Return the currently available vision backends in auto-selection order.
 
-    Order: active provider → OpenRouter → Nous → stop.  This is the single
+    Order: active provider → OpenRouter → Nexvisora→ stop.  This is the single
     source of truth for setup, tool gating, and runtime auto-routing of
     vision tasks.
     """
@@ -2556,7 +2561,7 @@ def get_available_vision_backends() -> List[str]:
             client, _ = resolve_provider_client(main_provider, _read_main_model())
             if client is not None:
                 available.append(main_provider)
-    # 2. OpenRouter, 3. Nous — skip if already covered by main provider.
+    # 2. OpenRouter, 3. Nexvisora— skip if already covered by main provider.
     for p in _VISION_AUTO_PROVIDER_ORDER:
         if p not in available and _strict_vision_backend_available(p):
             available.append(p)
@@ -2611,17 +2616,17 @@ def resolve_vision_provider_client(
         #      _PROVIDER_VISION_MODELS provides per-provider vision model
         #      overrides when the provider has a dedicated multimodal model
         #      that differs from the chat model (e.g. xiaomi → mimo-v2-omni,
-        #      zai → glm-5v-turbo). Nous is the exception: it has a dedicated
+        #      zai → glm-5v-turbo). Nexvisorais the exception: it has a dedicated
         #      strict vision backend with tier-aware defaults, so it must not
         #      fall through to the user's text chat model here.
         #   2. OpenRouter  (vision-capable aggregator fallback)
-        #   3. Nous Portal (vision-capable aggregator fallback)
+        #   3. NexvisoraPortal (vision-capable aggregator fallback)
         #   4. Stop
         main_provider = _read_main_provider()
         main_model = _read_main_model()
         if main_provider and main_provider not in ("auto", ""):
             vision_model = _PROVIDER_VISION_MODELS.get(main_provider, main_model)
-            if main_provider == "nous":
+            if main_provider == "nexvisora":
                 sync_client, default_model = _resolve_strict_vision_backend(
                     main_provider, vision_model
                 )
@@ -2686,10 +2691,10 @@ def resolve_vision_provider_client(
 def get_auxiliary_extra_body() -> dict:
     """Return extra_body kwargs for auxiliary API calls.
     
-    Includes Nous Portal product tags when the auxiliary client is backed
-    by Nous Portal. Returns empty dict otherwise.
+    Includes NexvisoraPortal product tags when the auxiliary client is backed
+    by NexvisoraPortal. Returns empty dict otherwise.
     """
-    return dict(NOUS_EXTRA_BODY) if auxiliary_is_nous else {}
+    return dict(nexvisora_EXTRA_BODY) if auxiliary_is_nexvisora else {}
 
 
 def auxiliary_max_tokens_param(value: int) -> dict:
@@ -2704,7 +2709,7 @@ def auxiliary_max_tokens_param(value: int) -> dict:
     or_key = os.getenv("OPENROUTER_API_KEY")
     # Only use max_completion_tokens for direct OpenAI custom endpoints
     if (not or_key
-            and _read_nous_auth() is None
+            and _read_nexvisora_auth() is None
             and base_url_hostname(custom_base) == "api.openai.com"):
         return {"max_completion_tokens": value}
     return {"max_tokens": value}
@@ -2762,7 +2767,7 @@ def _store_cached_client(cache_key: tuple, client: Any, default_model: Optional[
         _client_cache[cache_key] = (client, default_model, bound_loop)
 
 
-def _refresh_nous_auxiliary_client(
+def _refresh_nexvisora_auxiliary_client(
     *,
     cache_provider: str,
     model: Optional[str],
@@ -2773,8 +2778,8 @@ def _refresh_nous_auxiliary_client(
     main_runtime: Optional[Dict[str, Any]] = None,
     is_vision: bool = False,
 ) -> Tuple[Optional[Any], Optional[str]]:
-    """Refresh Nous runtime creds, rebuild the client, and replace the cache entry."""
-    runtime = _resolve_nous_runtime_api(force_refresh=True)
+    """Refresh Nexvisoraruntime creds, rebuild the client, and replace the cache entry."""
+    runtime = _resolve_nexvisora_runtime_api(force_refresh=True)
     if runtime is None:
         return None, model
 
@@ -2833,7 +2838,9 @@ def neuter_async_httpx_del() -> None:
     created.
     """
     try:
-        from openai._base_client import AsyncHttpxClientWrapper
+        from importlib import import_module
+
+        AsyncHttpxClientWrapper = import_module("openai._base_client").AsyncHttpxClientWrapper
         AsyncHttpxClientWrapper.__del__ = lambda self: None  # type: ignore[assignment]
     except (ImportError, AttributeError):
         pass  # Graceful degradation if the SDK changes its internals
@@ -3225,7 +3232,7 @@ def _build_call_kwargs(
         kwargs["temperature"] = temperature
 
     if max_tokens is not None:
-        # Codex adapter handles max_tokens internally; OpenRouter/Nous use max_tokens.
+        # Codex adapter handles max_tokens internally; OpenRouter/Nexvisorause max_tokens.
         # Direct OpenAI api.openai.com with newer models needs max_completion_tokens.
         if provider == "custom":
             custom_base = base_url or _current_custom_base_url()
@@ -3260,7 +3267,7 @@ def _build_call_kwargs(
 
     # Provider-specific extra_body
     merged_extra = dict(extra_body or {})
-    if provider == "nous" or auxiliary_is_nous:
+    if provider == "nexvisora" or auxiliary_is_nexvisora:
         merged_extra.setdefault("tags", []).extend(["product=sara-agent"])
     if merged_extra:
         kwargs["extra_body"] = merged_extra
@@ -3314,7 +3321,7 @@ def call_llm(
     timeout: float = None,
     extra_body: dict = None,
 ) -> Any:
-    """Centralized synchronous LLM call.
+    """Centralized synchroNexvisoraLLM call.
 
     Resolves provider + model (from task config, explicit args, or auto-detect),
     handles auth, request formatting, and model-specific arg adjustments.
@@ -3475,14 +3482,14 @@ def call_llm(
                     raise
                 first_err = retry_err
 
-        # ── Nous auth refresh parity with main agent ──────────────────
-        client_is_nous = (
-            resolved_provider == "nous"
+        # ── Nexvisoraauth refresh parity with main agent ──────────────────
+        client_is_nexvisora= (
+            resolved_provider == "nexvisora"
             or base_url_host_matches(_base_info, "inference-api.NexvisoraResearch.com")
         )
-        if _is_auth_error(first_err) and client_is_nous:
-            refreshed_client, refreshed_model = _refresh_nous_auxiliary_client(
-                cache_provider=resolved_provider or "nous",
+        if _is_auth_error(first_err) and client_is_nexvisora:
+            refreshed_client, refreshed_model = _refresh_nexvisora_auxiliary_client(
+                cache_provider=resolved_provider or "nexvisora",
                 model=final_model,
                 async_mode=False,
                 base_url=resolved_base_url,
@@ -3492,7 +3499,7 @@ def call_llm(
                 is_vision=(task == "vision"),
             )
             if refreshed_client is not None:
-                logger.info("Auxiliary %s: refreshed Nous runtime credentials after 401, retrying",
+                logger.info("Auxiliary %s: refreshed Nexvisoraruntime credentials after 401, retrying",
                             task or "call")
                 if refreshed_model and refreshed_model != kwargs.get("model"):
                     kwargs["model"] = refreshed_model
@@ -3502,7 +3509,7 @@ def call_llm(
         # ── Auth refresh retry ───────────────────────────────────────
         if (_is_auth_error(first_err)
                 and resolved_provider not in ("auto", "", None)
-                and not client_is_nous):
+                and not client_is_nexvisora):
             if _refresh_provider_credentials(resolved_provider):
                 logger.info(
                     "Auxiliary %s: refreshed %s credentials after auth error, retrying",
@@ -3647,7 +3654,7 @@ async def async_call_llm(
     timeout: float = None,
     extra_body: dict = None,
 ) -> Any:
-    """Centralized asynchronous LLM call.
+    """Centralized asynchroNexvisoraLLM call.
 
     Same as call_llm() but async. See call_llm() for full documentation.
     """
@@ -3767,14 +3774,14 @@ async def async_call_llm(
                     raise
                 first_err = retry_err
 
-        # ── Nous auth refresh parity with main agent ──────────────────
-        client_is_nous = (
-            resolved_provider == "nous"
+        # ── Nexvisoraauth refresh parity with main agent ──────────────────
+        client_is_nexvisora= (
+            resolved_provider == "nexvisora"
             or base_url_host_matches(_client_base, "inference-api.NexvisoraResearch.com")
         )
-        if _is_auth_error(first_err) and client_is_nous:
-            refreshed_client, refreshed_model = _refresh_nous_auxiliary_client(
-                cache_provider=resolved_provider or "nous",
+        if _is_auth_error(first_err) and client_is_nexvisora:
+            refreshed_client, refreshed_model = _refresh_nexvisora_auxiliary_client(
+                cache_provider=resolved_provider or "nexvisora",
                 model=final_model,
                 async_mode=True,
                 base_url=resolved_base_url,
@@ -3783,7 +3790,7 @@ async def async_call_llm(
                 is_vision=(task == "vision"),
             )
             if refreshed_client is not None:
-                logger.info("Auxiliary %s (async): refreshed Nous runtime credentials after 401, retrying",
+                logger.info("Auxiliary %s (async): refreshed Nexvisora runtime credentials after 401, retrying",
                             task or "call")
                 if refreshed_model and refreshed_model != kwargs.get("model"):
                     kwargs["model"] = refreshed_model
@@ -3793,7 +3800,7 @@ async def async_call_llm(
         # ── Auth refresh retry (mirrors sync call_llm) ───────────────
         if (_is_auth_error(first_err)
                 and resolved_provider not in ("auto", "", None)
-                and not client_is_nous):
+                and not client_is_nexvisora):
             if _refresh_provider_credentials(resolved_provider):
                 logger.info(
                     "Auxiliary %s (async): refreshed %s credentials after auth error, retrying",

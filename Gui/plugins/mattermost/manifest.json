@@ -1,0 +1,14 @@
+{
+  "id": "mattermost",
+  "name": "Mattermost",
+  "version": "1.0.0",
+  "description": "Connect to Mattermost for team collaboration",
+  "author": "Sara Agent",
+  "icon": "mattermost",
+  "platforms": ["win", "linux", "mac"],
+  "requiredCredentials": [
+    { "key": "serverUrl", "label": "Mattermost Server URL", "sensitive": false, "placeholder": "https://mattermost.example.com" },
+    { "key": "token", "label": "Personal Access Token", "sensitive": true, "placeholder": "Your token" }
+  ],
+  "permissions": ["messages.read", "messages.send", "channels.read", "users.read"]
+}

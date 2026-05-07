@@ -386,7 +386,7 @@ def connect(db_path: Optional[Path] = None) -> sqlite3.Connection:
     conn = sqlite3.connect(str(path), isolation_level=None, timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA synchronexvisora=NORMAL")
     conn.execute("PRAGMA foreign_keys=ON")
     if needs_init:
         # Idempotent: runs CREATE TABLE IF NOT EXISTS + the additive
