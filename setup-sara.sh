@@ -30,6 +30,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 PYTHON_VERSION="3.11"
+DEFAULT_VENV_DIR=".venv"
+if [ ! -d "$DEFAULT_VENV_DIR" ] && [ -d "venv" ]; then
+    DEFAULT_VENV_DIR="venv"
+fi
+VENV_DIR="${SARA_VENV_DIR:-$DEFAULT_VENV_DIR}"
+VENV_PATH="$SCRIPT_DIR/$VENV_DIR"
+COMMAND_NAME="${SARA_COMMAND_NAME:-sara}"
+RUN_SETUP="${SARA_RUN_SETUP:-1}"
 
 is_termux() {
     [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux/files/usr"* ]]
@@ -147,21 +155,25 @@ fi
 
 echo -e "${CYAN}→${NC} Setting up virtual environment..."
 
-if [ -d "venv" ]; then
-    echo -e "${CYAN}→${NC} Removing old venv..."
-    rm -rf venv
-fi
-
-if is_termux; then
-    "$PYTHON_PATH" -m venv venv
-    echo -e "${GREEN}✓${NC} venv created with stdlib venv"
+if [ -x "$VENV_PATH/bin/python" ]; then
+    echo -e "${GREEN}✓${NC} Reusing existing virtual environment: $VENV_DIR"
 else
-    $UV_CMD venv venv --python "$PYTHON_VERSION"
-    echo -e "${GREEN}✓${NC} venv created (Python $PYTHON_VERSION)"
+    if [ -d "$VENV_PATH" ]; then
+        echo -e "${CYAN}→${NC} Removing incomplete virtual environment: $VENV_DIR"
+        rm -rf "$VENV_PATH"
+    fi
+
+    if is_termux; then
+        "$PYTHON_PATH" -m venv "$VENV_PATH"
+        echo -e "${GREEN}✓${NC} $VENV_DIR created with stdlib venv"
+    else
+        $UV_CMD venv "$VENV_PATH" --python "$PYTHON_VERSION"
+        echo -e "${GREEN}✓${NC} $VENV_DIR created (Python $PYTHON_VERSION)"
+    fi
 fi
 
-export VIRTUAL_ENV="$SCRIPT_DIR/venv"
-SETUP_PYTHON="$SCRIPT_DIR/venv/bin/python"
+export VIRTUAL_ENV="$VENV_PATH"
+SETUP_PYTHON="$VENV_PATH/bin/python"
 
 # ============================================================================
 # Dependencies
@@ -187,7 +199,7 @@ else
     # fall back to pip install for compatibility or when lockfile is stale.
     if [ -f "uv.lock" ]; then
         echo -e "${CYAN}→${NC} Using uv.lock for hash-verified installation..."
-        UV_PROJECT_ENVIRONMENT="$SCRIPT_DIR/venv" $UV_CMD sync --all-extras --locked 2>/dev/null && \
+        UV_PROJECT_ENVIRONMENT="$VENV_PATH" $UV_CMD sync --all-extras --locked 2>/dev/null && \
             echo -e "${GREEN}✓${NC} Dependencies installed (lockfile verified)" || {
             echo -e "${YELLOW}⚠${NC} Lockfile install failed (may be outdated), falling back to pip install..."
             $UV_CMD pip install -e ".[all]" || $UV_CMD pip install -e "."
@@ -226,8 +238,13 @@ if command -v rg &> /dev/null; then
     echo -e "${GREEN}✓${NC} ripgrep found"
 else
     echo -e "${YELLOW}⚠${NC} ripgrep not found (file search will use grep fallback)"
-    read -p "Install ripgrep for faster search? [Y/n] " -n 1 -r
-    echo
+    if [ -t 0 ]; then
+        read -p "Install ripgrep for faster search? [Y/n] " -n 1 -r
+        echo
+    else
+        REPLY="n"
+        echo -e "${YELLOW}⚠${NC} Non-interactive shell detected; skipping ripgrep auto-install"
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
         INSTALLED=false
 
@@ -316,12 +333,16 @@ fi
 
 echo -e "${CYAN}→${NC} Setting up sara command..."
 
-sara_BIN="$SCRIPT_DIR/venv/bin/sara"
+sara_BIN="$VENV_PATH/bin/sara"
 COMMAND_LINK_DIR="$(get_command_link_dir)"
 COMMAND_LINK_DISPLAY_DIR="$(get_command_link_display_dir)"
 mkdir -p "$COMMAND_LINK_DIR"
 ln -sf "$sara_BIN" "$COMMAND_LINK_DIR/sara"
 echo -e "${GREEN}✓${NC} Symlinked sara → $COMMAND_LINK_DISPLAY_DIR/sara"
+if [ "$COMMAND_NAME" != "sara" ]; then
+    ln -sf "$sara_BIN" "$COMMAND_LINK_DIR/$COMMAND_NAME"
+    echo -e "${GREEN}✓${NC} Symlinked $COMMAND_NAME → $COMMAND_LINK_DISPLAY_DIR/$COMMAND_NAME"
+fi
 
 if is_termux; then
     export PATH="$COMMAND_LINK_DIR:$PATH"
@@ -373,7 +394,7 @@ mkdir -p "$sara_SKILLS_DIR"
 
 echo ""
 echo "Syncing bundled skills to ~/.sara/skills/ ..."
-if "$SCRIPT_DIR/venv/bin/python" "$SCRIPT_DIR/tools/skills_sync.py" 2>/dev/null; then
+if "$SETUP_PYTHON" "$SCRIPT_DIR/tools/skills_sync.py" 2>/dev/null; then
     echo -e "${GREEN}✓${NC} Skills synced"
 else
     # Fallback: copy if sync script fails (missing deps, etc.)
@@ -394,38 +415,47 @@ echo "Next steps:"
 echo ""
 if is_termux; then
     echo "  1. Run the setup wizard to configure API keys:"
-    echo "     sara setup"
+    echo "     $COMMAND_NAME setup"
     echo ""
     echo "  2. Start chatting:"
-    echo "     sara"
+    echo "     $COMMAND_NAME"
     echo ""
 else
     echo "  1. Reload your shell:"
     echo "     source $SHELL_CONFIG"
     echo ""
     echo "  2. Run the setup wizard to configure API keys:"
-    echo "     sara setup"
+    echo "     $COMMAND_NAME setup"
     echo ""
     echo "  3. Start chatting:"
-    echo "     sara"
+    echo "     $COMMAND_NAME"
     echo ""
 fi
 echo "Other commands:"
-echo "  sara status        # Check configuration"
+echo "  $COMMAND_NAME status        # Check configuration"
 if is_termux; then
-    echo "  sara gateway       # Run gateway in foreground"
+    echo "  $COMMAND_NAME gateway       # Run gateway in foreground"
 else
-    echo "  sara gateway install # Install gateway service (messaging + cron)"
+    echo "  $COMMAND_NAME gateway install # Install gateway service (messaging + cron)"
 fi
-echo "  sara cron list     # View scheduled jobs"
-echo "  sara doctor        # Diagnose issues"
+echo "  $COMMAND_NAME cron list     # View scheduled jobs"
+echo "  $COMMAND_NAME doctor        # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now
-read -p "Would you like to run the setup wizard now? [Y/n] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-    echo ""
-    # Run directly with venv Python (no activation needed)
-    "$SCRIPT_DIR/venv/bin/python" -m sara_cli.main setup
+if [ "$RUN_SETUP" = "1" ]; then
+    if [ -t 0 ]; then
+        read -p "Would you like to run the setup wizard now? [Y/n] " -n 1 -r
+        echo
+    else
+        REPLY="n"
+        echo -e "${YELLOW}⚠${NC} Non-interactive shell detected; skipping setup wizard"
+    fi
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        echo ""
+        # Run directly with venv Python (no activation needed)
+        "$SETUP_PYTHON" -m sara_cli.main setup
+    fi
+else
+    echo "Setup wizard skipped. Run later with: $COMMAND_NAME setup"
 fi

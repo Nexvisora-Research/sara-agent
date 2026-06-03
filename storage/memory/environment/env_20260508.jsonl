@@ -1,0 +1,1 @@
+{"id": "59db5fa0-f300-42c8-b7ba-09e2c3d4d077", "label": "test", "timestamp": "2026-05-08T14:25:20.897010", "modalities": ["voice", "screen"], "context": {"voice": {"text": "hello world", "confidence": 0.9, "engine": "test"}, "screen": {"path": "/tmp/test.png"}}}

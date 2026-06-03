@@ -16,6 +16,12 @@ Get sara Agent up and running in under two minutes with the one-line installer.
 curl -fsSL https://raw.githubusercontent.com/NexvisoraResearch/sara-agent/main/scripts/install.sh | bash
 ```
 
+To install the same CLI under a custom global command name:
+
+```bash
+curl -fsSL https://your-domain/install.sh | SARA_COMMAND_NAME=eden bash
+```
+
 ### Android / Termux
 
 sara now ships a Termux-aware installer path too:

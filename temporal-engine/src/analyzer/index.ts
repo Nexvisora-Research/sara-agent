@@ -1,0 +1,1 @@
+export { ConflictDetector } from "./conflictDetector";

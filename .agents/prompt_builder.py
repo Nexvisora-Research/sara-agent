@@ -400,6 +400,13 @@ PLATFORM_HINTS = {
         "attachments, audio as file attachments. You can also include image URLs "
         "in markdown format ![alt](url) and they will be uploaded as attachments."
     ),
+    "voice_assistant": (
+        "You are a voice assistant on the user's device. "
+        "Keep responses concise and conversational since they will be "
+        "read aloud via text-to-speech. Do not use markdown formatting. "
+        "Use natural language for device controls, smart home commands, "
+        "and information queries. Prefer short, clear sentences."
+    ),
     "signal": (
         "You are on a text messaging communication platform, Signal. "
         "Please do not use markdown as it does not render. "

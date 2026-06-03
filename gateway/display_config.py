@@ -179,9 +179,9 @@ def resolve_display_setting(
 def _normalise(setting: str, value: Any) -> Any:
     """Normalise YAML quirks (bare ``off`` → False in YAML 1.1)."""
     if setting == "tool_progress":
-        if value is False:
+        if value is False or (isinstance(value, str) and value.lower() == "false"):
             return "off"
-        if value is True:
+        if value is True or (isinstance(value, str) and value.lower() == "true"):
             return "all"
         return str(value).lower()
     if setting in ("show_reasoning", "streaming"):

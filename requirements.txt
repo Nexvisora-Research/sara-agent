@@ -16,6 +16,18 @@ groq
 discord.py
 Flask
 twilio
+prompt_toolkit
+fire
+httpx
+aiohttp
+numpy
+websockets
+fastapi
+uvicorn
+pyyaml
+simple-term-menu
+openai
+boto3
 
 # ── Feature Upgrade: 8 New Tools ──
 SpeechRecognition

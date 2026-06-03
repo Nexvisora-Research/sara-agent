@@ -297,8 +297,10 @@ def browser_click_nth_item(url: str, nth: int = 1) -> str:
             }
             base = url.lower()
             selector = next((sel for site, sel in selectors.items() if site in base), "a[href*='/p/']")
-            try: page.wait_for_selector(selector, timeout=5000)
-            except: pass
+            try:
+                page.wait_for_selector(selector, timeout=5000)
+            except Exception:
+                pass
             items = page.query_selector_all(selector)
             if nth <= 0 or nth > len(items):
                 browser.close()
@@ -345,10 +347,9 @@ def browser_add_to_cart(url: str) -> str:
                         page.wait_for_timeout(2000)
                         added = True
                         break
-                except:
+                except Exception:
                     continue
             browser.close()
             return "✅ Added to cart!" if added else "⚠️ Could not find 'Add to Cart' button. Please check manually."
     except Exception as e:
         return f"❌ Cart error: {e}"
-

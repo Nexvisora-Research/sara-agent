@@ -3,6 +3,7 @@ import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { TYPING_IDLE_MS } from '../config/timing.js'
 import { attachedImageNotice } from '../domain/messages.js'
 import { looksLikeSlashCommand } from '../domain/slash.js'
+import { recordDreamingUserPrompt } from '../dreaming/index.js'
 import type { GatewayClient } from '../gatewayClient.js'
 import type {
   InputDetectDropResponse,
@@ -98,6 +99,7 @@ export function useSubmission(opts: UseSubmissionOptions) {
         turnController.clearStatusTimer()
         maybeGoodVibes(submitText)
         setLastUserMsg(text)
+        recordDreamingUserPrompt(submitText, sid)
 
         if (showUserMessage) {
           appendMessage({ role: 'user', text: displayText })

@@ -6,6 +6,7 @@ import './lib/forceTruecolor.js'
 import type { FrameEvent } from '@sara/ink'
 
 import { GatewayClient } from './gatewayClient.js'
+import { DreamingEngine, setDreamingEngine } from './dreaming/index.js'
 import { setupGracefulExit } from './lib/gracefulExit.js'
 import { formatBytes, type HeapDumpResult, performHeapDump } from './lib/memory.js'
 import { type MemorySnapshot, startMemoryMonitor } from './lib/memoryMonitor.js'
@@ -21,6 +22,11 @@ if (!process.stdin.isTTY) {
 resetTerminalModes()
 
 const gw = new GatewayClient()
+const dreamingEngine = new DreamingEngine()
+
+dreamingEngine.attachGateway(gw)
+setDreamingEngine(dreamingEngine)
+await dreamingEngine.start()
 
 gw.start()
 
@@ -29,6 +35,7 @@ const dumpNotice = (snap: MemorySnapshot, dump: HeapDumpResult | null) =>
 
 setupGracefulExit({
   cleanups: [
+    () => dreamingEngine.stop(),
     () => {
       resetTerminalModes()
 

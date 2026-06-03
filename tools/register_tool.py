@@ -294,7 +294,19 @@ from tools.browser_tools import browser_open, browser_screenshot, browser_fill_f
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 8 — Knowledge System (memory/knowledge.py via ChromaDB)
 # ══════════════════════════════════════════════════════════════════════════════
-from memory.knowledge import knowledge_add, knowledge_search, knowledge_count
+def knowledge_add(text: str, user_id: str = "", **kwargs: Any) -> str:
+    from memory.knowledge import knowledge_add as _knowledge_add
+    return _knowledge_add(text, user_id=user_id, **kwargs)
+
+
+def knowledge_search(query: str, user_id: str = "", **kwargs: Any) -> str:
+    from memory.knowledge import knowledge_search as _knowledge_search
+    return _knowledge_search(query, user_id=user_id, **kwargs)
+
+
+def knowledge_count(unused: str = "") -> str:
+    from memory.knowledge import knowledge_count as _knowledge_count
+    return _knowledge_count(unused)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

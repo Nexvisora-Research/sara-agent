@@ -1,0 +1,19 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+httpx>=0.25.0
+pydantic>=2.0.0
+websockets>=12.0
+python-multipart>=0.0.6
+
+# STT (optional - one of these)
+# openai-whisper    # local STT (requires ffmpeg)
+# faster-whisper    # faster local STT (recommended)
+# Or configure Sara's existing STT providers:
+#   sara_LOCAL_STT_COMMAND, GROQ_API_KEY, VOICE_TOOLS_OPENAI_KEY,
+#   MISTRAL_API_KEY, XAI_API_KEY
+
+# TTS (optional - one of these)
+# edge-tts          # local TTS (free, high quality)
+
+# Wake word (optional)
+# pvporcupine       # Picovoice Porcupine wake word detection

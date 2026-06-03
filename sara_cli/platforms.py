@@ -40,6 +40,7 @@ PLATFORMS: OrderedDict[str, PlatformInfo] = OrderedDict([
     ("webhook",        PlatformInfo(label="🔗 Webhook",         default_toolset="sara-webhook")),
     ("api_server",     PlatformInfo(label="🌐 API Server",      default_toolset="sara-api-server")),
     ("cron",           PlatformInfo(label="⏰ Cron",            default_toolset="sara-cron")),
+    ("voice_assistant", PlatformInfo(label="🎤 Voice Assistant", default_toolset="sara-voice-assistant")),
 ])
 
 

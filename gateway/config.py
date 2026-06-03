@@ -108,6 +108,7 @@ class Platform(Enum):
     BLUEBUBBLES = "bluebubbles"
     QQBOT = "qqbot"
     YUANBAO = "yuanbao"
+    VOICE_ASSISTANT = "voice_assistant"
     @classmethod
     def _missing_(cls, value):
         """Accept unknown platform names only for known plugin adapters.
@@ -376,6 +377,7 @@ _PLATFORM_CONNECTED_CHECKERS: dict[Platform, Callable[[PlatformConfig], bool]] =
         (cfg.extra.get("client_id") or os.getenv("DINGTALK_CLIENT_ID"))
         and (cfg.extra.get("client_secret") or os.getenv("DINGTALK_CLIENT_SECRET"))
     ),
+    Platform.VOICE_ASSISTANT: lambda cfg: True,
 }
 
 
@@ -1525,6 +1527,38 @@ def _apply_env_overrides(config: GatewayConfig) -> None:
         yuanbao_group_allow_from = os.getenv("YUANBAO_GROUP_ALLOW_FROM")
         if yuanbao_group_allow_from:
             extra["group_allow_from"] = yuanbao_group_allow_from
+
+    # Voice Assistant
+    voice_enabled = os.getenv("VOICE_ASSISTANT_ENABLED", "").lower() in ("true", "1", "yes")
+    if voice_enabled:
+        if Platform.VOICE_ASSISTANT not in config.platforms:
+            config.platforms[Platform.VOICE_ASSISTANT] = PlatformConfig()
+        config.platforms[Platform.VOICE_ASSISTANT].enabled = True
+        voice_host = os.getenv("VOICE_GATEWAY_HOST", "")
+        if voice_host:
+            config.platforms[Platform.VOICE_ASSISTANT].extra["voice_gateway_host"] = voice_host
+        voice_port = os.getenv("VOICE_GATEWAY_PORT", "")
+        if voice_port:
+            try:
+                config.platforms[Platform.VOICE_ASSISTANT].extra["voice_gateway_port"] = int(voice_port)
+            except ValueError:
+                pass
+        voice_tts = os.getenv("VOICE_ASSISTANT_TTS", "")
+        if voice_tts:
+            config.platforms[Platform.VOICE_ASSISTANT].extra["tts_enabled"] = voice_tts.lower() in ("true", "1", "yes")
+        voice_wake_word = os.getenv("VOICE_ASSISTANT_WAKE_WORD", "")
+        if voice_wake_word:
+            config.platforms[Platform.VOICE_ASSISTANT].extra["wake_word_enabled"] = voice_wake_word.lower() in ("true", "1", "yes")
+        voice_stt_lang = os.getenv("VOICE_ASSISTANT_STT_LANGUAGE", "")
+        if voice_stt_lang:
+            config.platforms[Platform.VOICE_ASSISTANT].extra["stt_language"] = voice_stt_lang
+        voice_home = os.getenv("VOICE_ASSISTANT_HOME_CHANNEL")
+        if voice_home:
+            config.platforms[Platform.VOICE_ASSISTANT].home_channel = HomeChannel(
+                platform=Platform.VOICE_ASSISTANT,
+                chat_id=voice_home,
+                name=os.getenv("VOICE_ASSISTANT_HOME_CHANNEL_NAME", "Home"),
+            )
 
     # Session settings
     idle_minutes = os.getenv("SESSION_IDLE_MINUTES")
