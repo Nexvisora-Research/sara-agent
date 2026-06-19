@@ -2357,28 +2357,29 @@ def setup_gateway(config: dict):
 
     print_header("Messaging Platforms")
     print_info("Connect to messaging platforms to chat with sara from anywhere.")
-    print_info("Toggle with Space, confirm with Enter.")
+    print_info("Select a platform with the arrow keys and press Enter.")
     print()
 
     platforms = _all_platforms()
+    from sara_cli.curses_ui import curses_radiolist
 
-    # Build checklist, pre-selecting already-configured platforms.
-    items = []
-    pre_selected = []
-    for i, plat in enumerate(platforms):
-        status = _platform_status(plat)
-        items.append(f"{plat['emoji']} {plat['label']}  ({status})")
-        if status == "configured":
-            pre_selected.append(i)
+    while True:
+        items = [
+            f"{plat['emoji']} {plat['label']}  ({_platform_status(plat)})"
+            for plat in platforms
+        ]
+        items.append("Done configuring platforms")
 
-    selected = prompt_checklist("Select platforms to configure:", items, pre_selected)
+        choice = curses_radiolist(
+            "Select a platform to configure:",
+            items,
+            selected=0,
+            cancel_returns=len(platforms),
+        )
+        if choice == len(platforms):
+            break
 
-    if not selected:
-        print_info("No platforms selected. Run 'sara setup gateway' later to configure.")
-        return
-
-    for idx in selected:
-        _configure_platform(platforms[idx])
+        _configure_platform(platforms[choice])
 
     # ── Gateway Service Setup ──
     # Count any platform (built-in or plugin) the user configured during this

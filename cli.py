@@ -38,6 +38,17 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
+# ``python cli.py --gateway`` is a legacy source-tree entrypoint that users
+# still invoke directly.  Shells with both Conda and .venv activated can bind
+# ``python`` to Conda while ``sara`` correctly uses the project venv, producing
+# late per-message import failures.  Hand off before importing third-party
+# packages so the gateway always runs in the environment it was installed in.
+if __name__ == "__main__" and "--gateway" in sys.argv:
+    from sara_cli.runtime_python import reexec_gateway_in_project_venv
+
+    _script_path = Path(__file__).resolve()
+    reexec_gateway_in_project_venv(_script_path.parent, _script_path)
+
 logger = logging.getLogger(__name__)
 
 # Suppress startup messages for clean CLI experience

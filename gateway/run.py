@@ -10,7 +10,7 @@ Usage:
     python -m gateway.run
     
     # Or from CLI
-    python cli.py --gateway
+    sara gateway run
 """
 
 import asyncio

@@ -470,6 +470,10 @@ class VoiceReceiver:
                 pass
 
 
+class DiscordConfigurationError(RuntimeError):
+    """Raised when Discord rejects settings that require user configuration."""
+
+
 class DiscordAdapter(BasePlatformAdapter):
     """
     Discord bot adapter.
@@ -529,6 +533,60 @@ class DiscordAdapter(BasePlatformAdapter):
         # chunk only, default), "all" (reply-reference on every chunk).
         self._reply_to_mode: str = getattr(config, 'reply_to_mode', 'first') or 'first'
         self._slash_commands: bool = self.config.extra.get("slash_commands", True)
+
+    async def _wait_for_ready_or_startup_error(self, timeout: float = 25.0) -> None:
+        """Wait for Discord readiness while observing failures from Client.start()."""
+        if self._bot_task is None:
+            raise RuntimeError("Discord client task was not started")
+
+        ready_task = asyncio.create_task(self._ready_event.wait())
+        try:
+            done, _ = await asyncio.wait(
+                {ready_task, self._bot_task},
+                timeout=timeout,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if not done:
+                # Closing the client completes discord.py's gateway task and
+                # exposes terminal handshake failures such as close code 4014
+                # (privileged intents).  Collect that exception before falling
+                # back to a generic timeout.  The inner deadline intentionally
+                # leaves headroom for GatewayRunner's 30-second wrapper.
+                client = getattr(self, "_client", None)
+                if client is not None and not client.is_closed():
+                    await client.close()
+                try:
+                    await asyncio.wait_for(asyncio.shield(self._bot_task), timeout=2.0)
+                except discord.errors.PrivilegedIntentsRequired as exc:
+                    raise DiscordConfigurationError(
+                        "Discord rejected the bot's privileged intents. In the Discord "
+                        "Developer Portal, open the application, go to Bot → Privileged "
+                        "Gateway Intents, enable Message Content Intent, save, then "
+                        "restart the gateway."
+                    ) from exc
+                except asyncio.TimeoutError:
+                    pass
+                raise asyncio.TimeoutError
+
+            if self._bot_task in done:
+                try:
+                    self._bot_task.result()
+                except discord.errors.PrivilegedIntentsRequired as exc:
+                    raise DiscordConfigurationError(
+                        "Discord rejected the bot's privileged intents. In the Discord "
+                        "Developer Portal, open the application, go to Bot → Privileged "
+                        "Gateway Intents, enable Message Content Intent, save, then "
+                        "restart the gateway."
+                    ) from exc
+                if not self._ready_event.is_set():
+                    raise RuntimeError("Discord client stopped before becoming ready")
+        finally:
+            if not ready_task.done():
+                ready_task.cancel()
+                try:
+                    await ready_task
+                except asyncio.CancelledError:
+                    pass
 
     async def connect(self) -> bool:
         """Connect to Discord and start receiving events."""
@@ -767,12 +825,17 @@ class DiscordAdapter(BasePlatformAdapter):
             # Start the bot in background
             self._bot_task = asyncio.create_task(self._client.start(self.config.token))
 
-            # Wait for ready
-            await asyncio.wait_for(self._ready_event.wait(), timeout=30)
+            # Wait for ready while also observing Client.start().  Previously
+            # startup exceptions (notably missing privileged intents) were
+            # abandoned in the background and misreported as a 30s timeout.
+            await self._wait_for_ready_or_startup_error(timeout=25)
 
             self._running = True
             return True
 
+        except DiscordConfigurationError:
+            self._release_platform_lock()
+            raise
         except asyncio.TimeoutError:
             logger.error("[%s] Timeout waiting for connection to Discord", self.name, exc_info=True)
             self._release_platform_lock()

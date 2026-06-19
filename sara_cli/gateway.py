@@ -1610,6 +1610,25 @@ def _sara_home_for_target_user(target_home_dir: str) -> str:
         return str(current_sara)
 
 
+def _systemd_quote_exec_arg(value: str) -> str:
+    """Quote one ExecStart argument using systemd.service syntax."""
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("%", "%%")
+    )
+    return f'"{escaped}"'
+
+
+def _gateway_systemd_exec_start(python_path: str, profile_arg: str = "") -> str:
+    """Build an ExecStart command that preserves spaces in filesystem paths."""
+    args = [python_path, "-m", "sara_cli.main"]
+    if profile_arg:
+        args.extend(profile_arg.split())
+    args.extend(["gateway", "run", "--replace"])
+    return " ".join(_systemd_quote_exec_arg(arg) for arg in args)
+
+
 def generate_systemd_unit(system: bool = False, run_as_user: str | None = None) -> str:
     python_path = get_python_path()
     working_dir = str(PROJECT_ROOT)
@@ -1651,6 +1670,7 @@ def generate_systemd_unit(system: bool = False, run_as_user: str | None = None) 
         path_entries.extend(_build_user_local_paths(Path(home_dir), path_entries))
         path_entries.extend(common_bin_paths)
         sane_path = ":".join(path_entries)
+        exec_start = _gateway_systemd_exec_start(python_path, profile_arg)
         return f"""[Unit]
 Description={SERVICE_DESCRIPTION}
 After=network-online.target
@@ -1661,7 +1681,7 @@ StartLimitIntervalSec=0
 Type=simple
 User={username}
 Group={group_name}
-ExecStart={python_path} -m sara_cli.main{f" {profile_arg}" if profile_arg else ""} gateway run --replace
+ExecStart={exec_start}
 WorkingDirectory={working_dir}
 Environment="HOME={home_dir}"
 Environment="USER={username}"
@@ -1690,6 +1710,7 @@ WantedBy=multi-user.target
     path_entries.extend(_build_user_local_paths(Path.home(), path_entries))
     path_entries.extend(common_bin_paths)
     sane_path = ":".join(path_entries)
+    exec_start = _gateway_systemd_exec_start(python_path, profile_arg)
     return f"""[Unit]
 Description={SERVICE_DESCRIPTION}
 After=network-online.target
@@ -1698,7 +1719,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart={python_path} -m sara_cli.main{f" {profile_arg}" if profile_arg else ""} gateway run --replace
+ExecStart={exec_start}
 WorkingDirectory={working_dir}
 Environment="PATH={sane_path}"
 Environment="VIRTUAL_ENV={venv_dir}"
