@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Palette, Check } from "lucide-react";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { ListItem } from "@nexvisora-research/ui/ui/components/list-item";
+import { Button } from "@/components/ui/button";
+import { ListItem } from "@/components/ui/list-item";
 import { Typography } from "@/components/NouiTypography";
 import { BUILTIN_THEMES, useTheme } from "@/themes";
 import { useI18n } from "@/i18n";

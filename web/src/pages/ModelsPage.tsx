@@ -20,11 +20,11 @@ import type {
 } from "@/lib/api";
 import { timeAgo } from "@/lib/utils";
 import { formatTokenCount } from "@/lib/format";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
-import { Stats } from "@nexvisora-research/ui/ui/components/stats";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Stats } from "@/components/ui/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
+import { Badge } from "@/components/ui/badge";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { useI18n } from "@/i18n";
 import { PluginSlot } from "@/plugins";

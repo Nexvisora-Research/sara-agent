@@ -1,0 +1,5 @@
+name: nexvisora-provider
+kind: model-provider
+version: 1.0.0
+description: nexvisora Research Portal
+author: nexvisora Research

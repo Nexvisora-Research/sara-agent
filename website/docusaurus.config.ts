@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'sara Agent',
-  tagline: 'The self-improving AI agent',
+  tagline: 'The Self-Improving Autonomous AI Agent',
   favicon: 'img/favicon.ico',
 
   url: 'https://sara-agent.NexvisoraResearch.com',
@@ -14,6 +14,24 @@ const config: Config = {
   projectName: 'sara-agent',
 
   onBrokenLinks: 'warn',
+
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+  ],
 
   markdown: {
     mermaid: true,
@@ -105,9 +123,9 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://sara-agent.NexvisoraResearch.com',
+          to: '/',
           label: 'Home',
-          position: 'right',
+          position: 'left',
         },
         {
           href: 'https://github.com/NexvisoraResearch/sara-agent',

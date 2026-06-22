@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Clock, Pause, Play, Plus, Trash2, Zap } from "lucide-react";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { Select, SelectOption } from "@nexvisora-research/ui/ui/components/select";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectOption } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { H2 } from "@/components/NouiTypography";
 import { api } from "@/lib/api";
 import type { CronJob } from "@/lib/api";

@@ -23,8 +23,8 @@
  * terminal pane keeps working unimpaired.
  */
 
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 import { ModelPickerDialog } from "@/components/ModelPickerDialog";

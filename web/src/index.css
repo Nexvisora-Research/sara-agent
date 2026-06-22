@@ -1,9 +1,4 @@
 @import 'tailwindcss';
-@import '@nexvisora-research/ui/styles/globals.css';
-
-/* Scan the published design-system bundle so its utility classes survive
-   Tailwind's JIT purge. */
-@source '../node_modules/@nexvisora-research/ui/dist';
 
 /* ------------------------------------------------------------------ */
 /* JetBrains Mono — bundled for the embedded TUI (/chat tab).          */

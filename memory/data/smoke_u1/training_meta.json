@@ -1,9 +1,0 @@
-{
-  "model_name": "Sara v2",
-  "user_id": "smoke_u1",
-  "sample_count": 0,
-  "history_length": 0,
-  "collected_at": "2026-03-08T12:50:59.063083+00:00",
-  "last_trained": null,
-  "lora_trained": false
-}

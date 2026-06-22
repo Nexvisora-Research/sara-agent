@@ -1,4 +1,4 @@
-import { useGpuTier } from "@nexvisora-research/ui/hooks/use-gpu-tier";
+import { useGpuTier } from "@/hooks/use-gpu-tier";
 
 /**
  * Replicates the visual layer stack of `<Overlays dark />` from

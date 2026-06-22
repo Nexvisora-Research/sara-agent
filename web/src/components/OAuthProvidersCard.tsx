@@ -9,9 +9,9 @@ import {
   LogIn,
 } from "lucide-react";
 import { api, type OAuthProvider } from "@/lib/api";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { CopyButton } from "@nexvisora-research/ui/ui/components/command-block";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
+import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/command-block";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
+import { Badge } from "@/components/ui/badge";
 import { OAuthLoginModal } from "@/components/OAuthLoginModal";
 import { useI18n } from "@/i18n";
 

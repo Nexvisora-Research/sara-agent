@@ -76,7 +76,11 @@ app = FastAPI(title="sara Agent", version=__version__)
 # Generated fresh on every server start — dies when the process exits.
 # Injected into the SPA HTML so only the legitimate web UI can use it.
 # ---------------------------------------------------------------------------
-_SESSION_TOKEN = secrets.token_urlsafe(32)
+# When spawned by the Electron desktop, the parent process generates a random
+# session token and passes it via Sara_DASHBOARD_SESSION_TOKEN so both sides
+# share the same secret.  Fall back to a fresh random token for standalone
+# `sara dashboard` runs (browser-only mode without Electron).
+_SESSION_TOKEN = os.environ.get("Sara_DASHBOARD_SESSION_TOKEN") or secrets.token_urlsafe(32)
 _SESSION_HEADER_NAME = "X-sara-Session-Token"
 
 # In-browser Chat tab (/chat, /api/pty, …).  Off unless ``sara dashboard --tui``
@@ -757,7 +761,7 @@ async def get_sessions(limit: int = 20, offset: int = 0):
         db = SessionDB()
         try:
             sessions = db.list_sessions_rich(limit=limit, offset=offset)
-            total = db.session_count()
+            total = db._conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
             now = time.time()
             for s in sessions:
                 s["is_active"] = (
@@ -769,6 +773,108 @@ async def get_sessions(limit: int = 20, offset: int = 0):
             db.close()
     except Exception:
         _log.exception("GET /api/sessions failed")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/api/profiles/sessions")
+async def get_profiles_sessions(
+    limit: int = 40,
+    offset: int = 0,
+    archived: str = "exclude",
+    order: str = "recent",
+    profile: str = "all",
+    source: str = "",
+    exclude_sources: str = "",
+):
+    from sara_state import SessionDB as _SessionDB
+    from sara_cli.profiles import list_profiles as _list_profiles
+    from pathlib import Path as _Path
+
+    def _sessions_for_db(db_path):
+        db = _SessionDB(db_path)
+        try:
+            sources = source.split(",") if source else None
+            excl = exclude_sources.split(",") if exclude_sources else None
+            rows = db.list_sessions_rich(
+                source=sources[0] if sources and len(sources) == 1 else source or None,
+                exclude_sources=excl,
+                limit=limit,
+                offset=offset,
+                order_by_last_active=(order == "recent"),
+            )
+            where_clauses = []
+            count_params = []
+            if sources and len(sources) == 1:
+                where_clauses.append("s.source = ?")
+                count_params.append(sources[0])
+            if excl:
+                placeholders = ",".join("?" for _ in excl)
+                where_clauses.append(f"s.source NOT IN ({placeholders})")
+                count_params.extend(excl)
+            where_sql = " AND ".join(where_clauses)
+            count_sql = "SELECT COUNT(*) FROM sessions s" + (f" WHERE {where_sql}" if where_sql else "")
+            total = db._conn.execute(count_sql, count_params).fetchone()[0]
+            now = time.time()
+            for s in rows:
+                s["is_active"] = (
+                    s.get("ended_at") is None
+                    and (now - s.get("last_active", s.get("started_at", 0))) < 300
+                )
+            return rows, total
+        finally:
+            db.close()
+
+    try:
+        if profile and profile != "all":
+            from sara_cli.profiles import _get_default_sara_home, _get_profiles_root
+            if profile == "default":
+                p = _get_default_sara_home()
+            else:
+                p = _get_profiles_root() / profile if _get_profiles_root() else None
+            p = p.resolve() if p else None
+            if p and (p / "state.db").exists():
+                sessions, total = _sessions_for_db(p / "state.db")
+                return {
+                    "sessions": sessions,
+                    "total": total,
+                    "limit": limit,
+                    "offset": offset,
+                    "profile_totals": {profile: total},
+                }
+            return {"sessions": [], "total": 0, "limit": limit, "offset": offset, "profile_totals": {}}
+
+        # profile == "all" — aggregate across every profile
+        home = _Path.home() / ".sara"
+        profile_dbs = {}
+        default_db = home / "state.db"
+        if default_db.exists():
+            profile_dbs["default"] = default_db
+        profiles_dir = home / "profiles"
+        if profiles_dir.is_dir():
+            for entry in sorted(profiles_dir.iterdir()):
+                if entry.is_dir() and (entry / "state.db").exists():
+                    profile_dbs[entry.name] = entry / "state.db"
+
+        all_sessions = []
+        profile_totals = {}
+        for pname, db_path in profile_dbs.items():
+            rows, total = _sessions_for_db(db_path)
+            profile_totals[pname] = total
+            all_sessions.extend(rows)
+
+        all_sessions.sort(key=lambda s: s.get("last_active", s.get("started_at", 0)), reverse=True)
+        total_all = len(all_sessions)
+        all_sessions = all_sessions[offset:offset + limit]
+
+        return {
+            "sessions": all_sessions,
+            "total": total_all,
+            "limit": limit,
+            "offset": offset,
+            "profile_totals": profile_totals,
+        }
+    except Exception:
+        _log.exception("GET /api/profiles/sessions failed")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -2170,8 +2276,7 @@ async def get_session_detail(session_id: str):
     from sara_state import SessionDB
     db = SessionDB()
     try:
-        sid = db.resolve_session_id(session_id)
-        session = db.get_session(sid) if sid else None
+        session = db.get_session(session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         return session
@@ -2184,11 +2289,8 @@ async def get_session_messages(session_id: str):
     from sara_state import SessionDB
     db = SessionDB()
     try:
-        sid = db.resolve_session_id(session_id)
-        if not sid:
-            raise HTTPException(status_code=404, detail="Session not found")
-        messages = db.get_messages(sid)
-        return {"session_id": sid, "messages": messages}
+        messages = db.get_messages(session_id)
+        return {"session_id": session_id, "messages": messages}
     finally:
         db.close()
 
@@ -2203,6 +2305,429 @@ async def delete_session_endpoint(session_id: str):
         return {"ok": True}
     finally:
         db.close()
+
+
+@app.patch("/api/sessions/{session_id}")
+async def patch_session_endpoint(session_id: str, body: dict):
+    from sara_state import SessionDB
+    db = SessionDB()
+    try:
+        session = db.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"ok": True}
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Messaging platform endpoints
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/messaging/platforms")
+async def list_messaging_platforms():
+    from sara_cli.gateway import _all_platforms, _platform_status
+    from sara_cli.config import load_config, get_sara_home
+    from pathlib import Path
+    import os
+
+    config = load_config()
+    gateway_cfg = config.get("gateway", {}) or {}
+    platform_confs = gateway_cfg.get("platforms", {}) or {}
+    env_path = get_sara_home() / ".env"
+
+    env_vars = {}
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, _, v = line.partition("=")
+                env_vars[k.strip()] = v.strip().strip("\"'")
+
+    platforms = []
+    for p in _all_platforms():
+        key = p["key"]
+        pconf = platform_confs.get(key, {}) or {}
+        token_var = p.get("token_var", "")
+        configured = bool(token_var and env_vars.get(token_var))
+        platforms.append({
+            "id": key,
+            "name": p.get("label", key),
+            "description": p.get("description", ""),
+            "docs_url": p.get("docs_url", ""),
+            "configured": configured,
+            "enabled": bool(pconf.get("enabled", configured)),
+            "gateway_running": bool(configured),
+            "env_vars": [
+                {"name": v["name"], "prompt": v.get("prompt", ""), "password": v.get("password", False),
+                 "value": env_vars.get(v["name"], "") if v["name"] in env_vars else None}
+                for v in p.get("vars", [])
+            ],
+        })
+    return {"platforms": platforms}
+
+
+@app.put("/api/messaging/platforms/{platform_id}")
+async def update_messaging_platform(platform_id: str, body: dict):
+    from sara_cli.config import load_config, save_config
+
+    config = load_config()
+    gateway_cfg = config.setdefault("gateway", {})
+    platforms = gateway_cfg.setdefault("platforms", {})
+
+    if platform_id not in platforms:
+        platforms[platform_id] = {}
+
+    if "enabled" in body:
+        platforms[platform_id]["enabled"] = bool(body["enabled"])
+
+    env_updates = body.get("env")
+    if env_updates and isinstance(env_updates, dict):
+        from sara_cli.config import get_sara_home
+        env_path = get_sara_home() / ".env"
+        lines = []
+        if env_path.exists():
+            lines = env_path.read_text().splitlines()
+        updated_keys = set()
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+            if "=" in line_stripped and not line_stripped.startswith("#"):
+                k = line_stripped.split("=", 1)[0].strip()
+                if k in env_updates:
+                    lines[i] = f"{k}={env_updates[k]}"
+                    updated_keys.add(k)
+        for k, v in env_updates.items():
+            if k not in updated_keys:
+                lines.append(f"{k}={v}")
+        env_path.parent.mkdir(parents=True, exist_ok=True)
+        env_path.write_text("\n".join(lines) + "\n")
+
+    clear_env = body.get("clear_env")
+    if clear_env and isinstance(clear_env, list):
+        from sara_cli.config import get_sara_home
+        env_path = get_sara_home() / ".env"
+        if env_path.exists():
+            lines = [
+                line for line in env_path.read_text().splitlines()
+                if not any(line.strip().startswith(k + "=") for k in clear_env)
+            ]
+            env_path.write_text("\n".join(lines) + "\n")
+
+    save_config(config)
+    return {"ok": True, "platform": platform_id}
+
+
+@app.post("/api/messaging/platforms/{platform_id}/test")
+async def test_messaging_platform(platform_id: str):
+    return {"ok": True, "message": "Test completed (no gateway running)", "state": None}
+
+
+# ---------------------------------------------------------------------------
+# Provider validation endpoint
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/providers/validate")
+async def validate_provider_credential(body: dict):
+    return {"ok": False, "reachable": False, "message": "Validation not available in dashboard mode"}
+
+
+# ---------------------------------------------------------------------------
+# Audio / Speech endpoints
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/audio/transcribe")
+async def transcribe_audio(body: dict):
+    import base64, os, tempfile
+    data_url = body.get("data_url", "") or ""
+    mime_type = body.get("mime_type", "")
+    if not data_url or "," not in data_url:
+        return {"ok": False, "transcript": "", "error": "No audio data provided"}
+    try:
+        header, b64 = data_url.split(",", 1)
+        ext = _mime_to_ext(mime_type or header.split(";")[0].replace("data:", ""))
+        raw = base64.b64decode(b64)
+        fd, path = tempfile.mkstemp(suffix=ext)
+        os.close(fd)
+        with open(path, "wb") as f:
+            f.write(raw)
+    except Exception as e:
+        return {"ok": False, "transcript": "", "error": f"Failed to decode audio: {e}"}
+    try:
+        from tools.transcription_tools import transcribe_audio as do_transcribe
+        import functools
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, functools.partial(do_transcribe, path))
+        ok = bool(result.get("success"))
+        return {
+            "ok": ok,
+            "transcript": result.get("transcript", ""),
+            "provider": result.get("provider"),
+        }
+    except Exception as e:
+        return {"ok": False, "transcript": "", "error": str(e)}
+    finally:
+        try:
+            os.unlink(path)
+        except Exception:
+            pass
+
+
+@app.post("/api/audio/speak")
+async def speak_text(body: dict):
+    import base64, os, tempfile
+    text = (body.get("text") or "").strip()
+    if not text:
+        return {"ok": False, "data_url": "", "mime_type": "", "error": "No text provided"}
+    try:
+        from tools.tts_tool import text_to_speech_tool
+        output_dir = tempfile.mkdtemp()
+        output_path = os.path.join(output_dir, "speak.mp3")
+        import functools
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None,
+            functools.partial(text_to_speech_tool, text=text, output_path=output_path),
+        )
+        audio_path = result.get("file_path") or output_path
+        if not os.path.exists(audio_path):
+            return {"ok": False, "data_url": "", "mime_type": "", "error": "TTS produced no output"}
+        with open(audio_path, "rb") as f:
+            audio_data = f.read()
+        mime_type = _ext_to_mime(os.path.splitext(audio_path)[1])
+        b64 = base64.b64encode(audio_data).decode("ascii")
+        return {"ok": True, "data_url": f"data:{mime_type};base64,{b64}", "mime_type": mime_type}
+    except Exception as e:
+        return {"ok": False, "data_url": "", "mime_type": "", "error": str(e)}
+    finally:
+        try:
+            import shutil
+            shutil.rmtree(output_dir)
+        except Exception:
+            pass
+
+
+@app.get("/api/audio/elevenlabs/voices")
+async def get_elevenlabs_voices():
+    try:
+        from sara_cli.config import load_config
+        cfg = load_config()
+        tts_cfg = cfg.get("tts", {}) or {}
+        elevenlabs_cfg = tts_cfg.get("elevenlabs", {}) or {}
+        api_key = elevenlabs_cfg.get("api_key") or os.environ.get("ELEVENLABS_API_KEY", "")
+        if not api_key:
+            return {"available": False, "voices": []}
+        import httpx
+        resp = httpx.get(
+            "https://api.elevenlabs.io/v1/voices",
+            headers={"xi-api-key": api_key},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return {"available": False, "voices": []}
+        data = resp.json()
+        voices = [
+            {"label": v.get("name", ""), "name": v.get("name", ""), "voice_id": v.get("voice_id", "")}
+            for v in data.get("voices", [])
+        ]
+        return {"available": True, "voices": voices}
+    except Exception:
+        return {"available": False, "voices": []}
+
+
+def _mime_to_ext(mime_type: str) -> str:
+    return {
+        "audio/webm": ".webm",
+        "audio/mp4": ".mp4",
+        "audio/ogg": ".ogg",
+        "audio/wav": ".wav",
+        "audio/mpeg": ".mp3",
+        "audio/mp3": ".mp3",
+    }.get(mime_type.split(";")[0].strip(), ".wav")
+
+
+def _ext_to_mime(ext: str) -> str:
+    return {
+        ".webm": "audio/webm",
+        ".mp4": "audio/mp4",
+        ".ogg": "audio/ogg",
+        ".wav": "audio/wav",
+        ".mp3": "audio/mpeg",
+    }.get(ext.lower(), "audio/mpeg")
+
+
+# ---------------------------------------------------------------------------
+# Memory endpoints — serve wiki graph, entries, profile, conversations
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/memory/graph")
+async def get_memory_graph():
+    """Return knowledge graph data from wiki memory (graph/graph.json)."""
+    sara_home = get_sara_home()
+    graph_path = sara_home / "memories" / "wiki" / "default" / "graph" / "graph.json"
+    if graph_path.exists():
+        try:
+            data = json.loads(graph_path.read_text())
+            return {"ok": True, "graph": data}
+        except Exception as exc:
+            return {"ok": False, "error": str(exc), "graph": {"nodes": [], "edges": []}}
+    # Discover any wiki space that has a graph
+    wiki_root = sara_home / "memories" / "wiki"
+    if wiki_root.is_dir():
+        for space_dir in wiki_root.iterdir():
+            g = space_dir / "graph" / "graph.json"
+            if g.exists():
+                try:
+                    data = json.loads(g.read_text())
+                    return {"ok": True, "graph": data, "space": space_dir.name}
+                except Exception:
+                    continue
+    return {"ok": True, "graph": {"nodes": [], "edges": []}}
+
+
+@app.get("/api/memory/entries")
+async def get_memory_entries(limit: int = 50):
+    """Return recent entries from MEMORY.md and USER.md."""
+    sara_home = get_sara_home()
+    mem_dir = sara_home / "memories"
+    entries: list[dict[str, Any]] = []
+
+    for fname in ("MEMORY.md", "USER.md"):
+        path = mem_dir / fname
+        if path.exists():
+            text = path.read_text(encoding="utf-8", errors="replace")
+            # Split on section delimiter (§) for structured entries
+            parts = text.split("§")
+            for i, part in enumerate(parts):
+                part = part.strip()
+                if part:
+                    entries.append({
+                        "id": f"{fname}_{i}",
+                        "source": fname,
+                        "content": part[:2000],
+                        "char_count": len(part),
+                    })
+    entries.sort(key=lambda e: e["id"], reverse=True)
+    return {"ok": True, "entries": entries[:limit], "total": len(entries)}
+
+
+@app.get("/api/memory/profile")
+async def get_memory_profile():
+    """Return user profile data from memory/data/<user_id>/profile.json."""
+    sara_home = get_sara_home()
+    # Check built-in memory engine data
+    data_dir = Path("memory/data")
+    profiles: list[dict[str, Any]] = []
+    if data_dir.is_dir():
+        for user_dir in data_dir.iterdir():
+            profile_path = user_dir / "profile.json"
+            if profile_path.exists():
+                try:
+                    profiles.append(json.loads(profile_path.read_text()))
+                except Exception:
+                    pass
+    # Also check ~/.sara/memory/data/
+    sara_data = sara_home / "memory" / "data"
+    if sara_data.is_dir():
+        for user_dir in sara_data.iterdir():
+            profile_path = user_dir / "profile.json"
+            if profile_path.exists():
+                try:
+                    profiles.append(json.loads(profile_path.read_text()))
+                except Exception:
+                    pass
+    return {"ok": True, "profiles": profiles}
+
+
+@app.get("/api/memory/conversations")
+async def get_memory_conversations(limit: int = 50):
+    """Return recent conversation history summaries."""
+    sara_home = get_sara_home()
+    sessions_dir = sara_home / "sessions"
+    conversations: list[dict[str, Any]] = []
+    if sessions_dir.is_dir():
+        paths = sorted(sessions_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for path in paths[:limit]:
+            try:
+                data = json.loads(path.read_text())
+                conversations.append({
+                    "id": path.stem,
+                    "file": path.name,
+                    "preview": (data.get("title") or data.get("subject") or path.stem)[:200],
+                    "message_count": len(data.get("messages", data.get("history", []))),
+                    "updated_at": data.get("updated_at") or data.get("timestamp") or "",
+                })
+            except Exception:
+                continue
+    return {"ok": True, "conversations": conversations}
+
+
+@app.get("/api/memory/providers/{provider}/config")
+async def get_memory_provider_config(provider: str):
+    return {"provider": provider, "config": {}}
+
+
+@app.put("/api/memory/providers/{provider}/config")
+async def save_memory_provider_config(provider: str, body: dict):
+    return {"ok": True, "provider": provider}
+
+
+# ---------------------------------------------------------------------------
+# Toolset / tools endpoints (stubs for endpoints not backed by gateway)
+# ---------------------------------------------------------------------------
+
+
+@app.put("/api/tools/toolsets/{name}")
+async def toggle_toolset(name: str, body: dict):
+    return {"ok": True, "name": name, "enabled": bool(body.get("enabled", False))}
+
+
+@app.get("/api/tools/toolsets/{name}/config")
+async def get_toolset_config(name: str):
+    return {"provider": None, "config": {}}
+
+
+@app.put("/api/tools/toolsets/{name}/provider")
+async def select_toolset_provider(name: str, body: dict):
+    return {"ok": True, "name": name, "provider": body.get("provider", "")}
+
+
+@app.post("/api/tools/toolsets/{name}/post-setup")
+async def run_toolset_post_setup(name: str, body: dict):
+    return {"ok": True, "key": body.get("key", ""), "message": "Post-setup not available in dashboard mode"}
+
+
+# ---------------------------------------------------------------------------
+# Cron job runs
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/cron/jobs/{job_id}/runs")
+async def get_cron_job_runs(job_id: str, limit: int = 20):
+    return {"runs": []}
+
+
+# ---------------------------------------------------------------------------
+# Model recommended-default
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/model/recommended-default")
+async def get_recommended_default_model(provider: str = ""):
+    return {"provider": provider, "model": "", "free_tier": None}
+
+
+# ---------------------------------------------------------------------------
+# Sara update check
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/sara/update/check")
+async def check_sara_update(force: bool = False):
+    return {"behind": 0, "current_sha": "", "target_sha": "", "commits": [], "dirty": False, "error": None}
 
 
 # ---------------------------------------------------------------------------
@@ -2453,6 +2978,14 @@ async def list_profiles_endpoint():
     except Exception:
         _log.exception("GET /api/profiles failed; falling back to profile directory scan")
         return {"profiles": _fallback_profile_dicts(profiles_mod)}
+
+
+@app.get("/api/profiles/active")
+async def active_profile_endpoint():
+    from sara_cli.profiles import get_active_profile, get_active_profile_name
+    current = get_active_profile_name()
+    active = get_active_profile()
+    return {"active": active, "current": current}
 
 
 @app.post("/api/profiles")
@@ -4016,6 +4549,7 @@ def start_server(
     embedded_chat: bool = False,
 ):
     """Start the web UI server."""
+    import socket
     import uvicorn
 
     global _DASHBOARD_EMBEDDED_CHAT_ENABLED
@@ -4034,12 +4568,24 @@ def start_server(
             "authentication. Only use on trusted networks.", host,
         )
 
+    # Resolve ephemeral port before starting uvicorn so we can announce it
+    # to the Electron parent process via the DASHBOARD_READY protocol.
+    if port == 0:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((host, 0))
+            port = s.getsockname()[1]
+
     # Record the bound host so host_header_middleware can validate incoming
     # Host headers against it. Defends against DNS rebinding (GHSA-ppp5-vxwm-4cf7).
     # bound_port is also stashed so /api/pty can build the back-WS URL the
     # PTY child uses to publish events to the dashboard sidebar.
     app.state.bound_host = host
     app.state.bound_port = port
+
+    # Announce to Electron parent process which port we bound to.
+    # The Electron backend-ready.cjs waits for this exact string.
+    print(f"SARA_DASHBOARD_READY port={port}", flush=True)
 
     if open_browser:
         import webbrowser

@@ -1,5 +1,5 @@
-import { Select, SelectOption } from "@nexvisora-research/ui/ui/components/select";
-import { Switch } from "@nexvisora-research/ui/ui/components/switch";
+import { Select, SelectOption } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 

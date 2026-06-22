@@ -21,9 +21,9 @@ import { Toast } from "@/components/Toast";
 import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useToast } from "@/hooks/useToast";
 import { OAuthProvidersCard } from "@/components/OAuthProvidersCard";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { ListItem } from "@nexvisora-research/ui/ui/components/list-item";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
+import { Button } from "@/components/ui/button";
+import { ListItem } from "@/components/ui/list-item";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Card,
   CardContent,
@@ -31,7 +31,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/i18n";

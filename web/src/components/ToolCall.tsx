@@ -1,4 +1,4 @@
-import { ListItem } from "@nexvisora-research/ui/ui/components/list-item";
+import { ListItem } from "@/components/ui/list-item";
 import {
   AlertCircle,
   Check,

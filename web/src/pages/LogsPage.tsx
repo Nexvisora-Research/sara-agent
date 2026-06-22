@@ -7,11 +7,11 @@ import {
 } from "react";
 import { FileText, RefreshCw } from "lucide-react";
 import { api } from "@/lib/api";
-import { Badge } from "@nexvisora-research/ui/ui/components/badge";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { FilterGroup, Segmented } from "@nexvisora-research/ui/ui/components/segmented";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
-import { Switch } from "@nexvisora-research/ui/ui/components/switch";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FilterGroup, Segmented } from "@/components/ui/segmented";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/i18n";

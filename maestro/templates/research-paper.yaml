@@ -1,0 +1,49 @@
+name: Research Paper Analysis
+description: Download, analyze, summarize, and extract insights from a research paper
+version: "1.0"
+tags: [research, paper, analysis]
+steps:
+  - name: download_pdf
+    handler: download_file
+    step_type: sequential
+    input_map:
+      url: paper_url
+    depends_on: []
+
+  - name: extract_text
+    handler: extract_pdf_text
+    step_type: sequential
+    input_map:
+      file_path: download_pdf.output_path
+    depends_on: [download_pdf]
+
+  - name: summarize
+    handler: summarize_text
+    step_type: sequential
+    input_map:
+      text: extract_text.content
+      max_length: 500
+    depends_on: [extract_text]
+
+  - name: extract_key_insights
+    handler: extract_key_points
+    step_type: parallel
+    input_map:
+      text: extract_text.content
+    depends_on: [extract_text]
+
+  - name: generate_questions
+    handler: generate_discussion_questions
+    step_type: sequential
+    input_map:
+      text: extract_text.content
+      summary: summarize.summary
+    depends_on: [summarize]
+
+  - name: save_to_memory
+    handler: save_wiki_memory
+    step_type: sequential
+    input_map:
+      title: "paper: {download_pdf.filename}"
+      content: "{summarize.summary}\n\n{extract_key_insights.points}"
+    depends_on: [summarize, extract_key_insights]

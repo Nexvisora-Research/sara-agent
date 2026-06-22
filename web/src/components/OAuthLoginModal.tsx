@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink, X, Check } from "lucide-react";
-import { Button } from "@nexvisora-research/ui/ui/components/button";
-import { CopyButton } from "@nexvisora-research/ui/ui/components/command-block";
-import { Spinner } from "@nexvisora-research/ui/ui/components/spinner";
+import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/command-block";
+import { Spinner } from "@/components/ui/spinner";
 import { H2 } from "@/components/NouiTypography";
 import { api, type OAuthProvider, type OAuthStartResponse } from "@/lib/api";
 import { Input } from "@/components/ui/input";

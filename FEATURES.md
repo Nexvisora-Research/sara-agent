@@ -1,232 +1,277 @@
-# Sara AI Features
+# Sara Agent Features
 
-Sara AI is a personal assistant that can chat with you through Telegram, Discord, and WhatsApp, remember useful details, use tools, run workflows, and delegate complex work to multiple sub-agents.
+Sara Agent is a self-improving personal AI agent with persistent memory, reusable skills, tool use, scheduled automation, multi-agent delegation, and a shared messaging gateway. It can run locally or in managed environments and can be used from the terminal, web UI, desktop app, or connected chat platforms.
 
-## What Sara Can Do
+## User Interfaces
 
-### Chat With You
+### Command-Line Interface
 
-- Reply to normal conversations.
-- Answer quick questions.
-- Help explain ideas, code, errors, documents, and plans.
-- Use your profile and past context to make replies more personal.
+The `sara` command provides the primary interactive agent experience, including:
 
-### Work Across Bot Platforms
+- Streaming conversations and tool calls.
+- One-shot prompts and interactive sessions.
+- Model and provider selection.
+- Profiles, goals, sessions, logs, and status commands.
+- Setup, diagnostics, backup, completion, and uninstall workflows.
+- Gateway, webhook, voice, browser, cron, plugin, skill, and MCP configuration.
 
-- Use Sara from Telegram.
-- Use Sara from Discord.
-- Use Sara from WhatsApp through a webhook provider such as Twilio.
-- Keep each platform connected to the same core agent brain.
+### Web Interface
 
-### Remember Important Information
+The web application provides graphical access to:
 
-- Save personal notes.
-- Learn profile facts naturally from conversation.
-- Keep conversation history per user.
-- Store summaries and useful long-term memory.
-- Recall relevant context in future chats.
+- Chat and session history.
+- Models and provider configuration.
+- Profiles, skills, plugins, cron jobs, logs, and analytics.
+- Environment settings, OAuth providers, platform connections, and tool calls.
+- Themes and localization.
 
-### Use Built-In Tools
+### Terminal UI
 
-Sara can use tools for:
+The terminal UI offers a richer full-screen experience with streaming output, tool-call rendering, slash commands, and keyboard interaction.
 
-- Current time and date.
-- Weather lookup.
-- Calculations.
-- Notes.
-- Reminders.
-- File reading and writing.
-- Folder creation and file listing.
-- Web search.
-- YouTube search.
-- Website scraping.
-- File downloads.
-- Browser automation.
-- Knowledge-base search.
-- News and trending headlines.
-- System information.
-- CPU, RAM, disk, and process monitoring.
-- Screenshots and OCR screen reading.
-- Clipboard reading and writing.
-- Media play/pause, next, previous, volume, mute, and unmute.
+### Desktop App
 
-### Control Local System Tasks
+`apps/desktop/` is a premium Electron, React, and TypeScript desktop app with:
 
-Sara can help with local machine actions such as:
+- A unified chat view with a hero dashboard and floating glass composer.
+- Full-duplex voice conversation (STT + TTS with multiple providers).
+- A theme system with 6 built-in skins, VS Code theme import, and light/dark/system mode.
+- Internationalization with 8 languages (English, Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish).
+- Custom ant-inspired geometric SVG logo and premium dark UI with glassmorphism panels.
+- Messaging-platform plugins, system-tray, auto-launch, and settings dialogs.
 
-- Open apps.
-- Open folders.
-- Open a terminal.
-- Run terminal commands.
-- Run Python files.
-- Install packages.
-- Clone git repositories.
-- Create simple projects.
-- Shut down or restart the computer.
+Desktop platform support depends on each plugin's credentials and runtime dependencies.
 
-Risky actions ask for confirmation before running.
 
-### Send Messages
+## Messaging Gateway
 
-Sara can send outbound messages through supported channels:
+One gateway connects the agent runtime to multiple communication platforms while preserving platform-aware sessions, delivery, pairing, and channel identity.
 
-- Telegram.
-- WhatsApp.
-- Discord.
-- Email.
-- Slack.
-- Generic channel routing.
+Gateway adapters are included for:
 
-### Manage Routines And Automations
+- Telegram and Discord.
+- Slack, WhatsApp, Signal, Matrix, and Mattermost.
+- Email, SMS, generic webhooks, and an API server.
+- DingTalk, Feishu, WeCom, and Weixin.
+- BlueBubbles and Home Assistant.
+- Yuanbao and additional platform-specific integrations.
 
-Sara can:
+The gateway also supports scheduled delivery, runtime status, restart handling, channel lookup, session context, media-aware delivery, and platform-specific hooks. An adapter being present does not remove the need for its external service, credentials, or optional dependencies.
 
-- Save named routines.
-- List routines.
-- Run saved routines.
-- Delete routines.
-- Schedule workflows.
-- List scheduled workflows.
-- Remove scheduled workflows.
-- Start the automation scheduler on app startup.
+## Models And Providers
 
-### Use Multi-Agent Mode
+Sara is not tied to one model vendor. The runtime supports multiple model families and OpenAI-compatible endpoints, with configuration for provider credentials, model selection, fallback behavior, and credential pools.
 
-Sara can delegate complex tasks to sub-agents:
+Provider capabilities include:
 
-- `planner`: breaks work into steps.
-- `researcher`: gathers facts and constraints.
-- `builder`: proposes concrete implementation or action steps.
-- `reviewer`: checks risks, gaps, and verification.
+- OpenAI-compatible APIs.
+- Anthropic, Groq, Amazon Bedrock, and OpenRouter-style services.
+- Local models through Ollama and compatible runtimes.
+- Provider and model switching from the CLI or web UI.
+- Fallback providers, rate-limit tracking, and credential rotation.
+- Context compression and prompt caching where supported.
+- Optional personal model training workflows.
 
-You can ask:
+Exact model availability is determined by configured credentials, provider access, installed dependencies, and current service availability.
+
+## Persistent Memory
+
+Sara can retain useful context across sessions, including profile facts, conversation summaries, project knowledge, decisions, and reflections.
+
+### Markdown-First Wiki Memory
+
+The wiki memory subsystem uses a strict authority model:
 
 ```text
-agents status
-use agents to plan a better memory system
-delegate: compare these options and recommend one
-multi agents: design, build, and review this feature idea
+Markdown Wiki = source of truth
+Knowledge Graph = relationship layer
+Search/Vector Index = rebuildable accelerator
 ```
 
-### Use Plugins
+It provides:
 
-Sara can surface plugin tools from the `plugins/` folder.
+- Separate memory spaces for different projects or identities.
+- Obsidian-compatible Markdown pages and internal links.
+- Episodic, semantic, identity, daily, map-of-content, and reflection pages.
+- FTS5 search through a derived SQLite index.
+- A derived knowledge graph with inspectable nodes and edges.
+- Retrieval ranked by text relevance, relationships, recency, and importance.
+- Provenance and retrieval reasons with each result.
+- Consolidation of short-term events into durable memories and reflections.
+- Git diff, commit, and rollback helpers for the authoritative Markdown vault.
 
-Examples of plugin areas:
+Derived indexes can be rebuilt without replacing Markdown as the source of truth.
 
-- Google Meet tools.
-- Spotify tools.
-- Memory provider plugins.
-- Dashboard plugins.
-- Observability plugins.
-- Platform adapter plugins.
+### Optional Memory Providers
 
-If a plugin is declared but its runtime dependencies are missing, Sara still shows the tool and explains why it cannot run yet.
+Plugin integrations are available for external or experimental memory systems, including Honcho, Mem0, Hindsight, Supermemory, OpenViking, Retaindb, ByteRover, and other provider-specific backends. Their availability depends on installation and configuration.
 
-### Use Skills
+## Skills And Learning
 
-Sara can inspect skill files from:
+Sara uses skills as portable procedural knowledge. Skills can be bundled with the repository, installed as optional packs, or created and refined from experience.
 
-- `skills/`
-- `optional-skills/`
+Skill features include:
 
-Useful skill commands:
+- Discovering and reading skills from `skills/` and `optional-skills/`.
+- Loading specialized instructions only when relevant.
+- Reusing scripts, templates, references, and assets packaged with a skill.
+- Skills for software development, research, productivity, media, creative work, MLOps, security testing, and agent workflows.
+- A Skills Hub workflow for discovery and management.
+- Agent-curated learning and skill improvement across sessions.
+
+## Tools And Extensibility
+
+Sara can combine built-in tools, plugins, MCP servers, browser automation, and managed execution environments.
+
+Major tool areas include:
+
+- Files, folders, terminal commands, Python, and package management.
+- Web search, page extraction, downloads, and browser automation.
+- Screenshots, OCR, computer vision, and GUI-agent actions.
+- Image generation, transcription, text-to-speech, and audio controls.
+- Notes, reminders, time, weather, calculations, news, and knowledge search.
+- System information, processes, CPU, memory, and disk monitoring.
+- Clipboard, notifications, and desktop application controls.
+- Email, documents, cloud storage, and platform-specific integrations.
+- MCP servers with configurable tool filtering and authentication.
+
+Plugin manifests and MCP connections expose capabilities; individual tools may still require credentials, a running service, system packages, or user approval.
+
+## Vision And Browser Workflows
+
+The vision pipeline can prepare images for models, inspect screenshots, route vision requests, and support GUI-oriented agent workflows. Browser tooling can search, extract, navigate, and interact with pages through supported local or remote browser providers.
+
+These workflows can be combined for tasks such as:
+
+- Reading and reasoning about screenshots.
+- Extracting text with OCR.
+- Inspecting application state.
+- Navigating websites and completing multi-step browser tasks.
+- Using visual context during desktop-agent operations.
+
+## Automation
+
+Sara supports both scheduled and reusable automation:
+
+- Named routines and workflows.
+- Cron-based schedules.
+- Delivery of scheduled results to connected platforms.
+- Startup and background gateway services.
+- Hooks for lifecycle and platform events.
+- Saved goals and structured project workflows.
+
+## Delegation And Multi-Agent Work
+
+Complex tasks can be split into isolated workstreams and delegated to sub-agents. Delegated work can cover planning, research, implementation, and review, then return results to the coordinating agent.
+
+The agent runtime supports:
+
+- Parallel sub-agent work where appropriate.
+- Scoped context and task instructions.
+- Tool use inside delegated work.
+- Result synthesis by the parent agent.
+- Programmatic multi-step tool execution.
+
+## Execution Environments
+
+Terminal work can run through supported local or managed backends, including:
+
+- Local execution.
+- Docker and SSH environments.
+- Daytona, Modal, and Singularity integrations.
+
+Backend availability depends on installed software, service credentials, and host configuration.
+
+## Safety And Approvals
+
+Sara distinguishes read-only or low-risk actions from actions that can change the machine or communicate externally.
+
+Actions that may require approval include:
+
+- Running commands or installing packages.
+- Creating, changing, or deleting files.
+- Controlling applications or the operating system.
+- Sending messages or invoking external services.
+- Browser and GUI automation.
+- Shutdown, restart, and other disruptive operations.
+
+The approval layer, tool gateway, authorization rules, and execution-environment boundaries work together to limit unintended actions.
+
+## Example Requests
 
 ```text
-list_skills
-list_skills all
-read_skill creative/p5js
-read_skill blender-mcp
+Summarize this repository and identify the riskiest subsystem.
+Remember that Markdown is the source of truth for this project.
+Search my project memory for previous deployment decisions.
+Use agents to research, implement, and review this feature.
+Schedule a daily summary and send it to Telegram.
+Read this screenshot and explain the error.
+Open the browser and collect the relevant documentation.
+List available skills and load the one for test-driven development.
+Connect an MCP server and show only its read-only tools.
+Check gateway status and diagnose the Discord connection.
 ```
 
-Skills help Sara follow specialized workflows for coding, creative work, research, diagrams, media, productivity, and more.
+## Desktop App
 
-### Build And Plan Projects
+### Premium UI
 
-Sara includes a project-building workflow that can:
+The desktop app (`apps/desktop/`) features a redesigned premium interface inspired by Linear, Raycast, and Arc Browser:
 
-- Discuss a project idea.
-- Ask clarifying questions.
-- Turn the idea into a plan.
-- Accept changes.
-- Track build progress.
-- Execute build steps through the agent loop.
+- **Dark-first aesthetic** — `#050505` base with `#ff2d55` red accent, glassmorphism panels (`backdrop-filter: blur(24px)`), and a custom ant-inspired geometric SVG logo.
+- **Spatial layout** — Three-panel layout: glass sidebar (brand header + sessions), center (hero dashboard with floating composer + chat thread), right sidebar (activity/system).
+- **Floating composer** — 24px rounded glass chat input with voice, attachment, and command controls.
+- **Typography** — Space Grotesk for headings, Inter for UI, JetBrains Mono for code.
 
-### Train Personal Models
+### Theme System
 
-Sara includes optional personal training features:
+- **6 built-in skins** — neXvisora, midnight, ember, mono, cyberpunk, and slate — each with light and dark variants.
+- **Color mode** — Light, Dark, and System (follows OS appearance) toggle via `Shift+X`.
+- **CSS cascade** — All UI colors derive from `--theme-*` seed variables via `color-mix()` at runtime, so `applyTheme()` propagates skin changes instantly across every surface.
+- **VS Code theme import** — Paste a Marketplace extension ID to convert its color theme into a desktop palette.
+- **Per-profile themes** — Each profile keeps its own theme and mode.
 
-- Collect training examples from conversations.
-- Track training data.
-- Train a personal model.
-- Train a small Sara SLM.
-- Show training status.
-- Delete trained models.
-- Optionally run auto-training checks.
+### Voice Conversation
 
-These features may require extra dependencies and more system resources.
+Full-duplex voice conversation with Voice Activity Detection (VAD):
 
-## Example Things To Ask Sara
+- **Dictation mode** — Record → transcribe → insert text into composer.
+- **Conversation mode** — Listen → transcribe → submit → speak response → loop.
+- **STT providers** — local (faster-whisper), Groq, OpenAI, Mistral, xAI, ElevenLabs.
+- **TTS providers** — edge-tts, OpenAI, ElevenLabs, xAI, Minimax, Mistral, Gemini, neural TTS.
+- **Backend API** — `POST /api/audio/transcribe` and `POST /api/audio/speak` with 120s timeout.
 
-```text
-What time is it?
-Weather in Mumbai
-Save note: call the bank tomorrow
-Show my notes
-Calculate 2500 / 12
-Search YouTube for Python tutorials
-Search web for latest AI tools
-Read file README.md
-List files in plugins
-Create folder test-output
-Run command python -m unittest test_agent_vnext.py
-Open Chrome
-Take a screenshot
-Read my screen
-Set volume to 40
-Get CPU usage
-Get top processes
-Get trending news
-Send Telegram message: hello
-Schedule a workflow for 9 AM daily news summary
-Use agents to review this project structure
-List plugins
-List skills all
-Read skill software-development/test-driven-development
-```
+### Internationalization
 
-## Safety Behavior
+- **8 supported locales** — English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish.
+- **Partial translation support** — Missing keys automatically fall back to English via `defineLocale()`.
+- **Locale aliases** — Browser/OS locale codes normalized to canonical locale IDs.
 
-Sara treats some tools as safe and others as risky.
+### Backend API Compatibility
 
-Safe actions usually run directly, such as:
+The Electron desktop app communicates with the backend via REST endpoints proxied through the main process:
 
-- Reading notes.
-- Getting time.
-- Listing files.
-- Searching knowledge.
-- Checking system stats.
+- Session archiving, messaging platform management, provider validation, toolset management, and cron job runs are all implemented.
+- Voice STT/TTS endpoints with configurable provider routing.
+- Authentication token normalization and backend readiness signaling.
 
-Risky actions ask for approval first, such as:
+## Feature File Targets
 
-- Running terminal commands.
-- Installing packages.
-- Writing or deleting files.
-- Opening apps.
-- Sending outbound messages.
-- Browser automation.
-- Shutdown or restart.
+- `FEATURES.md`: user-facing feature overview and capability boundaries.
+- `README.md`: project overview and quick start.
+- `website/docs/`: detailed product, setup, integration, and architecture documentation.
+- `memory/README.md`: wiki memory design, schema, API, and completion criteria.
+- `apps/desktop/README.md`: desktop app setup and development.
+- `gateway/platforms/ADDING_A_PLATFORM.md`: messaging adapter development.
+- `pyproject.toml`: package metadata, core dependencies, and optional dependency groups.
 
-Reply `yes` to continue or `no` to stop.
+## Definition Of Done
 
-## Main Use Cases
+This feature overview is current when:
 
-- Personal assistant.
-- Chatbot across Telegram, Discord, and WhatsApp.
-- Local productivity assistant.
-- Memory-based assistant.
-- Developer helper.
-- Research assistant.
-- Automation assistant.
-- Multi-agent planning assistant.
-- Plugin and skill-powered AI workspace.
+- Every major implemented subsystem has a concise user-facing description.
+- Optional, credential-backed, and dependency-backed capabilities are identified as such.
+- Claims match repository code or subsystem documentation.
+- File targets point readers to the authoritative implementation details.
+- The document does not present a plugin manifest or adapter alone as a fully configured integration.
+- Markdown formatting is valid.
