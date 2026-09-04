@@ -99,6 +99,85 @@ def delete_automation(user_id: str, automation_id: int) -> bool:
         return True
 
 
+def set_automation_active(user_id: str, automation_id: int, active: bool) -> bool:
+    """Pause or resume one automation without deleting its configuration."""
+    with _storage_lock:
+        items = _load_automations(user_id)
+        for item in items:
+            if int(item.get("id", -1)) == automation_id:
+                item["active"] = bool(active)
+                item["updated_at"] = _now_iso()
+                _save_automations(user_id, items)
+                return True
+    return False
+
+
+def get_automation_history(user_id: str, automation_id: int) -> list[dict[str, Any]]:
+    """Return the newest execution records for one automation."""
+    for item in list_automations(user_id):
+        if int(item.get("id", -1)) == automation_id:
+            history = item.get("run_history", [])
+            return list(reversed(history)) if isinstance(history, list) else []
+    return []
+
+
+def clear_automation_history(user_id: str, automation_id: int) -> bool:
+    """Remove execution records while keeping the automation itself."""
+    with _storage_lock:
+        items = _load_automations(user_id)
+        for item in items:
+            if int(item.get("id", -1)) == automation_id:
+                item.pop("run_history", None)
+                item.pop("last_status", None)
+                item.pop("last_result", None)
+                _save_automations(user_id, items)
+                return True
+    return False
+
+
+def _record_automation_run(
+    user_id: str,
+    automation_id: int,
+    result: str,
+    status: str,
+) -> None:
+    with _storage_lock:
+        items = _load_automations(user_id)
+        for item in items:
+            if int(item.get("id", -1)) == automation_id:
+                history = item.setdefault("run_history", [])
+                history.append(
+                    {
+                        "timestamp": _now_iso(),
+                        "status": status,
+                        "result": result[:1000],
+                    }
+                )
+                item["run_history"] = history[-20:]
+                item["last_status"] = status
+                item["last_result"] = result[:1000]
+                _save_automations(user_id, items)
+                return
+
+
+def run_automation_now(user_id: str, automation_id: int) -> tuple[bool, str]:
+    """Execute one saved automation immediately, even if it is paused."""
+    automation = next(
+        (
+            item
+            for item in list_automations(user_id)
+            if int(item.get("id", -1)) == automation_id
+        ),
+        None,
+    )
+    if automation is None:
+        return False, f"I couldn't find automation {automation_id}."
+    result, status = _execute_automation(user_id, automation)
+    _record_automation_run(user_id, automation_id, result, status)
+    _deliver_result(user_id, automation, result)
+    return status == "completed", result
+
+
 def _get_user_timezone(user_id: str) -> str:
     profile = get_profile(user_id)
     tz = str(profile.get("timezone") or "Asia/Kolkata").strip()
@@ -366,17 +445,20 @@ def _run_routine_automation(user_id: str, automation: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _execute_automation(user_id: str, automation: dict[str, Any]) -> str:
+def _execute_automation(user_id: str, automation: dict[str, Any]) -> tuple[str, str]:
     try:
         automation_type = automation.get("type")
         if automation_type == "git_commit":
-            return _run_git_commit(user_id, automation)
-        if automation_type == "routine_run":
-            return _run_routine_automation(user_id, automation)
-        return _run_news_summary(user_id, automation)
+            result = _run_git_commit(user_id, automation)
+        elif automation_type == "routine_run":
+            result = _run_routine_automation(user_id, automation)
+        else:
+            result = _run_news_summary(user_id, automation)
+        status = "failed" if "failed" in result.lower() else "completed"
+        return result, status
     except Exception as exc:
         logger.warning("Automation %s for %s failed: %s", automation.get("id"), user_id, exc)
-        return f"Automation {automation.get('id')} failed: {exc}"
+        return f"Automation {automation.get('id')} failed: {exc}", "failed"
 
 
 def _mark_run(user_id: str, automation_id: int, local_date: str) -> None:
@@ -424,7 +506,8 @@ def run_due_automations() -> None:
             continue
         for automation, local_date in _due_automations_for_user(user_id):
             _mark_run(user_id, int(automation.get("id", -1)), local_date)
-            result = _execute_automation(user_id, automation)
+            result, status = _execute_automation(user_id, automation)
+            _record_automation_run(user_id, int(automation.get("id", -1)), result, status)
             _deliver_result(user_id, automation, result)
 
 

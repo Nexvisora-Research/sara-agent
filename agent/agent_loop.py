@@ -11,7 +11,8 @@ import json
 import logging
 import os
 import re
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from enum import Enum, auto
 
 from agent import build_workflow
@@ -55,6 +56,11 @@ class PendingConfirmationState:
     user_input: str
     completed_results: list[WorkerResult]
     pending_subtasks: list[Subtask]
+    created_at: float = field(default_factory=time.monotonic)
+
+    def is_expired(self, now: float | None = None) -> bool:
+        current = time.monotonic() if now is None else now
+        return current - self.created_at > _PENDING_CONFIRMATION_TTL_SECONDS
 
 
 @dataclass
@@ -70,6 +76,7 @@ class InteractiveShoppingState:
 
 _pending_confirmations: dict[str, PendingConfirmationState] = {}
 _pending_shopping_states: dict[str, InteractiveShoppingState] = {}
+_PENDING_CONFIRMATION_TTL_SECONDS = 10 * 60
 
 
 def _allow_cloud_fallback() -> bool:
@@ -267,6 +274,8 @@ def _handle_simple_tool_intent(user_id: str, user_input: str) -> str | None:
 
     if lower in {"list plugins", "plugins", "show plugins"}:
         return execute_tool("list_plugins", "", user_id=user_id)
+    if lower in {"capabilities", "capability status", "show capabilities", "integration status"}:
+        return execute_tool("capabilities_status", "", user_id=user_id)
     if lower in {"list skills", "skills", "show skills"}:
         return execute_tool("list_skills", "", user_id=user_id)
     if lower in {"list skills all", "all skills", "show all skills"}:
@@ -421,6 +430,20 @@ def _direct_text_response(text: str) -> AgentResponse:
     return AgentResponse(status="final", final_text=text)
 
 
+def _offline_small_talk_response(user_input: str) -> str:
+    """Provide basic conversation without requiring an LLM provider."""
+    normalized = user_input.strip().lower()
+    if normalized in {"hi", "hii", "hiii", "hello", "hey", "hiya", "howdy"}:
+        return "Hi! I'm Sara. How can I help? 😊"
+    if "how are you" in normalized:
+        return "I'm ready to help. What would you like to do? 😊"
+    if "good morning" in normalized:
+        return "Good morning! What should we work on today? ☀️"
+    if "good evening" in normalized or "good night" in normalized:
+        return "Good evening! How can I help? 🌙"
+    return "I'm here and ready to help. What would you like to do? 😊"
+
+
 def _respond_and_store(user_id: str, user_input: str, response: AgentResponse, *, channel: str) -> AgentResponse:
     add_message(user_id, "assistant", response.final_text, channel=channel)
     finalize_turn_memory(user_id, user_input, response.final_text, action_summaries=response.action_summaries)
@@ -431,6 +454,12 @@ def _handle_pending_confirmation(user_id: str, user_input: str) -> AgentResponse
     pending = _pending_confirmations.get(user_id)
     if not pending:
         return _direct_text_response("")
+
+    if pending.is_expired():
+        _pending_confirmations.pop(user_id, None)
+        return _direct_text_response(
+            "⏱️ That approval expired for safety. Please send the original request again."
+        )
 
     if _YES_RE.match(user_input):
         _pending_confirmations.pop(user_id, None)
@@ -756,6 +785,12 @@ def process_turn(user_id: str, user_input: str, *, channel: str = "chat") -> Age
                 AgentResponse(status="final", final_text=personal_reply),
                 channel=channel,
             )
+        return _respond_and_store(
+            user_id,
+            user_input,
+            _direct_text_response(_offline_small_talk_response(user_input)),
+            channel=channel,
+        )
 
     if intent is Intent.COMPLEX_TASK:
         plan = plan_complex_task(user_id, user_input, get_context(user_id))

@@ -10,7 +10,6 @@ This layer keeps:
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import re
@@ -21,6 +20,7 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 from memory import DATA_DIR
+from memory.storage import load_json, save_json, user_directory
 SUMMARY_FILE = "summary.json"
 EPISODIC_FILE = "episodic_memory.json"
 SUMMARY_MAX_LINES = 14
@@ -106,9 +106,7 @@ class UnderstandingFrame:
 
 
 def _user_dir(user_id: str) -> str:
-    user_dir = os.path.join(DATA_DIR, user_id)
-    os.makedirs(user_dir, exist_ok=True)
-    return user_dir
+    return str(user_directory(DATA_DIR, user_id))
 
 
 def _profile_path(user_id: str) -> str:
@@ -124,19 +122,12 @@ def _episodic_path(user_id: str) -> str:
 
 
 def _load_json(path: str, default):
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as exc:
-            logger.warning("Could not load %s: %s", path, exc)
-    return default
+    return load_json(path, default)
 
 
 def _save_json(path: str, value) -> None:
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(value, f, ensure_ascii=False, indent=2)
+        save_json(path, value)
     except Exception as exc:
         logger.error("Could not save %s: %s", path, exc)
 

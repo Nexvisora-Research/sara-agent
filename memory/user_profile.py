@@ -17,7 +17,6 @@ Schema:
   created_at    str          ISO timestamp
 """
 
-import json
 import os
 import logging
 from datetime import datetime, timezone
@@ -25,6 +24,7 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 from memory import DATA_DIR
+from memory.storage import load_json, save_json, user_directory
 
 _profiles: dict[str, dict] = {}
 
@@ -48,9 +48,7 @@ DEFAULT_PROFILE = {
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _profile_path(user_id: str) -> str:
-    user_dir = os.path.join(DATA_DIR, user_id)
-    os.makedirs(user_dir, exist_ok=True)
-    return os.path.join(user_dir, "profile.json")
+    return str(user_directory(DATA_DIR, user_id) / "profile.json")
 
 
 def _now_iso() -> str:
@@ -59,13 +57,9 @@ def _now_iso() -> str:
 
 def _load_profile(user_id: str) -> dict:
     path = _profile_path(user_id)
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return {**DEFAULT_PROFILE, **data}   # merge in new default keys
-        except (json.JSONDecodeError, OSError) as e:
-            logger.warning(f"Could not load profile for {user_id}: {e}")
+    data = load_json(path, None)
+    if isinstance(data, dict):
+        return {**DEFAULT_PROFILE, **data}   # merge in new default keys
     profile = dict(DEFAULT_PROFILE)
     profile["created_at"] = _now_iso()
     return profile
@@ -73,8 +67,7 @@ def _load_profile(user_id: str) -> dict:
 
 def _save_profile(user_id: str) -> None:
     try:
-        with open(_profile_path(user_id), "w", encoding="utf-8") as f:
-            json.dump(_profiles[user_id], f, ensure_ascii=False, indent=2)
+        save_json(_profile_path(user_id), _profiles[user_id])
     except OSError as e:
         logger.error(f"Could not save profile for {user_id}: {e}")
 

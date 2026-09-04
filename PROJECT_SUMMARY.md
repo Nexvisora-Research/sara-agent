@@ -1,4 +1,4 @@
-# Sara Agent v2.1.0 — Complete Project Summary
+# Sara Agent v2.2.0 — Complete Project Summary
 
 > Read this single file to understand the entire codebase. No need to read individual source files.
 
@@ -8,7 +8,7 @@
 
 **Sara Agent** is a self-improving personal AI assistant with persistent memory, reusable skills, tool use, scheduled automation, multi-agent delegation, and a shared messaging gateway. It runs locally or in managed environments and can be used from the terminal (CLI/TUI), desktop app (Electron), web UI, or connected chat platforms (Telegram, Discord, WhatsApp).
 
-- **Package:** `sara-agent` v2.1.0 (MIT, Nexvisora Research)
+- **Package:** `sara-agent` v2.2.0 (MIT, Nexvisora Research)
 - **Python:** >= 3.11
 - **Entry:** `sara` (`sara_cli.main:cli_main`) or `python cli.py` / `python run_agent.py`
 - **Data dir:** `~/.sara/` (configurable via `SARA_HOME` env var)

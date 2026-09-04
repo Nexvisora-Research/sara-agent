@@ -11,5 +11,5 @@ Provides subcommands for:
 - sara cron          - Manage cron jobs
 """
 
-__version__ = "1.12.0"
-__release_date__ = "2026.5.4"
+__version__ = "2.2.0"
+__release_date__ = "2026.09.04"

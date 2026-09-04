@@ -1,76 +1,72 @@
 import json
 import logging
 import os
+import threading
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
 RECENT_CONTEXT_MESSAGES = 12
 from memory import DATA_DIR
+from memory.storage import load_json, save_json, user_directory, validate_user_id
 
 # In-memory cache: { user_id: [ {role, content}, ... ] }
 _chat_histories: dict[str, list] = {}
+_history_lock = threading.RLock()
 
 
 def _history_path(user_id: str) -> str:
-    user_dir = os.path.join(DATA_DIR, user_id)
-    os.makedirs(user_dir, exist_ok=True)
-    return os.path.join(user_dir, "history.json")
+    return str(user_directory(DATA_DIR, user_id) / "history.json")
 
 
 def _load_history(user_id: str) -> list:
     """Load chat history from disk, return empty list if not found."""
     path = _history_path(user_id)
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    normalized = []
-                    for msg in data:
-                        if isinstance(msg, dict):
-                            normalized.append(
-                                {
-                                    "role": msg.get("role", "assistant"),
-                                    "content": msg.get("content", ""),
-                                    "timestamp": msg.get("timestamp"),
-                                    "channel": msg.get("channel", "chat"),
-                                }
-                            )
-                    return normalized
-        except (json.JSONDecodeError, OSError) as e:
-            logger.warning(f"Could not load history for {user_id}: {e}")
-    return []
+    data = load_json(path, [])
+    if not isinstance(data, list):
+        return []
+    return [
+        {
+            "role": msg.get("role", "assistant"),
+            "content": msg.get("content", ""),
+            "timestamp": msg.get("timestamp"),
+            "channel": msg.get("channel", "chat"),
+        }
+        for msg in data
+        if isinstance(msg, dict)
+    ]
 
 
 def _save_history(user_id: str) -> None:
     """Persist the current in-memory history to disk."""
     try:
-        with open(_history_path(user_id), "w", encoding="utf-8") as f:
-            json.dump(_chat_histories[user_id], f, ensure_ascii=False, indent=2)
+        save_json(_history_path(user_id), _chat_histories[user_id])
     except OSError as e:
         logger.error(f"Could not save history for {user_id}: {e}")
 
 
 def _get_history(user_id: str) -> list:
     """Return the in-memory history, loading from disk on first access."""
-    if user_id not in _chat_histories:
-        _chat_histories[user_id] = _load_history(user_id)
-    return _chat_histories[user_id]
+    validate_user_id(user_id)
+    with _history_lock:
+        if user_id not in _chat_histories:
+            _chat_histories[user_id] = _load_history(user_id)
+        return _chat_histories[user_id]
 
 
 def add_message(user_id: str, role: str, content: str, *, channel: str = "chat") -> None:
     """Append a message to a user's full history and persist it."""
-    history = _get_history(user_id)
-    history.append(
-        {
-            "role": role,
-            "content": content,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "channel": channel,
-        }
-    )
-    _save_history(user_id)
+    with _history_lock:
+        history = _get_history(user_id)
+        history.append(
+            {
+                "role": role,
+                "content": content,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "channel": channel,
+            }
+        )
+        _save_history(user_id)
 
 
 def get_context(user_id: str, max_messages: int = RECENT_CONTEXT_MESSAGES, *, limit: int | None = None) -> str:
@@ -98,5 +94,7 @@ def get_full_history(user_id: str) -> list:
 
 def clear_history(user_id: str) -> None:
     """Clear conversation history for a specific user (memory + disk)."""
-    _chat_histories[user_id] = []
-    _save_history(user_id)
+    with _history_lock:
+        validate_user_id(user_id)
+        _chat_histories[user_id] = []
+        _save_history(user_id)

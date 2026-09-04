@@ -248,6 +248,33 @@ def list_plugins(value: str = "") -> str:
     return "Available plugins:\n" + "\n".join(rows)
 
 
+def capabilities_status(value: str = "") -> str:
+    """Show a fast, non-network status summary of tools, plugins, and MCP."""
+    plugin_tools = [name for name, tool in TOOLS.items() if isinstance(tool, PluginTool)]
+    mcp_tools = [name for name in TOOLS if name.startswith("mcp__") or name.startswith("mcp_")]
+    try:
+        from sara_cli.config import load_config
+
+        configured_mcp = load_config().get("mcp_servers", {})
+        if not isinstance(configured_mcp, dict):
+            configured_mcp = {}
+    except Exception:
+        configured_mcp = {}
+
+    lines = [
+        "🔌 Sara capabilities",
+        f"- Tools: {len(TOOLS)} registered ({len(plugin_tools)} plugin, {len(mcp_tools)} MCP)",
+        f"- Plugins: {len(list(_iter_plugin_module_names()))} discovered",
+        f"- MCP servers: {len(configured_mcp)} configured",
+    ]
+    if configured_mcp:
+        lines.append("- MCP names: " + ", ".join(sorted(configured_mcp)))
+    if plugin_tools:
+        lines.append("- Plugin tools: " + ", ".join(sorted(plugin_tools)))
+    lines.append("Use `list plugins` or `sara mcp test <name>` for more detail.")
+    return "\n".join(lines)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 2 — System Control (system_tools.py)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -373,6 +400,7 @@ TOOLS: dict[str, Callable | PluginTool] = {
     "read_skill":         read_skill,
     "read_sara_features": read_sara_features,
     "list_plugins":       list_plugins,
+    "capabilities_status": capabilities_status,
     # ── System Control ────────────────────────────────
     "open_app":           open_app,
     "open_terminal":      open_terminal,
@@ -468,6 +496,7 @@ TOOL_POLICIES: dict[str, ToolPolicy] = {
     "read_skill":         ToolPolicy("safe_read"),
     "read_sara_features": ToolPolicy("safe_read"),
     "list_plugins":       ToolPolicy("safe_read"),
+    "capabilities_status": ToolPolicy("safe_read"),
     # System control
     "open_app":           ToolPolicy("risky", True, "Opens a local application"),
     "open_terminal":      ToolPolicy("risky", True, "Opens a terminal window"),
@@ -633,6 +662,7 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     "read_skill":         "read_skill(name_or_path) — Read a SKILL.md by name or path",
     "read_sara_features": "read_sara_features() — Read Sara's local guide for ready features, plugins, skills, new additions, and daily-life usage",
     "list_plugins":       "list_plugins() — List plugin manifests and surfaced plugin tools",
+    "capabilities_status": "capabilities_status() — Show registered tools, plugins, and MCP server status",
     # System
     "open_app":           "open_app(name) — Open an app e.g. 'chrome', 'vscode'",
     "open_terminal":      "open_terminal(cmd?) — Open a terminal, optionally running a command",

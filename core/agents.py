@@ -95,13 +95,21 @@ class BaseAgent(ABC):
 
 
 class _DefaultSpecializedAgent(BaseAgent):
-    """Safe default implementation, replaceable through dependency injection."""
+    """Useful baseline implementation, replaceable through dependency injection."""
 
     async def run(self, task: AgentTask, context: AgentContext) -> Any:
-        raise NotImplementedError(
-            f"{type(self).__name__} has not implemented a 'run' method. "
-            "Subclasses must override 'run' to provide real behavior."
+        context.raise_if_cancelled()
+        await context.report_progress(10, f"Starting {self.role.value} work")
+        await context.send_message(
+            f"{self.role.value.title()} agent accepted: {task.description}"
         )
+        await context.report_progress(100, "Baseline task completed")
+        return {
+            "role": self.role.value,
+            "task": task.title,
+            "description": task.description,
+            "status": "baseline_completed",
+        }
 
 
 class PlannerAgent(_DefaultSpecializedAgent):
@@ -141,4 +149,3 @@ def cancelled_result(task: AgentTask) -> AgentResult:
         started_at=task.started_at,
         completed_at=utc_now(),
     )
-

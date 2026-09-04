@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sara-agent"
-version = "2.1.0"
+version = "2.2.0"
 description = "Sara Agent - AI-powered assistant with multi-provider support"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -95,6 +95,10 @@ termux = [
 
 [project.scripts]
 sara = "sara_cli.main:cli_main"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests", "maestro/tests"]
 
 [tool.setuptools]
 packages = ["sara_cli", "gateway", "integrations", "memory", "agent", "brain", "skills", "plugins", "tui_gateway", "backend", "backend.computer_use", "backend.computer_use.vision", "backend.computer_use.accessibility", "backend.computer_use.executor", "backend.computer_use.planner", "backend.computer_use.verifier", "backend.computer_use.memory", "backend.computer_use.overlay"]

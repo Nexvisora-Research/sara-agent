@@ -4,7 +4,7 @@ import unittest
 import uuid
 from unittest.mock import patch
 
-from agent.agent_loop import process_turn
+from agent.agent_loop import PendingConfirmationState, process_turn
 from agent.planner import ExecutionPlan, Subtask, ToolCall, _infer_tool_calls
 from memory.context_manager import add_message, get_context, get_full_history
 from memory.memory_engine import auto_update_profile, finalize_turn_memory, retrieve_relevant_memories
@@ -17,6 +17,16 @@ class SaraVNextTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.user_dir, ignore_errors=True)
+
+    def test_pending_confirmation_expires(self):
+        state = PendingConfirmationState(
+            user_input="install requests",
+            completed_results=[],
+            pending_subtasks=[],
+            created_at=0,
+        )
+        self.assertTrue(state.is_expired(now=601))
+        self.assertFalse(state.is_expired(now=599))
 
     def test_full_history_is_preserved_while_prompt_context_stays_bounded(self):
         for index in range(25):
