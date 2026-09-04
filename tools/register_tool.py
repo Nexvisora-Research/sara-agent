@@ -73,10 +73,6 @@ def calculate(expression: str) -> str:
         return f"❌ Calculation error: {e}"
 
 
-def set_reminder(text: str) -> str:
-    return f"⏰ Reminder set: '{text}'"
-
-
 def get_weather(city: str) -> str:
     city = city.strip()
     if not city:

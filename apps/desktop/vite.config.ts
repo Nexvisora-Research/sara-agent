@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
+const usePolling = process.env.CHOKIDAR_USEPOLLING === '1' || process.env.CHOKIDAR_USEPOLLING === 'true'
+
 export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
@@ -47,7 +49,13 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5174,
-    strictPort: true
+    strictPort: true,
+    watch: usePolling
+      ? {
+          interval: 350,
+          usePolling: true
+        }
+      : undefined
   },
   preview: {
     host: '127.0.0.1',

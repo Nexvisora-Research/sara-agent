@@ -19,7 +19,7 @@ import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PlatformAvatar } from '@/app/messaging/platform-icon'
-import { SaraLogo } from '@/components/ui/sara-logo'
+import { BrandMark } from '@/components/brand-mark'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { DisclosureCaret } from '@/components/ui/disclosure-caret'
@@ -36,7 +36,6 @@ import {
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tip } from '@/components/ui/tooltip'
-import { searchSessions, type SessionInfo, type SessionSearchResult } from '@/Sara'
 import { useWorktreeInfo } from '@/hooks/use-worktree-info'
 import { useI18n } from '@/i18n'
 import { comboTokens } from '@/lib/keybinds/combo'
@@ -44,6 +43,7 @@ import { profileColor } from '@/lib/profile-color'
 import { sessionMatchesSearch } from '@/lib/session-search'
 import { normalizeSessionSource, sessionSourceLabel } from '@/lib/session-source'
 import { cn } from '@/lib/utils'
+import { searchSessions, type SessionInfo, type SessionSearchResult } from '@/Sara'
 import { $cronJobs } from '@/store/cron'
 import {
   $panesFlipped,
@@ -535,6 +535,7 @@ export function ChatSidebar({
 
     if (!next.length && agentOrderIds.length) {
       setSidebarSessionOrderIds([])
+
       return
     }
 
@@ -796,28 +797,34 @@ export function ChatSidebar({
   return (
     <Sidebar
       className={cn(
-        'relative h-full min-w-0 overflow-hidden border-t-0 border-b-0 text-foreground transition-none',
+        'relative h-full min-w-0 overflow-hidden border-t-0 border-b-0 text-foreground shadow-[inset_-1px_0_0_color-mix(in_srgb,var(--ui-base)_5%,transparent)] transition-none',
         panesFlipped ? 'border-l border-r-0' : 'border-r border-l-0',
         sidebarOpen
-          ? 'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100'
+          ? 'border-(--sidebar-edge-border) bg-[color-mix(in_srgb,var(--ui-sidebar-surface-background)_94%,transparent)] opacity-100 backdrop-blur-xl'
           : 'pointer-events-none border-transparent bg-transparent opacity-0',
         // While floated by PaneShell's hover-reveal, force visible + interactive
         // — on hover (group-hover/reveal) or when keyboard-pinned (data-forced).
-        'in-data-[pane-hover-reveal=open]:pointer-events-auto in-data-[pane-hover-reveal=open]:border-(--sidebar-edge-border) in-data-[pane-hover-reveal=open]:bg-(--ui-sidebar-surface-background) in-data-[pane-hover-reveal=open]:opacity-100',
-        'group-hover/reveal:pointer-events-auto group-hover/reveal:border-(--sidebar-edge-border) group-hover/reveal:bg-(--ui-sidebar-surface-background) group-hover/reveal:opacity-100'
+        'in-data-[pane-hover-reveal=open]:pointer-events-auto in-data-[pane-hover-reveal=open]:border-(--sidebar-edge-border) in-data-[pane-hover-reveal=open]:bg-[color-mix(in_srgb,var(--ui-sidebar-surface-background)_94%,transparent)] in-data-[pane-hover-reveal=open]:opacity-100',
+        'group-hover/reveal:pointer-events-auto group-hover/reveal:border-(--sidebar-edge-border) group-hover/reveal:bg-[color-mix(in_srgb,var(--ui-sidebar-surface-background)_94%,transparent)] group-hover/reveal:opacity-100'
       )}
       collapsible="none"
     >
-      <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
+      <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2">
         {/* Brand Header */}
-        <div className="flex shrink-0 items-center gap-2.5 px-2 pt-[calc(var(--titlebar-height)+0.5rem)] pb-2">
-          <SaraLogo size={22} />
-          <span className="font-heading text-sm font-semibold tracking-tight text-(--ui-text-primary)">
-            Sara
-          </span>
-          <div className="ml-auto flex items-center gap-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-(--ui-accent) shadow-[0_0_6px_rgba(255,45,85,0.35)]" />
-            <span className="text-[10px] text-(--ui-text-tertiary) font-mono tracking-wider uppercase">Online</span>
+        <div className="relative mx-0.5 mb-2 mt-[calc(var(--titlebar-height)+0.625rem)] flex shrink-0 items-center gap-2.5 overflow-hidden rounded-lg border border-(--ui-stroke-quaternary) bg-(--ui-bg-quinary) px-2 py-2 shadow-[inset_0_1px_0_color-mix(in_srgb,#fff_18%,transparent)]">
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0 left-0 w-0.5 bg-(--ui-accent)"
+          />
+          <BrandMark className="size-8 rounded-md" />
+          <div className="min-w-0">
+            <div className="font-heading text-[0.9375rem] font-semibold leading-4 text-(--ui-text-primary)">Sara</div>
+            <div className="mt-0.5 flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-(--ui-green) shadow-[0_0_0.625rem_color-mix(in_srgb,var(--ui-green)_50%,transparent)]" />
+              <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-(--ui-text-tertiary)">
+                Online
+              </span>
+            </div>
           </div>
         </div>
 
@@ -847,9 +854,10 @@ export function ChatSidebar({
                         // resolved region has been observed to swallow clicks on the
                         // top rows. Same carve-out as USER_BUBBLE_BASE_CLASS in
                         // thread.tsx.
-                        'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
+                        'flex h-8 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
+                        isNewSession && 'mb-1 bg-(--ui-bg-quinary) text-(--ui-text-primary) shadow-[inset_0_0_0_1px_var(--ui-stroke-quaternary)]',
                         active &&
-                          'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-none hover:border-(--ui-stroke-tertiary)!',
+                          'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-[inset_2px_0_0_var(--ui-accent)] hover:border-(--ui-stroke-tertiary)!',
                         !isInteractive &&
                           'cursor-default hover:border-transparent hover:bg-transparent hover:text-inherit'
                       )}
@@ -867,7 +875,15 @@ export function ChatSidebar({
                       tooltip={s.nav[item.id] ?? item.label}
                       type="button"
                     >
-                      <item.icon className="size-4 shrink-0 text-[color-mix(in_srgb,currentColor_72%,transparent)]" />
+                      <span
+                        className={cn(
+                          'grid size-5 shrink-0 place-items-center rounded-[0.35rem] text-[color-mix(in_srgb,currentColor_72%,transparent)]',
+                          isNewSession && 'bg-(--ui-accent) text-primary-foreground',
+                          active && 'bg-(--ui-bg-quaternary) text-(--ui-accent)'
+                        )}
+                      >
+                        <item.icon className="size-4" />
+                      </span>
                       {contentVisible && (
                         <>
                           <span className="min-w-0 flex-1 truncate">{s.nav[item.id] ?? item.label}</span>
@@ -890,13 +906,15 @@ export function ChatSidebar({
 
         {contentVisible && showSessionSections && (
           <div className="shrink-0 px-2 pb-1 pt-1">
-            <SearchField
-              aria-label={s.searchAria}
-              inputRef={searchInputRef}
-              onChange={setSearchQuery}
-              placeholder={s.searchPlaceholder}
-              value={searchQuery}
-            />
+            <div className="rounded-md bg-[color-mix(in_srgb,var(--ui-bg-quinary)_92%,transparent)] px-2 py-1 shadow-[inset_0_0_0_1px_var(--ui-stroke-quaternary)]">
+              <SearchField
+                aria-label={s.searchAria}
+                inputRef={searchInputRef}
+                onChange={setSearchQuery}
+                placeholder={s.searchPlaceholder}
+                value={searchQuery}
+              />
+            </div>
           </div>
         )}
 
@@ -1114,9 +1132,9 @@ interface SidebarSectionHeaderProps {
 
 function SidebarSectionHeader({ label, open, onToggle, action, meta, icon }: SidebarSectionHeaderProps) {
   return (
-    <div className="group/section flex shrink-0 items-center justify-between pb-1 pt-1.5">
+    <div className="group/section flex shrink-0 items-center justify-between pb-1 pt-2">
       <button
-        className="group/section-label flex w-fit items-center gap-1 bg-transparent text-left leading-none"
+        className="group/section-label flex w-fit items-center gap-1.5 bg-transparent text-left leading-none"
         onClick={onToggle}
         type="button"
       >
@@ -1626,7 +1644,11 @@ function SortableSidebarWorkspaceParent(props: SortableWorkspaceParentProps) {
 }
 
 function SidebarCount({ children }: { children: React.ReactNode }) {
-  return <span className="text-[0.6875rem] font-medium text-(--ui-text-quaternary)">{children}</span>
+  return (
+    <span className="rounded-sm bg-(--ui-bg-quinary) px-1 text-[0.625rem] font-semibold text-(--ui-text-tertiary)">
+      {children}
+    </span>
+  )
 }
 
 // Reveals the next page of already-loaded rows within a workspace/worktree.

@@ -749,7 +749,7 @@ export function restartGateway(): Promise<ActionResponse> {
 
 export function updateSara(): Promise<ActionResponse> {
   return window.SaraDesktop.api<ActionResponse>({
-    path: '/api/Sara/update',
+    path: '/api/sara/update',
     method: 'POST'
   })
 }
@@ -759,7 +759,7 @@ export function updateSara(): Promise<ActionResponse> {
  *  distinct from the Electron client clone's git state. */
 export function checkSaraUpdate(force = false): Promise<BackendUpdateCheckResponse> {
   return window.SaraDesktop.api<BackendUpdateCheckResponse>({
-    path: `/api/Sara/update/check${force ? '?force=true' : ''}`
+    path: `/api/sara/update/check${force ? '?force=true' : ''}`
   })
 }
 

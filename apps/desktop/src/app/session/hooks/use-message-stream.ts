@@ -132,15 +132,8 @@ function hasSessionInfoStatePatch(patch: SessionRuntimeStatePatch): boolean {
   return Object.keys(patch).length > 0
 }
 
-// Minimum gap between two assistant-text flushes during a stream. Was 16ms
-// (rAF only), which at typical LLM token rates of ~30-80 tok/sec meant every
-// token got its own React commit + Streamdown markdown re-parse, scaling
-// linearly with the growing last-block length. Bumping to 33ms lets ~2 tokens
-// batch into one commit at 60 tok/sec without introducing visible lag on the
-// streaming text (still 30 fps of visible text growth). Big perceived
-// smoothness win on long messages with big trailing paragraphs; see
-// `scripts/profile-typing-lag.md` for the measurement work behind this.
-const STREAM_DELTA_FLUSH_MS = 33
+// Minimum gap between two assistant-text flushes during a stream.
+const STREAM_DELTA_FLUSH_MS = 16
 
 // Gateway/provider failures sometimes arrive as message.complete text instead
 // of an explicit error event. Treat matches as inline assistant errors so they

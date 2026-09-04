@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@sara/ink": ["src/types/sara-ink.d.ts"]
-    }
-  }
-}

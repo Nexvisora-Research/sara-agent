@@ -168,6 +168,7 @@ Rules:
 - Output ONLY the JSON. No markdown fences, no explanation.
 """
 
+    raw = ""
     try:
         raw = ask_ai_smart(prompt).strip()
         # Strip markdown fences if the LLM added them anyway

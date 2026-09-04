@@ -31,9 +31,8 @@ def _open_url_in_browser(url: str) -> bool:
     """
     try:
         if OS == "Windows":
-            # 'start "" "url"' is the most reliable way on Windows
             subprocess.Popen(
-                f'start "" "{url}"',
+                ["start", "", url],
                 shell=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,

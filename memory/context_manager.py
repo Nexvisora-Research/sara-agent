@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 RECENT_CONTEXT_MESSAGES = 12
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+from memory import DATA_DIR
 
 # In-memory cache: { user_id: [ {role, content}, ... ] }
 _chat_histories: dict[str, list] = {}

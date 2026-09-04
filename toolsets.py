@@ -36,6 +36,7 @@ _TOOLSET_TOOL_MAP: Dict[str, List[str]] = {
     "discord": ["discord_fetch_messages", "discord_search_members", "discord_create_thread"],
     "discord_admin": ["discord_list_channels", "discord_list_roles", "discord_pin_message", "discord_assign_role"],
     "yuanbao": ["yuanbao_group_info", "yuanbao_member_queries", "yuanbao_dm"],
+    "computer_use": ["computer_task", "computer_observe", "computer_action", "computer_screenshot", "computer_status", "computer_workflow"],
 }
 
 

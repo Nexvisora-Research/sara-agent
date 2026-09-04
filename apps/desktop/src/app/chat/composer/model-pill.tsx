@@ -20,8 +20,8 @@ import {
 import type { ChatBarState } from './types'
 
 const PILL = cn(
-  'h-(--composer-control-size) max-w-40 shrink-0 gap-1 rounded-md px-2 text-xs font-normal',
-  'text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
+  'h-(--composer-control-size) max-w-44 shrink-0 gap-1 rounded-md border border-(--ui-stroke-quaternary) bg-(--ui-bg-quinary) px-2 text-xs font-medium',
+  'text-(--ui-text-secondary) shadow-[inset_0_1px_0_color-mix(in_srgb,#fff_18%,transparent)] hover:bg-(--chrome-action-hover) hover:text-foreground'
 )
 
 /**

@@ -629,7 +629,8 @@ def _run_training(user_id, callback, config):
     def cb(msg, pct=0):
         if callback:
             try: callback(msg, pct)
-            except Exception: pass
+            except Exception as e:
+                logger.warning("Training callback failed: %s", e, exc_info=True)
 
     try:
         from transformers import GPT2Tokenizer
@@ -845,7 +846,8 @@ def _run_stage_training(user_id, stage, callback, config, resume_from=None):
     def cb(msg, pct=0):
         if callback:
             try: callback(f"[Stage {stage}] {msg}", pct)
-            except Exception: pass
+            except Exception as e:
+                logger.warning("Training callback failed: %s", e, exc_info=True)
 
     try:
         from transformers import GPT2Tokenizer
@@ -1009,7 +1011,8 @@ def _run_3stage_training(user_id, callback, config):
     def cb(msg, pct=0):
         if callback:
             try: callback(msg, pct)
-            except Exception: pass
+            except Exception as e:
+                logger.warning("Training callback failed: %s", e, exc_info=True)
 
     try:
         # Auto-download datasets if not present

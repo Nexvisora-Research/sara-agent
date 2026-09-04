@@ -98,17 +98,10 @@ class _DefaultSpecializedAgent(BaseAgent):
     """Safe default implementation, replaceable through dependency injection."""
 
     async def run(self, task: AgentTask, context: AgentContext) -> Any:
-        await context.report_progress(10, f"{self.role.value} agent accepted task")
-        context.raise_if_cancelled()
-        await asyncio.sleep(0)
-        await context.send_message(f"Completed: {task.title}")
-        await context.report_progress(100, "complete")
-        return {
-            "title": task.title,
-            "description": task.description,
-            "role": self.role.value,
-            "input": task.input_data,
-        }
+        raise NotImplementedError(
+            f"{type(self).__name__} has not implemented a 'run' method. "
+            "Subclasses must override 'run' to provide real behavior."
+        )
 
 
 class PlannerAgent(_DefaultSpecializedAgent):

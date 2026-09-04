@@ -154,7 +154,7 @@ class Intent(Enum):
 
 
 _SMALL_TALK_RE = re.compile(
-    r"^(hi+|hey+|hello|howdy|hiya|yo|sup|what'?s up|how are you|good (morning|afternoon|evening|night))[\s!?.]*$",
+    r"(hi+|hey+|hello|howdy|hiya|yo|sup|what'?s up|how are you|good (morning|afternoon|evening|night))[\s!?.]*$",
     re.IGNORECASE,
 )
 _MATH_EXPR_RE = re.compile(r"^[\d\s+\-*/().]+$")
@@ -229,8 +229,6 @@ def _classify_intent(user_input: str) -> Intent:
 
     if _SMALL_TALK_RE.match(text):
         return Intent.SMALL_TALK
-    if lower in {"coding time", "free time", "movie time", "study time", "gaming time", "meeting time", "editing time"}:
-        return Intent.SIMPLE_TOOL
     if _power_action_from_text(text):
         return Intent.SIMPLE_TOOL
     if _RUN_COMMAND_RE.match(text) or _INSTALL_APP_RE.match(text) or _INSTALL_PACKAGE_RE.match(text):
@@ -300,6 +298,8 @@ def _handle_simple_tool_intent(user_id: str, user_input: str) -> str | None:
     install_app_match = _INSTALL_APP_RE.match(text)
     if install_app_match:
         app_name = install_app_match.group(1).strip()
+        if not re.fullmatch(r"[a-zA-Z0-9_ .\-+]+", app_name):
+            return f"❌ Invalid app name: '{app_name}'. Please use a simple app name."
         return _run_structured_plan(user_id, user_input, _single_tool_plan(user_input, "smart_open_app", app_name)).final_text
 
     install_package_match = _INSTALL_PACKAGE_RE.match(text)
@@ -345,10 +345,6 @@ def _handle_simple_tool_intent(user_id: str, user_input: str) -> str | None:
 
     if "joke" in lower and len(lower.split()) <= 8:
         return execute_tool("tell_joke", "", user_id=user_id)
-    return None
-
-
-def _build_desktop_routine_plan(user_input: str) -> ExecutionPlan | None:
     return None
 
 
@@ -439,7 +435,7 @@ def _handle_pending_confirmation(user_id: str, user_input: str) -> AgentResponse
     if _YES_RE.match(user_input):
         _pending_confirmations.pop(user_id, None)
         approval_plan = ExecutionPlan(user_goal=pending.user_input, subtasks=pending.pending_subtasks)
-        new_results, new_pending, progress = execute_plan(user_id, approval_plan, allow_risky=True)
+        new_results, new_pending, progress, partial = execute_plan(user_id, approval_plan, allow_risky=True)
         all_results = pending.completed_results + new_results
         review = review_execution(
             user_input=pending.user_input,
@@ -489,8 +485,6 @@ def _save_shopping_workflow(user_id: str, data: dict):
 
 def _handle_interactive_shopping(user_id: str, user_input: str, context: str, channel: str) -> AgentResponse | None:
     from tools.browser_tools import browser_screenshot, browser_click_nth_item, browser_add_to_cart, _build_search_url
-    import re
-    import os
 
     # Check if resuming
     if user_id in _pending_shopping_states:
@@ -574,7 +568,7 @@ def _handle_interactive_shopping(user_id: str, user_input: str, context: str, ch
     return None
 
 def _run_structured_plan(user_id: str, user_input: str, plan: ExecutionPlan) -> AgentResponse:
-    worker_results, pending_confirmation, progress = execute_plan(user_id, plan, allow_risky=False)
+    worker_results, pending_confirmation, progress, partial = execute_plan(user_id, plan, allow_risky=False)
     review = review_execution(
         user_input=user_input,
         plan=plan,
@@ -754,12 +748,14 @@ def process_turn(user_id: str, user_input: str, *, channel: str = "chat") -> Age
             )
 
     if intent is Intent.SMALL_TALK:
-        return _respond_and_store(
-            user_id,
-            user_input,
-            AgentResponse(status="final", final_text="Hey! What can I help you with? 😊"),
-            channel=channel,
-        )
+        personal_reply = ask_personal(user_id, user_input)
+        if personal_reply:
+            return _respond_and_store(
+                user_id,
+                user_input,
+                AgentResponse(status="final", final_text=personal_reply),
+                channel=channel,
+            )
 
     if intent is Intent.COMPLEX_TASK:
         plan = plan_complex_task(user_id, user_input, get_context(user_id))

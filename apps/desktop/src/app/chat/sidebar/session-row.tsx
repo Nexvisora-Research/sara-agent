@@ -6,12 +6,12 @@ import { PlatformAvatar } from '@/app/messaging/platform-icon'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Tip } from '@/components/ui/tooltip'
-import type { SessionInfo } from '@/Sara'
 import { type Translations, useI18n } from '@/i18n'
 import { sessionTitle } from '@/lib/chat-runtime'
 import { triggerHaptic } from '@/lib/haptics'
 import { handoffOriginSource, sessionSourceLabel } from '@/lib/session-source'
 import { cn } from '@/lib/utils'
+import type { SessionInfo } from '@/Sara'
 import { $attentionSessionIds } from '@/store/session'
 import { canOpenSessionWindow, openSessionInNewWindow } from '@/store/windows'
 
@@ -93,8 +93,9 @@ export function SidebarSessionRow({
     >
       <div
         className={cn(
-          'group relative grid min-h-[1.625rem] cursor-pointer grid-cols-[minmax(0,1fr)_1.375rem] items-center rounded-md transition-colors duration-100 ease-out hover:bg-(--ui-row-hover-background) hover:transition-none',
-          isSelected && 'bg-(--ui-row-active-background)',
+          'group relative grid min-h-7 cursor-pointer grid-cols-[minmax(0,1fr)_1.5rem] items-center rounded-md border border-transparent transition-colors duration-100 ease-out hover:bg-(--ui-row-hover-background) hover:transition-none',
+          isSelected &&
+            'border-(--ui-stroke-secondary) bg-[color-mix(in_srgb,var(--ui-row-active-background)_92%,var(--ui-bg-elevated))] shadow-[inset_2px_0_0_var(--ui-accent),0_1px_0_color-mix(in_srgb,var(--ui-base)_5%,transparent)]',
           isWorking && 'text-foreground',
           // Opaque surface while lifted so the dragged row erases what's under
           // it (translucency let the rows below bleed through).
@@ -203,11 +204,25 @@ export function SidebarSessionRow({
               />
             </Tip>
           ) : null}
-          <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-normal text-(--ui-text-secondary) group-hover:text-foreground group-data-[working=true]:text-foreground/90">
-            {title}
+          <span className="flex min-w-0 flex-1 items-center gap-1.5">
+            <span
+              className={cn(
+                'min-w-0 flex-1 truncate text-[0.8125rem] font-normal text-(--ui-text-secondary) group-hover:text-foreground group-data-[working=true]:text-foreground/90',
+                isSelected && 'font-medium text-(--ui-text-primary)'
+              )}
+            >
+              {title}
+            </span>
+            {isPinned && (
+              <Codicon
+                className="shrink-0 text-(--ui-text-quaternary) opacity-0 transition-opacity group-hover:opacity-100"
+                name="pin"
+                size="0.6875rem"
+              />
+            )}
           </span>
         </button>
-        <div className="relative z-2 grid w-[1.375rem] place-items-center">
+        <div className="relative z-2 grid w-6 place-items-center">
           {!isWorking && (
             <span className="pointer-events-none absolute right-6 top-1/2 min-w-6 -translate-y-1/2 text-right text-[0.625rem] leading-none text-(--ui-text-tertiary) opacity-0 transition-opacity group-hover:opacity-100">
               {age}

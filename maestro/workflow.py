@@ -189,10 +189,31 @@ class WorkflowRunner:
         if not step.condition:
             return False
         try:
-            return not bool(eval(step.condition, {"__builtins__": {}}, context))
+            return not bool(_safe_eval(step.condition, context))
         except Exception:
             logger.warning("Condition eval failed for step %s: %s", step.name, step.condition)
             return False
+
+
+def _safe_eval(expr: str, context: dict[str, Any]) -> bool:
+    """Safely evaluate a boolean expression using only context variables."""
+    import ast
+    allowed_ops = (ast.And, ast.Or, ast.Not, ast.Compare, ast.Eq, ast.NotEq,
+                   ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Is, ast.IsNot,
+                   ast.In, ast.NotIn, ast.Name, ast.Constant, ast.BoolOp,
+                   ast.Expression, ast.Load, ast.UnaryOp, ast.USub)
+    try:
+        tree = ast.parse(expr, mode="eval")
+        for node in ast.walk(tree):
+            if not isinstance(node, allowed_ops):
+                raise ValueError(f"Unsupported expression: {type(node).__name__}")
+            if isinstance(node, ast.Name):
+                if node.id not in context:
+                    raise NameError(f"Unknown variable: {node.id}")
+        code = compile(tree, "<safe_eval>", "eval")
+        return bool(eval(code, {"__builtins__": {}}, context))
+    except Exception:
+        raise
 
 
 class WorkflowEngine:

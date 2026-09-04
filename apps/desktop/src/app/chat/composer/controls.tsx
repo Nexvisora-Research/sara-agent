@@ -22,9 +22,9 @@ export const GHOST_ICON_BTN = cn(
 // match the reference composer's high-contrast CTA. Keeps the pill itself
 // neutral and lets the action visually dominate the row.
 export const PRIMARY_ICON_BTN = cn(
-  'size-(--composer-control-primary-size,var(--composer-control-size)) shrink-0 rounded-full p-0',
-  'bg-foreground text-background hover:bg-foreground/90',
-  'disabled:bg-foreground/30 disabled:text-background disabled:opacity-100'
+  'size-(--composer-control-primary-size,var(--composer-control-size)) shrink-0 rounded-md p-0',
+  'bg-(--ui-accent) text-primary-foreground shadow-[0_0.375rem_1rem_color-mix(in_srgb,var(--ui-accent)_28%,transparent)] hover:bg-(--ui-accent-secondary)',
+  'disabled:bg-foreground/25 disabled:text-background disabled:opacity-100'
 )
 
 interface ConversationProps {

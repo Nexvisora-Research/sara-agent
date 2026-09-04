@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+from memory import DATA_DIR
 SUMMARY_FILE = "summary.json"
 EPISODIC_FILE = "episodic_memory.json"
 SUMMARY_MAX_LINES = 14

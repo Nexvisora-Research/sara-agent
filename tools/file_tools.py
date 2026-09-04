@@ -21,7 +21,7 @@ PROTECTED_ROOTS = [
 
 def _is_protected(path: str) -> bool:
     """Return True if the path is inside a protected system directory."""
-    abs_path = os.path.abspath(path)
+    abs_path = os.path.realpath(path)
     return any(abs_path.lower().startswith(p.lower()) for p in PROTECTED_ROOTS if p)
 
 
@@ -113,7 +113,7 @@ def list_files(directory: str) -> str:
                 size_str = f"{size:,} B" if size < 1024 else f"{size/1024:.1f} KB"
                 lines.append(f"  📄 {entry.name}  ({size_str})")
 
-        total = len(list(os.scandir(folder)))
+        total = len(entries)
         note = f"\n_(showing {MAX_LIST_ITEMS} of {total})_" if total > MAX_LIST_ITEMS else ""
         return f"📂 `{folder}`:\n" + "\n".join(lines) + note
     except PermissionError:

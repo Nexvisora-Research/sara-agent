@@ -103,11 +103,11 @@ def execute_plan(
     plan: ExecutionPlan,
     *,
     allow_risky: bool = False,
-) -> tuple[list[WorkerResult], list[Subtask], list[str]]:
+) -> tuple[list[WorkerResult], list[Subtask], list[str], bool]:
     """
     Execute all ready subtasks while respecting dependencies and confirmation policy.
 
-    Returns (worker_results, pending_confirmation_subtasks, progress_updates).
+    Returns (worker_results, pending_confirmation_subtasks, progress_updates, partial_completion).
     """
     remaining = {subtask.id: subtask for subtask in plan.subtasks}
     completed: set[str] = set()
@@ -115,6 +115,7 @@ def execute_plan(
     results: list[WorkerResult] = []
     progress_updates: list[str] = []
     pending_confirmation: list[Subtask] = []
+    partial_completion = False
 
     while remaining:
         ready = [
@@ -124,6 +125,7 @@ def execute_plan(
         ]
 
         if not ready:
+            partial_completion = bool(completed)
             for subtask in list(remaining.values()):
                 result = WorkerResult(
                     subtask_id=subtask.id,
@@ -161,9 +163,11 @@ def execute_plan(
 
         if blocked:
             pending_confirmation.extend(sorted(blocked, key=lambda item: item.id))
+            partial_completion = bool(completed)
             break
 
         if not executable:
+            partial_completion = bool(completed)
             break
 
         batch = _choose_batch(executable)
@@ -185,7 +189,7 @@ def execute_plan(
                 failed.add(result.subtask_id)
                 progress_updates.append(f"Failed {result.subtask_id}: {result.goal}")
 
-    return results, pending_confirmation, progress_updates
+    return results, pending_confirmation, progress_updates, partial_completion
 
 
 def _choose_batch(ready: list[Subtask]) -> list[Subtask]:
@@ -438,7 +442,7 @@ def _heuristic_plan(user_input: str) -> ExecutionPlan:
 
 
 def _split_segments(text: str) -> list[str]:
-    parts = re.split(r"\bthen\b|,| and ", text, flags=re.IGNORECASE)
+    parts = re.split(r"\bthen\b|,", text, flags=re.IGNORECASE)
     cleaned = [part.strip(" .") for part in parts if part.strip(" .")]
     return cleaned or [text.strip()]
 
@@ -456,7 +460,7 @@ def _infer_tool_calls(text: str) -> list[ToolCall]:
         return [ToolCall("get_time", "")]
 
     if "weather in " in lower:
-        city = text.lower().split("weather in ", 1)[1].strip()
+        city = lower.split("weather in ", 1)[1].strip()
         return [ToolCall("get_weather", city)]
 
     if lower.startswith("weather "):

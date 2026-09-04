@@ -1815,13 +1815,13 @@ def _build_compact_banner() -> str:
         _skin = None
 
     skin_name = getattr(_skin, "name", "default") if _skin else "default"
-    border_color = _skin.get_color("banner_border", "#FFD700") if _skin else "#FFD700"
-    title_color = _skin.get_color("banner_title", "#FFBF00") if _skin else "#FFBF00"
-    dim_color = _skin.get_color("banner_dim", "#B8860B") if _skin else "#B8860B"
+    border_color = _skin.get_color("banner_border", "#2DD4BF") if _skin else "#2DD4BF"
+    title_color = _skin.get_color("banner_title", "#E6EDF3") if _skin else "#E6EDF3"
+    dim_color = _skin.get_color("banner_dim", "#8EA8A6") if _skin else "#8EA8A6"
 
     if skin_name == "default":
-        line1 = "⚕ Nex sara - AI Agent Framework"
-        tiny_line = "⚕ Nex sara"
+        line1 = "Sara Agent - local-first AI chat console"
+        tiny_line = "Sara Agent"
     else:
         agent_name = _skin.get_branding("agent_name", "sara Agent") if _skin else "sara Agent"
         line1 = f"{agent_name} - AI Agent Framework"

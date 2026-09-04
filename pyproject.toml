@@ -8,7 +8,7 @@ version = "2.1.0"
 description = "Sara Agent - AI-powered assistant with multi-provider support"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Nexvisora Research", email = "nexvisora@gmail.com"}
 ]
@@ -49,6 +49,10 @@ dependencies = [
     "boto3",
     "prompt_toolkit",
     "httpx",
+    "mss",
+    "opencv-python-headless",
+    "ewmh",
+    "python-xlib",
 ]
 
 [project.optional-dependencies]
@@ -60,6 +64,13 @@ all = [
     "accelerate",
     "bitsandbytes",
     "ripgrep",
+]
+
+computer-use = [
+    "mss",
+    "opencv-python-headless",
+    "ewmh",
+    "python-xlib",
 ]
 
 termux = [
@@ -86,7 +97,7 @@ termux = [
 sara = "sara_cli.main:cli_main"
 
 [tool.setuptools]
-packages = ["sara_cli", "gateway", "integrations", "memory", "agent", "brain", "skills", "plugins", "ui-tui", "web"]
+packages = ["sara_cli", "gateway", "integrations", "memory", "agent", "brain", "skills", "plugins", "tui_gateway", "backend", "backend.computer_use", "backend.computer_use.vision", "backend.computer_use.accessibility", "backend.computer_use.executor", "backend.computer_use.planner", "backend.computer_use.verifier", "backend.computer_use.memory", "backend.computer_use.overlay"]
 
 [tool.setuptools.package-data]
 sara_cli = ["*.py"]

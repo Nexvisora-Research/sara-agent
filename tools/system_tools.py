@@ -379,7 +379,7 @@ def _install_app(app_name: str, executable: str) -> tuple[bool, str]:
 def _open_windows(executable: str) -> bool:
     try:
         subprocess.Popen(
-            f'start "" "{executable}"',
+            ["start", "", executable],
             shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -655,7 +655,7 @@ def open_youtube_music(query: str = "") -> str:
         elif OS == "Darwin":
             subprocess.Popen(["open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            subprocess.Popen(f'start "" "{url}"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(["start", "", url], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return "🎵 Opened YouTube Music."
     except Exception:
         ok = webbrowser.open_new_tab(url)
@@ -900,11 +900,16 @@ def _take_screenshot_linux(save_path: str) -> tuple[bool, str]:
             r1 = subprocess.run(["xwd", "-root", "-out", xwd_path], capture_output=True, text=True, timeout=10)
             if r1.returncode == 0:
                 r2 = subprocess.run(["convert", xwd_path, save_path], capture_output=True, text=True, timeout=10)
-                os.remove(xwd_path)
                 if r2.returncode == 0:
                     return True, save_path
         except Exception:
             pass
+        finally:
+            if os.path.exists(xwd_path):
+                try:
+                    os.remove(xwd_path)
+                except OSError as e:
+                    logger.debug("Failed to clean up temp file %s: %s", xwd_path, e)
 
     return False, (
         "No screenshot tool found on this Linux system.\n"
@@ -1001,8 +1006,8 @@ def read_screen(unused: str = "") -> str:
             finally:
                 try:
                     os.remove(tmp_path)
-                except Exception:
-                    pass
+                except OSError as e:
+                    logger.debug("Failed to clean up temp file %s: %s", tmp_path, e)
             if not text:
                 return "👁️ Screen captured but no readable text found."
             if len(text) > 2000:
@@ -1011,8 +1016,8 @@ def read_screen(unused: str = "") -> str:
         finally:
             try:
                 os.remove(tmp_path)
-            except Exception:
-                pass
+            except OSError as e:
+                logger.debug("Failed to clean up temp file %s: %s", tmp_path, e)
     else:
         try:
             from PIL import ImageGrab

@@ -1,20 +1,20 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-22T11:08:13.874Z",
+  "generatedAt": "2026-06-22T16:35:17.637Z",
   "rootPath": "/home/mr-roy/Desktop/Red Code/saraAgent",
   "summary": {
     "totalFiles": 750,
-    "totalEdges": 830,
-    "totalLines": 253416,
+    "totalEdges": 809,
+    "totalLines": 250178,
     "languages": [
       "py",
       "js"
     ],
     "flowStages": {
       "start": 78,
-      "main": 434,
-      "core": 112,
-      "helpers": 126
+      "main": 437,
+      "core": 108,
+      "helpers": 127
     }
   },
   "files": [
@@ -3947,14 +3947,14 @@
         "status": "collaborative",
         "impact": "bridge",
         "summary": "Connects multiple parts of the code flow.",
-        "score": 32
+        "score": 23
       },
-      "crossStageLinks": 9,
-      "impactScore": 32,
+      "crossStageLinks": 6,
+      "impactScore": 23,
       "isDeadCode": false,
       "isOrphan": false,
       "isCircular": false,
-      "hotspotScore": 38,
+      "hotspotScore": 32,
       "hotspotLevel": "high",
       "summary": "Main orchestration code. Classes: PendingConfirmationState, InteractiveShoppingState, Intent. Functions: _allow_cloud_fallback, _allow_auto_train, _allow_slm_auto_train, _extract_and_learn_facts",
       "functions": [
@@ -3995,10 +3995,7 @@
         "brain/auto_trainer.py",
         "brain/llm_engine.py",
         "brain/personal_llm.py",
-        "brain/slm_auto_trainer.py",
-        "memory/context_manager.py",
-        "memory/memory_engine.py",
-        "memory/user_profile.py"
+        "brain/slm_auto_trainer.py"
       ],
       "usedBy": [
         "integrations/discord_bot.py",
@@ -25195,6 +25192,883 @@
       "usedBy": []
     },
     {
+      "path": "backend/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 1,
+      "size": 0,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 1,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 202,
+      "size": 7158,
+      "collaboration": {
+        "status": "collaborative",
+        "impact": "bridge",
+        "summary": "Connects multiple parts of the code flow.",
+        "score": 17
+      },
+      "crossStageLinks": 3,
+      "impactScore": 17,
+      "isDeadCode": true,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 27,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: ComputerAgent. Functions: __init__, _lazy_init, observe, analyze",
+      "functions": [
+        "__init__",
+        "_lazy_init",
+        "observe",
+        "analyze",
+        "plan",
+        "execute_action",
+        "verify",
+        "run_task",
+        "shutdown",
+        "get_computer_agent"
+      ],
+      "classes": [
+        "ComputerAgent"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py",
+        "backend/computer_use/permissions.py",
+        "backend/computer_use/vision/screen_capture.py",
+        "backend/computer_use/vision/window_tracker.py",
+        "backend/computer_use/vision/element_detector.py",
+        "backend/computer_use/accessibility/atspi_bridge.py",
+        "backend/computer_use/accessibility/ui_tree.py",
+        "backend/computer_use/executor/action_engine.py",
+        "backend/computer_use/planner/task_planner.py",
+        "backend/computer_use/verifier/action_verifier.py",
+        "backend/computer_use/memory/ui_memory.py"
+      ],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/accessibility/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 186,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/accessibility/atspi_bridge.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 212,
+      "size": 7766,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 3
+      },
+      "crossStageLinks": 0,
+      "impactScore": 3,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 14,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: ATSPIBridge. Functions: __init__, _init_atspi, is_available, get_desktop",
+      "functions": [
+        "__init__",
+        "_init_atspi",
+        "is_available",
+        "get_desktop",
+        "get_application_list",
+        "_fallback_application_list",
+        "get_ui_tree",
+        "_build_tree",
+        "get_applications_with_windows",
+        "get_active_element"
+      ],
+      "classes": [
+        "ATSPIBridge"
+      ],
+      "exports": [],
+      "imports": [],
+      "usedBy": [
+        "backend/computer_use/__init__.py",
+        "backend/computer_use/accessibility/ui_tree.py",
+        "backend/computer_use/vision/element_detector.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/accessibility/ui_tree.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 110,
+      "size": 3535,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 2
+      },
+      "crossStageLinks": 0,
+      "impactScore": 2,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 10,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Classes: UITree. Functions: __init__, get_tree, get_application_summary, flatten_tree",
+      "functions": [
+        "__init__",
+        "get_tree",
+        "get_application_summary",
+        "flatten_tree",
+        "_walk",
+        "find_element",
+        "_search_node"
+      ],
+      "classes": [
+        "UITree"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/accessibility/atspi_bridge.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/config.py",
+      "fileType": "config",
+      "stage": "helpers",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 80,
+      "size": 3111,
+      "collaboration": {
+        "status": "collaborative",
+        "impact": "bridge",
+        "summary": "Connects multiple parts of the code flow.",
+        "score": 30
+      },
+      "crossStageLinks": 10,
+      "impactScore": 30,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 34,
+      "hotspotLevel": "high",
+      "summary": "Support or shared utility code. Classes: ComputerUseConfig. Functions: from_env, from_dict",
+      "functions": [
+        "from_env",
+        "from_dict"
+      ],
+      "classes": [
+        "ComputerUseConfig"
+      ],
+      "exports": [],
+      "imports": [],
+      "usedBy": [
+        "backend/computer_use/__init__.py",
+        "backend/computer_use/executor/action_engine.py",
+        "backend/computer_use/memory/ui_memory.py",
+        "backend/computer_use/overlay/sara_overlay.py",
+        "backend/computer_use/permissions.py",
+        "backend/computer_use/planner/task_planner.py",
+        "backend/computer_use/verifier/action_verifier.py",
+        "backend/computer_use/vision/element_detector.py",
+        "backend/computer_use/vision/screen_capture.py",
+        "backend/computer_use/voice_driven.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/executor/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 204,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/executor/action_engine.py",
+      "fileType": "module",
+      "stage": "core",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 203,
+      "size": 7900,
+      "collaboration": {
+        "status": "collaborative",
+        "impact": "bridge",
+        "summary": "Connects multiple parts of the code flow.",
+        "score": 9
+      },
+      "crossStageLinks": 3,
+      "impactScore": 9,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 12,
+      "hotspotLevel": "medium",
+      "summary": "Core business logic. Classes: ActionEngine. Functions: __init__, _init_controllers, is_available, execute",
+      "functions": [
+        "__init__",
+        "_init_controllers",
+        "is_available",
+        "execute",
+        "_move_mouse",
+        "_click",
+        "_double_click",
+        "_drag",
+        "_scroll",
+        "_type_text",
+        "_press_key",
+        "_hotkey",
+        "_screenshot",
+        "_wait",
+        "_resolve_button",
+        "_resolve_key",
+        "shutdown"
+      ],
+      "classes": [
+        "ActionEngine"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py",
+        "backend/computer_use/vision/screen_capture.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/memory/__init__.py",
+      "fileType": "module",
+      "stage": "core",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 198,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Core business logic. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/memory/ui_memory.py",
+      "fileType": "module",
+      "stage": "core",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 164,
+      "size": 5602,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 4
+      },
+      "crossStageLinks": 2,
+      "impactScore": 4,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 10,
+      "hotspotLevel": "medium",
+      "summary": "Core business logic. Classes: UIActionRecord, UIMemory. Functions: __init__, _load_json, _save_json, remember_action",
+      "functions": [
+        "__init__",
+        "_load_json",
+        "_save_json",
+        "remember_action",
+        "get_action_history",
+        "find_frequent_actions",
+        "remember_layout",
+        "get_layout",
+        "remember_workflow",
+        "get_workflow",
+        "list_workflows",
+        "clear"
+      ],
+      "classes": [
+        "UIActionRecord",
+        "UIMemory"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/overlay/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 7,
+      "size": 202,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/overlay/sara_overlay.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 313,
+      "size": 11043,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 2
+      },
+      "crossStageLinks": 1,
+      "impactScore": 2,
+      "isDeadCode": true,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 8,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Classes: OverlayState, SaraOverlay. Functions: __init__, _init_tk, is_available, show",
+      "functions": [
+        "__init__",
+        "_init_tk",
+        "is_available",
+        "show",
+        "hide",
+        "update_state",
+        "add_thought",
+        "add_action",
+        "request_permission",
+        "_approve",
+        "_deny",
+        "_add_permission_buttons",
+        "_run_overlay",
+        "_check_running",
+        "_build_ui",
+        "_refresh",
+        "_do_refresh"
+      ],
+      "classes": [
+        "OverlayState",
+        "SaraOverlay"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py"
+      ],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/permissions.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 93,
+      "size": 2541,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 4
+      },
+      "crossStageLinks": 1,
+      "impactScore": 4,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 13,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: PermissionLevel, PermissionManager. Functions: register_approval_callback, enable_autonomous, disable_autonomous, is_autonomous_enabled",
+      "functions": [
+        "register_approval_callback",
+        "enable_autonomous",
+        "disable_autonomous",
+        "is_autonomous_enabled",
+        "__init__",
+        "get_level",
+        "request_approval",
+        "check_action_allowed"
+      ],
+      "classes": [
+        "PermissionLevel",
+        "PermissionManager"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py",
+        "backend/computer_use/planner/task_planner.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/planner/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 160,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/planner/task_planner.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 183,
+      "size": 6819,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 4
+      },
+      "crossStageLinks": 1,
+      "impactScore": 4,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 12,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: TaskPlanner. Functions: __init__, _init_llm, analyze_screen, create_plan",
+      "functions": [
+        "__init__",
+        "_init_llm",
+        "analyze_screen",
+        "create_plan",
+        "execute_task_loop"
+      ],
+      "classes": [
+        "TaskPlanner"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py",
+        "backend/computer_use/permissions.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/verifier/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 192,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/verifier/action_verifier.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 175,
+      "size": 6901,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 3
+      },
+      "crossStageLinks": 1,
+      "impactScore": 3,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 10,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: ActionVerifier. Functions: __init__, _init_llm, verify, _verify_click",
+      "functions": [
+        "__init__",
+        "_init_llm",
+        "verify",
+        "_verify_click",
+        "_verify_type",
+        "_verify_hotkey",
+        "_verify_generic",
+        "_detect_screen_change",
+        "_get_screenshot_b64",
+        "_image_diff_percent"
+      ],
+      "classes": [
+        "ActionVerifier"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/vision/__init__.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 6,
+      "size": 186,
+      "collaboration": {
+        "status": "isolated",
+        "impact": "solo",
+        "summary": "No local collaboration links yet.",
+        "score": 0
+      },
+      "crossStageLinks": 0,
+      "impactScore": 0,
+      "isDeadCode": true,
+      "isOrphan": true,
+      "isCircular": false,
+      "hotspotScore": 2,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Type: module",
+      "functions": [],
+      "classes": [],
+      "exports": [],
+      "imports": [],
+      "usedBy": []
+    },
+    {
+      "path": "backend/computer_use/vision/element_detector.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 220,
+      "size": 8622,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 4
+      },
+      "crossStageLinks": 1,
+      "impactScore": 4,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 12,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: ElementDetector. Functions: __init__, _init_optional, detect_all, _detect_from_atspi",
+      "functions": [
+        "__init__",
+        "_init_optional",
+        "detect_all",
+        "_detect_from_atspi",
+        "_extract_elements_from_tree",
+        "_detect_from_ocr",
+        "_classify_text_element",
+        "_detect_from_vision",
+        "_deduplicate"
+      ],
+      "classes": [
+        "ElementDetector"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py",
+        "backend/computer_use/accessibility/atspi_bridge.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/vision/screen_capture.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 197,
+      "size": 6238,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 6
+      },
+      "crossStageLinks": 2,
+      "impactScore": 6,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 16,
+      "hotspotLevel": "medium",
+      "summary": "Main orchestration code. Classes: MonitorInfo, CaptureResult, ScreenCapture. Functions: __init__, _resolve_capture_dir, _init_backend, list_monitors",
+      "functions": [
+        "__init__",
+        "_resolve_capture_dir",
+        "_init_backend",
+        "list_monitors",
+        "capture_monitor",
+        "capture_primary",
+        "capture_all_monitors",
+        "save_screenshot",
+        "stream_frames",
+        "get_last_capture"
+      ],
+      "classes": [
+        "MonitorInfo",
+        "CaptureResult",
+        "ScreenCapture"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py"
+      ],
+      "usedBy": [
+        "backend/computer_use/__init__.py",
+        "backend/computer_use/executor/action_engine.py",
+        "backend/computer_use/voice_driven.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/vision/window_tracker.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 175,
+      "size": 6174,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 1
+      },
+      "crossStageLinks": 0,
+      "impactScore": 1,
+      "isDeadCode": false,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 8,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Classes: WindowInfo, WindowTracker. Functions: __init__, _init_backend, get_active_window, _get_title",
+      "functions": [
+        "__init__",
+        "_init_backend",
+        "get_active_window",
+        "_get_title",
+        "list_windows"
+      ],
+      "classes": [
+        "WindowInfo",
+        "WindowTracker"
+      ],
+      "exports": [],
+      "imports": [],
+      "usedBy": [
+        "backend/computer_use/__init__.py"
+      ]
+    },
+    {
+      "path": "backend/computer_use/voice_driven.py",
+      "fileType": "module",
+      "stage": "main",
+      "lang": "py",
+      "ext": ".py",
+      "lines": 225,
+      "size": 8425,
+      "collaboration": {
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 3
+      },
+      "crossStageLinks": 1,
+      "impactScore": 3,
+      "isDeadCode": true,
+      "isOrphan": false,
+      "isCircular": false,
+      "hotspotScore": 9,
+      "hotspotLevel": "low",
+      "summary": "Main orchestration code. Classes: VoiceCommandHandler. Functions: __init__, _init_voice, is_available, start_listening",
+      "functions": [
+        "__init__",
+        "_init_voice",
+        "is_available",
+        "start_listening",
+        "stop_listening",
+        "_listen_loop",
+        "_listen_once",
+        "_check_wake_word",
+        "_execute_voice_command",
+        "_handle_open_app",
+        "_handle_search",
+        "_handle_click_command",
+        "_handle_type_command",
+        "_handle_scroll",
+        "_handle_screenshot",
+        "_handle_status",
+        "_handle_close_app",
+        "_handle_unknown_command",
+        "_speak_result"
+      ],
+      "classes": [
+        "VoiceCommandHandler"
+      ],
+      "exports": [],
+      "imports": [
+        "backend/computer_use/config.py",
+        "backend/computer_use/vision/screen_capture.py"
+      ],
+      "usedBy": []
+    },
+    {
       "path": "brain/auto_trainer.py",
       "fileType": "module",
       "stage": "core",
@@ -25921,14 +26795,14 @@
         "status": "collaborative",
         "impact": "hub",
         "summary": "A shared dependency reused by many files.",
-        "score": 10
+        "score": 8
       },
-      "crossStageLinks": 2,
-      "impactScore": 10,
+      "crossStageLinks": 1,
+      "impactScore": 8,
       "isDeadCode": false,
       "isOrphan": false,
       "isCircular": false,
-      "hotspotScore": 29,
+      "hotspotScore": 26,
       "hotspotLevel": "medium",
       "summary": "Core business logic. Classes: AgentRole, TaskStatus, EventType. Functions: utc_now",
       "functions": [
@@ -25956,8 +26830,7 @@
         "core/orchestrator.py",
         "core/tasks.py",
         "core/watchers.py",
-        "maestro/conductor.py",
-        "maestro/swarm.py"
+        "maestro/conductor.py"
       ]
     },
     {
@@ -29289,15 +30162,15 @@
         "status": "collaborative",
         "impact": "bridge",
         "summary": "Connects multiple parts of the code flow.",
-        "score": 33
+        "score": 24
       },
-      "crossStageLinks": 10,
-      "impactScore": 33,
+      "crossStageLinks": 7,
+      "impactScore": 24,
       "isDeadCode": true,
       "isOrphan": false,
       "isCircular": false,
-      "hotspotScore": 33,
-      "hotspotLevel": "high",
+      "hotspotScore": 27,
+      "hotspotLevel": "medium",
       "summary": "Main orchestration code. Functions: _split_telegram_text, sync_callback, sync_cb, _run_download",
       "functions": [
         "_split_telegram_text",
@@ -29314,9 +30187,6 @@
         "agent/agent_loop.py",
         "agent/__init__.py",
         "agent/build_workflow.py",
-        "memory/context_manager.py",
-        "memory/memory_engine.py",
-        "memory/user_profile.py",
         "brain/personal_trainer.py",
         "brain/trend_analyzer.py",
         "brain/persona_model.py",
@@ -29372,18 +30242,18 @@
       "lines": 102,
       "size": 2442,
       "collaboration": {
-        "status": "active",
-        "impact": "orchestrator",
-        "summary": "Pulls together several files to do its work.",
-        "score": 10
+        "status": "connected",
+        "impact": "leaf",
+        "summary": "Part of the local code flow with a focused role.",
+        "score": 1
       },
-      "crossStageLinks": 1,
-      "impactScore": 10,
+      "crossStageLinks": 0,
+      "impactScore": 1,
       "isDeadCode": true,
       "isOrphan": false,
       "isCircular": false,
-      "hotspotScore": 23,
-      "hotspotLevel": "medium",
+      "hotspotScore": 7,
+      "hotspotLevel": "low",
       "summary": "Main orchestration code. Type: module",
       "functions": [],
       "classes": [],
@@ -29410,14 +30280,6 @@
         "PlannerGoal"
       ],
       "imports": [
-        "maestro/models.py",
-        "maestro/planner.py",
-        "maestro/swarm.py",
-        "maestro/kanban.py",
-        "maestro/monitor.py",
-        "maestro/workflow.py",
-        "maestro/router.py",
-        "maestro/reflection.py",
         "maestro/conductor.py"
       ],
       "usedBy": []
@@ -29434,15 +30296,15 @@
         "status": "collaborative",
         "impact": "bridge",
         "summary": "Connects multiple parts of the code flow.",
-        "score": 25
+        "score": 15
       },
-      "crossStageLinks": 5,
-      "impactScore": 25,
+      "crossStageLinks": 4,
+      "impactScore": 15,
       "isDeadCode": false,
       "isOrphan": false,
       "isCircular": true,
-      "hotspotScore": 37,
-      "hotspotLevel": "high",
+      "hotspotScore": 21,
+      "hotspotLevel": "medium",
       "summary": "Main orchestration code. Classes: Conductor. Functions: __init__, select_model, create_task, get_board_stats",
       "functions": [
         "__init__",
@@ -29457,1105 +30319,15 @@
       "exports": [],
       "imports": [
         "maestro/conductor.py",
-        "maestro/kanban.py",
-        "maestro/monitor.py",
-        "maestro/planner.py",
-        "maestro/reflection.py",
-        "maestro/router.py",
-        "maestro/swarm.py",
-        "maestro/workflow.py",
         "core/database.py",
         "core/events.py",
         "core/orchestrator.py",
-        "maestro/models.py",
         "core/models.py"
       ],
       "usedBy": [
         "maestro/__init__.py",
         "maestro/conductor.py"
       ]
-    },
-    {
-      "path": "maestro/kanban.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 324,
-      "size": 12995,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 17,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: _DatabaseBackend, KanbanTaskStore, ColumnManager. Functions: __init__, connection, _ensure_schema, create_task",
-      "functions": [
-        "__init__",
-        "connection",
-        "_ensure_schema",
-        "create_task",
-        "get_task",
-        "list_tasks",
-        "list_by_column",
-        "update_task",
-        "move_task",
-        "delete_task",
-        "create_board",
-        "list_boards",
-        "search_tasks",
-        "_row_to_task",
-        "can_move",
-        "suggested_next",
-        "compute",
-        "get_board_stats"
-      ],
-      "classes": [
-        "_DatabaseBackend",
-        "KanbanTaskStore",
-        "ColumnManager",
-        "BoardMetrics",
-        "BoardManager"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_kanban.py"
-      ]
-    },
-    {
-      "path": "maestro/models.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 331,
-      "size": 8995,
-      "collaboration": {
-        "status": "collaborative",
-        "impact": "bridge",
-        "summary": "Connects multiple parts of the code flow.",
-        "score": 48
-      },
-      "crossStageLinks": 16,
-      "impactScore": 48,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 54,
-      "hotspotLevel": "high",
-      "summary": "Core business logic. Classes: KanbanColumn, TaskPriority, KanbanTask. Functions: utc_now, new_id",
-      "functions": [
-        "utc_now",
-        "new_id"
-      ],
-      "classes": [
-        "KanbanColumn",
-        "TaskPriority",
-        "KanbanTask",
-        "KanbanBoard",
-        "WorkflowStatus",
-        "WorkflowStepType",
-        "WorkflowStep",
-        "WorkflowDefinition",
-        "WorkflowExecution",
-        "SwarmAgentRole",
-        "SwarmMessage",
-        "SwarmAgentSpec",
-        "SwarmRun",
-        "SwarmConsensusVote",
-        "WatchTargetType"
-      ],
-      "exports": [],
-      "imports": [],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/kanban.py",
-        "maestro/monitor.py",
-        "maestro/planner.py",
-        "maestro/reflection.py",
-        "maestro/router.py",
-        "maestro/swarm.py",
-        "maestro/tests/test_kanban.py",
-        "maestro/tests/test_monitor.py",
-        "maestro/tests/test_planner.py",
-        "maestro/tests/test_reflection.py",
-        "maestro/tests/test_router.py",
-        "maestro/tests/test_swarm.py",
-        "maestro/tests/test_workflow.py",
-        "maestro/workflow.py"
-      ]
-    },
-    {
-      "path": "maestro/monitor.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 274,
-      "size": 9251,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 17,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: BaseWatcher, FileWatcher, RepoWatcher. Functions: __init__, stop, snapshot, diff",
-      "functions": [
-        "__init__",
-        "stop",
-        "snapshot",
-        "diff",
-        "_matches_rules",
-        "on",
-        "add_target",
-        "remove_target",
-        "start_watcher",
-        "stop_watcher",
-        "start_all",
-        "stop_all",
-        "list_targets",
-        "get_events",
-        "_build_watcher"
-      ],
-      "classes": [
-        "BaseWatcher",
-        "FileWatcher",
-        "RepoWatcher",
-        "LogWatcher",
-        "AlertEngine",
-        "WatchManager"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_monitor.py"
-      ]
-    },
-    {
-      "path": "maestro/planner.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 276,
-      "size": 9655,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 17,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: GoalAnalyzer, DependencyResolver, TaskGraph. Functions: analyze, estimate_effort, resolve, _visit",
-      "functions": [
-        "analyze",
-        "estimate_effort",
-        "resolve",
-        "_visit",
-        "__init__",
-        "build",
-        "critical_path",
-        "_depth",
-        "_walk",
-        "_assign_depth",
-        "_determine_approach",
-        "_assess_risks",
-        "get_task_graph",
-        "_create_tasks",
-        "_role_for_subgoal"
-      ],
-      "classes": [
-        "GoalAnalyzer",
-        "DependencyResolver",
-        "TaskGraph",
-        "ExecutionStrategyBuilder",
-        "PlannerAgent"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_planner.py"
-      ]
-    },
-    {
-      "path": "maestro/reflection.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 273,
-      "size": 9371,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 17,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: ConfidenceScorer, CriticAgent, ImprovementEngine. Functions: score, __init__, _analyze, generate_improvement_prompt",
-      "functions": [
-        "score",
-        "__init__",
-        "_analyze",
-        "generate_improvement_prompt",
-        "should_retry"
-      ],
-      "classes": [
-        "ConfidenceScorer",
-        "CriticAgent",
-        "ImprovementEngine",
-        "ReflectionAgent"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_reflection.py"
-      ]
-    },
-    {
-      "path": "maestro/router.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 282,
-      "size": 9495,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 17,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: ModelRegistry, CapabilityScorer, FallbackManager. Functions: __init__, register, get, list",
-      "functions": [
-        "__init__",
-        "register",
-        "get",
-        "list",
-        "find_by_capability",
-        "load_defaults",
-        "discover_local",
-        "_infer_and_register_local",
-        "score",
-        "set_fallback_chain",
-        "get_chain",
-        "select",
-        "select_for_task",
-        "select_with_fallback"
-      ],
-      "classes": [
-        "ModelRegistry",
-        "CapabilityScorer",
-        "FallbackManager",
-        "ModelRouter"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_router.py"
-      ]
-    },
-    {
-      "path": "maestro/swarm.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 274,
-      "size": 9819,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 7
-      },
-      "crossStageLinks": 2,
-      "impactScore": 7,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 19,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: AgentRegistry, SwarmMessageBus, SwarmContextManager. Functions: __init__, register, get, handler",
-      "functions": [
-        "__init__",
-        "register",
-        "get",
-        "handler",
-        "find_by_role",
-        "find_by_capability",
-        "list",
-        "remove",
-        "_check",
-        "results"
-      ],
-      "classes": [
-        "AgentRegistry",
-        "SwarmMessageBus",
-        "SwarmContextManager",
-        "ConsensusEngine",
-        "SwarmSupervisor",
-        "AgentSwarm"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py",
-        "core/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_swarm.py"
-      ]
-    },
-    {
-      "path": "maestro/tests/__init__.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 1,
-      "size": 0,
-      "collaboration": {
-        "status": "isolated",
-        "impact": "solo",
-        "summary": "No local collaboration links yet.",
-        "score": 0
-      },
-      "crossStageLinks": 0,
-      "impactScore": 0,
-      "isDeadCode": true,
-      "isOrphan": true,
-      "isCircular": false,
-      "hotspotScore": 1,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Type: module",
-      "functions": [],
-      "classes": [],
-      "exports": [],
-      "imports": [],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_kanban.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 112,
-      "size": 3658,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 9,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestKanbanTaskStore, TestColumnManager, TestBoardMetrics. Functions: store, board_manager, test_create_and_get, test_list_by_column",
-      "functions": [
-        "store",
-        "board_manager",
-        "test_create_and_get",
-        "test_list_by_column",
-        "test_move_task",
-        "test_delete_task",
-        "test_search",
-        "test_board_crud",
-        "test_valid_transitions",
-        "test_compute",
-        "test_create_move_stats"
-      ],
-      "classes": [
-        "TestKanbanTaskStore",
-        "TestColumnManager",
-        "TestBoardMetrics",
-        "TestBoardManager"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/kanban.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_monitor.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 88,
-      "size": 2794,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 8,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestFileWatcher, TestLogWatcher, TestAlertEngine",
-      "functions": [],
-      "classes": [
-        "TestFileWatcher",
-        "TestLogWatcher",
-        "TestAlertEngine",
-        "TestWatchManager"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/monitor.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_planner.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 95,
-      "size": 3189,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 9,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestGoalAnalyzer, TestDependencyResolver, TestTaskGraph. Functions: test_analyze_saas, test_analyze_api, test_analyze_generic, test_estimate_effort_small",
-      "functions": [
-        "test_analyze_saas",
-        "test_analyze_api",
-        "test_analyze_generic",
-        "test_estimate_effort_small",
-        "test_estimate_effort_large",
-        "test_resolve_linear",
-        "test_resolve_circular",
-        "test_build_and_critical_path"
-      ],
-      "classes": [
-        "TestGoalAnalyzer",
-        "TestDependencyResolver",
-        "TestTaskGraph",
-        "TestPlannerAgent"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/planner.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_reflection.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 137,
-      "size": 4322,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 9,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestConfidenceScorer, TestCriticAgent, TestImprovementEngine. Functions: test_score_no_critiques, test_score_high_quality, test_retry_penalty, test_generate_prompt",
-      "functions": [
-        "test_score_no_critiques",
-        "test_score_high_quality",
-        "test_retry_penalty",
-        "test_generate_prompt",
-        "test_should_retry"
-      ],
-      "classes": [
-        "TestConfidenceScorer",
-        "TestCriticAgent",
-        "TestImprovementEngine",
-        "TestReflectionAgent"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/reflection.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_router.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 84,
-      "size": 2999,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 8,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestModelRegistry, TestCapabilityScorer, TestFallbackManager. Functions: test_register_and_find, test_load_defaults, test_score_matching, test_score_cost_penalty",
-      "functions": [
-        "test_register_and_find",
-        "test_load_defaults",
-        "test_score_matching",
-        "test_score_cost_penalty",
-        "test_fallback_chain",
-        "test_select_by_capability",
-        "test_select_for_task",
-        "test_select_with_fallback",
-        "test_select_none_for_unknown"
-      ],
-      "classes": [
-        "TestModelRegistry",
-        "TestCapabilityScorer",
-        "TestFallbackManager",
-        "TestModelRouter"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/router.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_swarm.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 130,
-      "size": 4270,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 9,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestAgentRegistry, TestSwarmMessageBus, TestSwarmContextManager. Functions: test_register_and_find, test_find_by_capability, test_majority_approval, test_reset",
-      "functions": [
-        "test_register_and_find",
-        "test_find_by_capability",
-        "test_majority_approval",
-        "test_reset"
-      ],
-      "classes": [
-        "TestAgentRegistry",
-        "TestSwarmMessageBus",
-        "TestSwarmContextManager",
-        "TestConsensusEngine",
-        "TestSwarmSupervisor",
-        "TestAgentSwarm"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/swarm.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/tests/test_workflow.py",
-      "fileType": "test",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 111,
-      "size": 3420,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 3
-      },
-      "crossStageLinks": 1,
-      "impactScore": 3,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 9,
-      "hotspotLevel": "low",
-      "summary": "Main orchestration code. Classes: TestWorkflowRegistry, TestStepExecutor, TestWorkflowRunner. Functions: test_register_and_get, test_list",
-      "functions": [
-        "test_register_and_get",
-        "test_list"
-      ],
-      "classes": [
-        "TestWorkflowRegistry",
-        "TestStepExecutor",
-        "TestWorkflowRunner",
-        "TestWorkflowEngine"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/workflow.py",
-        "maestro/models.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "maestro/workflow.py",
-      "fileType": "module",
-      "stage": "main",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 228,
-      "size": 7948,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 1,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 16,
-      "hotspotLevel": "medium",
-      "summary": "Main orchestration code. Classes: WorkflowRegistry, StepExecutor, WorkflowRunner. Functions: __init__, register, get, list",
-      "functions": [
-        "__init__",
-        "register",
-        "get",
-        "list",
-        "remove",
-        "load_yaml",
-        "register_handler",
-        "_ready_steps",
-        "_is_skipped",
-        "get_execution",
-        "list_executions"
-      ],
-      "classes": [
-        "WorkflowRegistry",
-        "StepExecutor",
-        "WorkflowRunner",
-        "WorkflowEngine"
-      ],
-      "exports": [],
-      "imports": [
-        "maestro/models.py"
-      ],
-      "usedBy": [
-        "maestro/__init__.py",
-        "maestro/conductor.py",
-        "maestro/tests/test_workflow.py"
-      ]
-    },
-    {
-      "path": "memory/automation_engine.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 449,
-      "size": 15576,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 1
-      },
-      "crossStageLinks": 0,
-      "impactScore": 1,
-      "isDeadCode": true,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 8,
-      "hotspotLevel": "low",
-      "summary": "Core business logic. Functions: _now_iso, _user_dir, _automations_path, _load_automations",
-      "functions": [
-        "_now_iso",
-        "_user_dir",
-        "_automations_path",
-        "_load_automations",
-        "_save_automations",
-        "list_automations",
-        "add_automation",
-        "delete_automation",
-        "_get_user_timezone",
-        "_parse_clock_time",
-        "_extract_news_query",
-        "_extract_routine_name",
-        "_infer_workflow",
-        "parse_automation_creation",
-        "format_automation",
-        "render_automations_text",
-        "_headline_summary",
-        "_send_telegram_message",
-        "_deliver_result",
-        "_run_news_summary",
-        "_run_git_commit",
-        "_run_routine_automation",
-        "_execute_automation",
-        "_mark_run",
-        "_due_automations_for_user"
-      ],
-      "classes": [],
-      "exports": [],
-      "imports": [
-        "memory/user_profile.py"
-      ],
-      "usedBy": []
-    },
-    {
-      "path": "memory/context_manager.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 103,
-      "size": 3525,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 4
-      },
-      "crossStageLinks": 2,
-      "impactScore": 4,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 11,
-      "hotspotLevel": "medium",
-      "summary": "Core business logic. Functions: _history_path, _load_history, _save_history, _get_history",
-      "functions": [
-        "_history_path",
-        "_load_history",
-        "_save_history",
-        "_get_history",
-        "add_message",
-        "get_context",
-        "get_recent_messages",
-        "get_full_history",
-        "clear_history"
-      ],
-      "classes": [],
-      "exports": [],
-      "imports": [],
-      "usedBy": [
-        "agent/agent_loop.py",
-        "integrations/telegram_bot.py"
-      ]
-    },
-    {
-      "path": "memory/knowledge.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 229,
-      "size": 7163,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 1
-      },
-      "crossStageLinks": 0,
-      "impactScore": 1,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 8,
-      "hotspotLevel": "low",
-      "summary": "Core business logic. Functions: _check_deps, _get_collection, _get_embedder, _chunk_text",
-      "functions": [
-        "_check_deps",
-        "_get_collection",
-        "_get_embedder",
-        "_chunk_text",
-        "_build_where",
-        "search_knowledge_records",
-        "knowledge_add",
-        "knowledge_search",
-        "knowledge_count"
-      ],
-      "classes": [],
-      "exports": [],
-      "imports": [],
-      "usedBy": [
-        "memory/memory_engine.py"
-      ]
-    },
-    {
-      "path": "memory/memory_engine.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 616,
-      "size": 21463,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 2,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 14,
-      "hotspotLevel": "medium",
-      "summary": "Core business logic. Classes: MemoryRecord, UnderstandingFrame. Functions: _user_dir, _profile_path, _summary_path, _episodic_path",
-      "functions": [
-        "_user_dir",
-        "_profile_path",
-        "_summary_path",
-        "_episodic_path",
-        "_load_json",
-        "_save_json",
-        "_load_profile",
-        "_save_profile",
-        "_load_summary",
-        "_save_summary",
-        "_load_episodic_memories",
-        "_save_episodic_memories",
-        "_now_iso",
-        "extract_topics",
-        "detect_emotion",
-        "_extract_goals",
-        "_extract_habits",
-        "_extract_constraints",
-        "_extract_preferences",
-        "_extract_entities",
-        "extract_understanding_frame",
-        "_maybe_store_memory",
-        "auto_update_profile",
-        "finalize_turn_memory",
-        "retrieve_relevant_memories"
-      ],
-      "classes": [
-        "MemoryRecord",
-        "UnderstandingFrame"
-      ],
-      "exports": [],
-      "imports": [
-        "memory/knowledge.py"
-      ],
-      "usedBy": [
-        "agent/agent_loop.py",
-        "integrations/telegram_bot.py"
-      ]
-    },
-    {
-      "path": "memory/user_profile.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 392,
-      "size": 12225,
-      "collaboration": {
-        "status": "connected",
-        "impact": "leaf",
-        "summary": "Part of the local code flow with a focused role.",
-        "score": 5
-      },
-      "crossStageLinks": 2,
-      "impactScore": 5,
-      "isDeadCode": false,
-      "isOrphan": false,
-      "isCircular": false,
-      "hotspotScore": 15,
-      "hotspotLevel": "medium",
-      "summary": "Core business logic. Functions: _profile_path, _now_iso, _load_profile, _save_profile",
-      "functions": [
-        "_profile_path",
-        "_now_iso",
-        "_load_profile",
-        "_save_profile",
-        "_get",
-        "get_profile",
-        "is_onboarded",
-        "mark_onboarded",
-        "touch_last_seen",
-        "get_name",
-        "set_name",
-        "get_language",
-        "set_language",
-        "set_timezone",
-        "add_interest",
-        "set_interests",
-        "add_dislike",
-        "set_preference",
-        "get_preference",
-        "save_note",
-        "get_notes",
-        "clear_notes",
-        "save_custom_routine",
-        "get_custom_routine",
-        "get_custom_routines"
-      ],
-      "classes": [],
-      "exports": [],
-      "imports": [],
-      "usedBy": [
-        "agent/agent_loop.py",
-        "integrations/telegram_bot.py",
-        "memory/automation_engine.py"
-      ]
-    },
-    {
-      "path": "memory/wiki_memory.py",
-      "fileType": "module",
-      "stage": "core",
-      "lang": "py",
-      "ext": ".py",
-      "lines": 1025,
-      "size": 43068,
-      "collaboration": {
-        "status": "isolated",
-        "impact": "solo",
-        "summary": "No local collaboration links yet.",
-        "score": 0
-      },
-      "crossStageLinks": 0,
-      "impactScore": 0,
-      "isDeadCode": true,
-      "isOrphan": true,
-      "isCircular": false,
-      "hotspotScore": 7,
-      "hotspotLevel": "low",
-      "summary": "Core business logic. Classes: MemoryRecord, RetrievalResult, MemoryPathError. Functions: now_iso, today_slug, slugify, normalize_space",
-      "functions": [
-        "now_iso",
-        "today_slug",
-        "slugify",
-        "normalize_space",
-        "stable_id",
-        "default_memory_root",
-        "clamp_score",
-        "frontmatter_dump",
-        "frontmatter_load",
-        "render_markdown",
-        "summarize_text",
-        "tokenize",
-        "__init__",
-        "create_memory",
-        "update_memory",
-        "delete_memory",
-        "search_memory",
-        "wiki_query",
-        "semantic_search",
-        "graph_query",
-        "get_memory",
-        "reflect",
-        "consolidate_memory",
-        "commit_memory",
-        "memory_diff"
-      ],
-      "classes": [
-        "MemoryRecord",
-        "RetrievalResult",
-        "MemoryPathError",
-        "WikiMemorySystem"
-      ],
-      "exports": [],
-      "imports": [],
-      "usedBy": []
     }
   ]
 }

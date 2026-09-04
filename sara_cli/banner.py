@@ -67,31 +67,23 @@ def _skin_branding(key: str, fallback: str) -> str:
 from sara_cli import __version__ as VERSION, __release_date__ as RELEASE_DATE
 
 SARA_AGENT_LOGO = """\
-[bold #FFD700] ███████╗ █████╗ ██████╗  █████╗        █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
-[bold #FFD700] ██╔════╝██╔══██╗██╔══██╗██╔══██╗      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
-[#FFBF00] ███████╗███████║██████╔╝███████║█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   [/]
-[#FFBF00] ╚════██║██╔══██║██╔══██╗██╔══██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   [/]
-[#CD7F32] ███████║██║  ██║██║  ██║██║  ██║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   [/]
-[#CD7F32] ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   [/]"""
+[bold #7DD3FC]  ╭────────────────────────────────────────────────────────────╮[/]
+[#E6EDF3]     S A R A  A G E N T[/]   [#F78C6C]local-first AI chat console[/]
+[dim #8EA8A6]     tools · skills · memory · automation[/]
+[bold #7DD3FC]  ╰────────────────────────────────────────────────────────────╯[/]"""
 
 SARA_CADUCEUS = """\
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⢀⣴⣾⡿⠿⣷⣦⡀⠀⠀⠀⢀⣴⣾⠿⢿⣷⣦⡀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⢀⣴⠟⠁⠀⠀⠀⠈⢻⣿⣄⠀⣠⣿⠋⠀⠀⠀⠈⠙⢿⣦⡀⠀⠀[/]
-[#FFBF00]⠀⣠⡿⠋⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⡿⠋⠀⠀⠀⠀⠀⠀⠈⢿⣷⡀⠀[/]
-[#FFBF00]⠀⣿⡁⠀⢠⡄⠀⠀⠀⠀⠀⢠⣾⠟⢿⣦⠀⠀⠀⠀⢠⡄⠀⢈⣿⠀[/]
-[#FFBF00]⠀⠹⣿⣄⠀⠳⠶⠤⠤⠴⠾⠋⠀⠀⠀⠙⠷⠦⠤⠶⠶⠀⣠⣿⠏⠀[/]
-[#CD7F32]⠀⠀⠈⢿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⡿⠃⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠈⢻⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⡟⠁⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠉⠻⣷⣄⡀⠀⠀⣀⠀⢀⣀⠀⢀⣴⠿⠋⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠈⣿⣷⡀⠀⣿⠀⢸⣿⠀⣾⣿⠁⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⡄⠸⡄⢠⠇⣠⣿⡏⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣄⢣⡜⣠⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
+[#7DD3FC]            ╭────────────╮[/]
+[#7DD3FC]        ╭───┤    S A     ├───╮[/]
+[#E6EDF3]        │   ╰─────┬──────╯   │[/]
+[#E6EDF3]        │      SARA AGENT     │[/]
+[#8EA8A6]        │   chat · tools · os │[/]
+[#F78C6C]        ╰───────╮     ╭───────╯[/]
+[#F78C6C]                │  ◇  │[/]
+[#8EA8A6]                │     │[/]
+[#8EA8A6]                │     │[/]
+[#7DD3FC]              ╭─╯     ╰─╮[/]
+[#7DD3FC]              ╰─────────╯[/]"""
 
 
 # =========================================================================
@@ -441,12 +433,12 @@ def build_welcome_banner(
             disabled_tools.update(tools_in_ts)
 
     # ── Skin tokens ──────────────────────────────────────────────────
-    accent         = _skin_color("banner_accent",  "#FFBF00")
-    dim            = _skin_color("banner_dim",      "#B8860B")
-    text           = _skin_color("banner_text",     "#FFF8DC")
-    session_color  = _skin_color("session_border",  "#8B8682")
-    title_color    = _skin_color("banner_title",    "#FFD700")
-    border_color   = _skin_color("banner_border",   "#CD7F32")
+    accent         = _skin_color("banner_accent",  "#7DD3FC")
+    dim            = _skin_color("banner_dim",      "#8EA8A6")
+    text           = _skin_color("banner_text",     "#E6EDF3")
+    session_color  = _skin_color("session_border",  "#64748B")
+    title_color    = _skin_color("banner_title",    "#E6EDF3")
+    border_color   = _skin_color("banner_border",   "#2DD4BF")
 
     # ── Skin art ─────────────────────────────────────────────────────
     try:
@@ -472,17 +464,18 @@ def build_welcome_banner(
         if context_length else ""
     )
     left_lines = [
+        f"[bold {title_color}]Sara Agent[/] [dim {dim}]by Nexvisora Research[/]",
         "",
         hero_art,
         "",
-        f"[{accent}]{model_short}[/]{ctx_str} [dim {dim}]·[/] [dim {dim}]Nexvisora Research [/]",
+        f"[bold {accent}]{model_short}[/]{ctx_str}",
         f"[dim {dim}]{cwd}[/]",
     ]
     if session_id:
         left_lines.append(f"[dim {session_color}]Session: {session_id}[/]")
 
     # ── Right column (tools, MCP, skills, summary) ───────────────────
-    right_lines = [f"[bold {accent}]Available Tools[/]"]
+    right_lines = [f"[bold {accent}]Tools Ready[/]"]
 
     # Build toolsets dict
     toolsets_dict: Dict[str, list] = {}
@@ -508,10 +501,10 @@ def build_welcome_banner(
             else sorted_names
         )
         colored = _colorize_tool_names(display_names, text, disabled_tools, lazy_tools)
-        right_lines.append(f"[dim {dim}]{ts}:[/] {', '.join(colored)}")
+        right_lines.append(f"[bold {dim}]{ts}[/] [dim {dim}]→[/] {', '.join(colored)}")
 
     if remaining_count > 0:
-        right_lines.append(f"[dim {dim}](and {remaining_count} more toolsets...)[/]")
+        right_lines.append(f"[dim {dim}]+ {remaining_count} more toolsets[/]")
 
     # MCP servers
     try:
@@ -534,12 +527,15 @@ def build_welcome_banner(
                 )
 
     # Skills
-    right_lines += ["", f"[bold {accent}]Available Skills[/]"]
+    right_lines += ["", f"[bold {accent}]Skills Loaded[/]"]
     skills_by_category = get_available_skills()
     total_skills = sum(len(s) for s in skills_by_category.values())
 
     if skills_by_category:
-        for category in sorted(skills_by_category):
+        sorted_categories = sorted(skills_by_category)
+        display_categories = sorted_categories[:10]
+        remaining_categories = len(sorted_categories) - len(display_categories)
+        for category in display_categories:
             skill_names  = sorted(skills_by_category[category])
             display_part = skill_names[:8]
             skills_str   = ", ".join(display_part)
@@ -547,7 +543,9 @@ def build_welcome_banner(
                 skills_str += f" +{len(skill_names) - 8} more"
             if len(skills_str) > 50:
                 skills_str = skills_str[:47] + "..."
-            right_lines.append(f"[dim {dim}]{category}:[/] [{text}]{skills_str}[/]")
+            right_lines.append(f"[bold {dim}]{category}[/] [dim {dim}]→[/] [{text}]{skills_str}[/]")
+        if remaining_categories > 0:
+            right_lines.append(f"[dim {dim}]+ {remaining_categories} more skill categories[/]")
     else:
         right_lines.append(f"[dim {dim}]No skills installed[/]")
 
@@ -566,8 +564,8 @@ def build_welcome_banner(
     summary_parts  = [f"{len(tools)} tools", f"{total_skills} skills"]
     if mcp_connected:
         summary_parts.append(f"{mcp_connected} MCP servers")
-    summary_parts.append("/help for commands")
-    right_lines.append(f"[dim {dim}]{' · '.join(summary_parts)}[/]")
+    summary_parts.append("/help")
+    right_lines.append(f"[bold {accent}]{'  ·  '.join(summary_parts)}[/]")
 
     # Update notice
     try:
